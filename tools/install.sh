@@ -123,9 +123,11 @@ rdep)
                 github_install cran/getopt
                 github_install cran/optparse
                 github_install cran/numbers
+                github_install cran/yaml
         else
                 normal_install optparse
                 normal_install numbers
+                normal_install yaml
         fi
 	github_install llaniewski/rtemplate
 	github_install llaniewski/gvector
@@ -136,7 +138,12 @@ rpython)
 	normal_install rPython
 	;;
 rinside)
-	normal_install RInside
+	if test "x$1" == "xgithub"
+	then
+		github_install eddelbuettel/rinside
+	else
+		normal_install RInside
+	fi
 	;;
 cuda)
 	test -z "$1" && error Version number needed for cuda install
