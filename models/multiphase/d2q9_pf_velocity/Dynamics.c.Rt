@@ -409,13 +409,8 @@ CudaDeviceFunction void CollisionMRT(){
 	PhaseF = PhaseF(0,0);
 
 	int i,j;
-<<<<<<< HEAD
 	real_t C = PhaseF(0,0), mu;		// Phase and chemical potential
 	real_t tau, DynVisc, rho, p;	// Macroscopic Properties
-=======
-	real_t mu;					// Chemical potential
-	real_t tau, DynVisc, rho, p;			// Macroscopic Properties
->>>>>>> upstream/v6.2_candidate
 	vector_t gradPhi;				// Phase field gradients
 	real_t nx, ny;					// Normals
 	real_t Gamma[9], geq[9], mag;	// equilibrium, pressure equilibrium, velocity magnitude
@@ -515,23 +510,6 @@ CudaDeviceFunction void CollisionMRT(){
 	U = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*F_total[0]/rho;
 	V = g[2]-g[4]+g[5]+g[6]-g[7]-g[8] + 0.5*F_total[1]/rho;
 
-<<<<<<< HEAD
-//  PHASE FIELD POPULATION UPDATE:
-	#ifdef OPTIONS_RT
-		real_t Req[9];
-	#endif
-	tmp1 = (1.0 - 4.0*(C - 0.5)*(C - 0.5))/W;
-	for (i=0; i< 9; i++){
-	#ifdef OPTIONS_RT
-		Req[i] = 3.0 * wf[i] * (d2q9_ex[i] * (PhaseF*U - PhaseOld*uold)
-			+ d2q9_ey[i] * (PhaseF*V - PhaseOld*vold));
-		F_phi[i] = calcF_phi(i, tmp1, nx, ny) + Req[i];
-		heq[i] = C * wf[i] * (1 + 3.0 * (d2q9_ex[i]*U + d2q9_ey[i]*V) ) - 0.5*F_phi[i];
-	#else
-		F_phi[i] = calcF_phi(i, tmp1, nx, ny); // Forcing Terms
-		heq[i] = C * Gamma[i] - 0.5*F_phi[i];  // heq
-	#endif
-=======
 // PHASE FIELD POPULATION UPDATE:
 #ifdef OPTIONS_RT
     real_t Req[9];
@@ -547,7 +525,6 @@ for (i=0; i< 9; i++){
     F_phi[i] = calcF_phi(i, tmp1, nx, ny); // Forcing Terms
     heq[i] = PhaseF * Gamma[i] - 0.5*F_phi[i];  // heq
 #endif
->>>>>>> upstream/v6.2_candidate
 
 		h[i] = h[i] - omega_phi * (h[i]-heq[i]) + F_phi[i];	// collision
 	}
