@@ -26,7 +26,7 @@ if (Options$Outflow) {
 }
 
 #	Fields required for solid contact
-AddDensity(name="nw_x", dx=0, dy=0, group="nw")
+AddDensity(name="nw_x", dx=0, dy=0, group="nw", comment='phase field normal at the wall in x direction, pointing into fluid')
 AddDensity(name="nw_y", dx=0, dy=0, group="nw")
 
 #	Velocity Fields
@@ -91,16 +91,17 @@ AddSetting(name="CenterY", default="0", comment='Circle Center y-coord')
 AddSetting(name="BubbleType", default="1", comment='Drop/bubble')
 
 #	Inputs: For phasefield evolution
-AddSetting(name="Density_h", comment='High density')
-AddSetting(name="Density_l", comment='Low  density')
-AddSetting(name="PhaseField_h", default=1, comment='PhaseField in Liquid')
-AddSetting(name="PhaseField_l", default=0, comment='PhaseField gas')
-AddSetting(name="PhaseField", 	   comment='Initial PhaseField distribution', zonal=T)
-AddSetting(name="W", default=4,    comment='Anti-diffusivity coeff')
+AddSetting(name="Density_h", comment='High density fluid')
+AddSetting(name="Density_l", comment='Low  density fluid')
+AddSetting(name="PhaseField_h", default=1, comment='PhaseField in high density fluid')
+AddSetting(name="PhaseField_l", default=0, comment='PhaseField in low density fluid')
+AddSetting(name="PhaseField_init", 	   comment='Initial PhaseField distribution', zonal=T)
+AddSetting(name="W", default=4,    comment='Anti-diffusivity coeff (phase interfacial thickness) ')
 AddSetting(name="omega_phi", comment='one over relaxation time (phase field)')
 AddSetting(name="M", omega_phi='1.0/(3*M+0.5)', default=0.02, comment='Mobility')
 AddSetting(name="sigma", 		   comment='surface tension')
-AddSetting(name="ContactAngle", radAngle='ContactAngle*3.1415926535897/180', default='90', comment='Contact angle in degrees')
+AddSetting(name="ContactAngle", radAngle='ContactAngle*3.1415926535897/180', default='90',
+		 comment='Contact angle in degrees - in reference to the high density fluid')
 AddSetting(name="radAngle", comment='Conversion to rads for calcs')
 
 # 	Inputs: Fluid Properties
@@ -108,13 +109,7 @@ AddSetting(name="tau_l", comment='relaxation time (low density fluid)')
 AddSetting(name="tau_h", comment='relaxation time (high density fluid)')
 AddSetting(name="Viscosity_l", tau_l='(3*Viscosity_l)', default=0.16666666, comment='kinematic viscosity')
 AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comment='kinematic viscosity')
-#AddSetting(name="S0", default=1.0, comment='Relaxation Param')
-#AddSetting(name="S1", default=1.0, comment='Relaxation Param')
-#AddSetting(name="S2", default=1.0, comment='Relaxation Param')
-#AddSetting(name="S3", default=1.0, comment='Relaxation Param')
-#AddSetting(name="S4", default=1.0, comment='Relaxation Param')
-#AddSetting(name="S5", default=1.0, comment='Relaxation Param')
-#AddSetting(name="S6", default=1.0, comment='Relaxation Param')
+
 #	Inputs: Flow Properties
 AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
