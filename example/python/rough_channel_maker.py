@@ -3,6 +3,7 @@ import os
 import numpy as np
 import xml.etree.ElementTree as ET
 
+np.random.seed(0)
 import sys
 
 # this script is to make a corrugated channel geometry as in
@@ -10,21 +11,63 @@ import sys
 # by Li Bowen, Yao ZHaoHui, Hao PengFei
 
 # parametes from the article:
-L = 10 # length of ridge-wall
-S = 8  # length of air-hole
-h = 4  # depth of air-hole
+ridge_length = 4 # length of ridge-wall
+# S = 8  # length of air-hole
+air_height = 4  # depth of air-hole
 
-channel_length = 257
+channel_length = 256
 channel_height = 19
 
-ridges = np.arange(0, channel_length, L + S)
 
 path = os.getcwd()
 up_dir = os.path.dirname(path)
-file_name =  os.path.join(up_dir,'py_ref_channel.xml')
+file_name = os.path.join(up_dir,'py_rough_channel.xml')
 
-# file_name = "py_ref_channel.xml"
+file_name = "py_rough_channel.xml"
 
+ridges = np.arange(0, channel_length, ridge_length)
+
+# np.random.randint(a, b)
+mean, sigma = 0, 10 # mean and standard deviation
+ridge_heights = np.random.normal(mean, sigma, len(ridges))
+ridge_heights = np.array(list(map(lambda x: int(round(x)), ridge_heights))) # TODO is it ok to round gaussian dist?
+
+is_mean_correct = abs(mean - np.mean(ridge_heights)) < 0.01
+is_sigma_correct = abs(sigma - np.std(ridge_heights, ddof=1)) < 0.05 * sigma
+# Include ddof=1 if you're calculating np.std() for a sample taken from your full dataset.
+# Ensure ddof=0 if you're calculating np.std() for the full population
+
+smallest = min(ridge_heights)
+# ridge_heights  = np.array(list(map(abs, ridge_heights)))
+
+# translate to positive regime
+ridge_heights  = np.array(list(map(lambda x: x + abs(smallest) + 1 , ridge_heights)))
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import statsmodels.sandbox.distributions.extras as extras
+
+pdffunc = extras.pdf_mvsk([0, 50, 0,0]) # mu, sig, skew, kurt
+range = np.arange(-100, 100, 0.00001)
+y = pdffunc(range)
+
+
+
+from scipy.stats import kurtosis
+from scipy.stats import skew
+
+mean_y = np.mean(y)
+std_y = np.std(y)
+skewness_y = kurtosis(y)
+kurtosis_y = skew(y)
+print( 'excess kurtosis of normal distribution (should be 0): {}'.format( kurtosis(y) ))
+print( 'skewness of normal distribution (should be 0): {}'.format( skew(y) ))
+
+plt.plot(range, y)
+plt.show()
+
+a=123
 
 def indent(elem, level=0):
     '''
@@ -73,11 +116,11 @@ def _build_surface(xml_wall_element):
     box = ET.SubElement(wall, "Box")
     box.set("ny", str(1)) # make bottom_wall
 
-    for ridge in ridges[:-1]: # skip the last ridge
+    for ridge, ridge_height in zip(ridges[:-1], ridge_heights[:-1]): # skip the last ridge
         box = ET.SubElement(wall, "Box")
         box.set("dx", str(ridge))
-        box.set("nx", str(L))
-        box.set("fy", str(h))
+        box.set("nx", str(ridge_length))
+        box.set("fy", str(ridge_height))
 
 
 def _build_model(model_node):
@@ -102,9 +145,10 @@ def _build_model(model_node):
 
     params.set("Period", str(channel_length))
     params.set("Perturbation", str(0.01))
-    params.set("MidPoint", str(h))
+    params.set("MidPoint", str(air_height))
 
     indent(params)
+
 
 def build_channel():
 
@@ -133,7 +177,6 @@ def build_channel():
               model_node=model)
     _build_surface(xml_wall_element=geometry)
     _build_model(model_node=model)
-
 
     failcheck = ET.SubElement(CLBConfig, "Failcheck")
     failcheck.set("Iterations", str(2000))
