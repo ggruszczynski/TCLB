@@ -7,8 +7,9 @@ np.random.seed(0)
 import sys
 
 # this script is to make a corrugated channel geometry as in
-# "Incompressible LBGK simulation of flow characterisics in a micro-channel with patterned superhydrophobic surfaces"
-# by Li Bowen, Yao ZHaoHui, Hao PengFei
+# 'Simulation of lfuid flow in hydrophobic rough microchannels' by Christian Kunert & Jens Harting
+# or
+# 'Lattice Boltzmann Simulation of Droplets Impacting on Superhydrophobic Surfaces with Randomly Distributed Rough Structures' by Wu-Zhi Yuan and Li-Zhi Zhang
 
 # parametes from the article:
 ridge_length = 4 # length of ridge-wall
