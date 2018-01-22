@@ -10,20 +10,20 @@ import sys
 # by Li Bowen, Yao ZHaoHui, Hao PengFei
 
 # parametes from the article:
-L = 10 # length of ridge-wall
-S = 8  # length of air-hole
-h = 4  # depth of air-hole
+L = 3 # length of ridge-wall
+S = 6  # length of air-hole
+h = 2  # depth of air-hole
 
-channel_length = 257
-channel_height = 19
+channel_length = 256
+channel_height = 100 # TODO: put 200
 
 ridges = np.arange(0, channel_length, L + S)
 
 path = os.getcwd()
 up_dir = os.path.dirname(path)
-file_name =  os.path.join(up_dir,'py_ref_channel.xml')
+# file_name =  os.path.join(up_dir,'py_ref_channel.xml')
 
-# file_name = "py_ref_channel.xml"
+file_name = "py_ref_channel.xml"
 
 
 def indent(elem, level=0):
@@ -49,6 +49,8 @@ def indent(elem, level=0):
 
 
 def _build_BC(geometry_node, model_node):
+    return
+
     inlet = ET.SubElement(geometry_node, "WPressure")
     inlet.set("name", "inlet")
     inlet.set("nx", str(1))
@@ -84,11 +86,12 @@ def _build_model(model_node):
 
     params = ET.SubElement(model_node, "Params")
 
-    params.set("Density_h", str(1))
-    params.set("Density_l", str(0.001))
+    density_h = 1
+    params.set("Density_h", str(density_h))
+    params.set("Density_l", str(0.08))
 
-    params.set("Viscosity_h", str(0.0166))
-    params.set("Viscosity_l", str(0.166))
+    params.set("Viscosity_h", str(0.3333333333333333))
+    params.set("Viscosity_l", str(0.4166666666666667))
 
     params.set("PhaseField_init", str(0.0))
     params.set("PhaseField_h", str(1.0))
@@ -103,6 +106,9 @@ def _build_model(model_node):
     params.set("Period", str(channel_length))
     params.set("Perturbation", str(0.01))
     params.set("MidPoint", str(h))
+
+    params.set("GravitationX", str(0.08*channel_length/density_h))
+
 
     indent(params)
 

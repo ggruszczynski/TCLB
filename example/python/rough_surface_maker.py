@@ -11,7 +11,7 @@ import sys
 # or
 # 'Lattice Boltzmann Simulation of Droplets Impacting on Superhydrophobic Surfaces with Randomly Distributed Rough Structures' by Wu-Zhi Yuan and Li-Zhi Zhang
 
-# parametes from the article:
+# parameters
 ridge_length = 4 # length of ridge-wall
 # S = 8  # length of air-hole
 air_height = 4  # depth of air-hole
@@ -199,10 +199,7 @@ def append_notes_to_file():
     with open(file_name, "a") as f:
         f.write("\n\n"
                 "<!-- This is an automatically generated file --> \n"
-                "<!-- usage: to test TCLB result against: --> \n"
-                "<!--\n'Incompressible LBGK simulation of flow characterisics\n"
-                " in a micro-channel with patterned superhydrophobic surfaces'\n "
-                "by Li Bowen, Yao ZHaoHui, Hao PengFei \n-->"
+                "<!-- usage: to test TCLB result. --> \n"
                 "\n\n<!-- Model:	models/multiphase/d2q9_pf_velocity -->"
                 )
 

@@ -442,7 +442,7 @@ CudaDeviceFunction void CollisionMRT(){
 	// Fluid Properties:
 	mu = calcMu( PhaseF );
 	rho = Density_l + (PhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
-	p = g[0]+g[1]+g[2]+g[3]+g[4]+g[5]+g[6]+g[7]+g[8];
+	p = g[0]+g[1]+g[2]+g[3]+g[4]+g[5]+g[6]+g[7]+g[8]; // TODO: is the pressure formulation more stable than density one? 
 
 	if ( PhaseF < PhaseField_l){
 		tau = tau_l + 0.5;
