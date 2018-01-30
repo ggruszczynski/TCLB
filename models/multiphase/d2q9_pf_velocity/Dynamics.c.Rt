@@ -190,6 +190,13 @@ CudaDeviceFunction real_t calcWallPhase(){
 			else {   
 				myA = 1 - 0.5*myH * (4.0/W)  * cos(radAngle);
 				PhaseF = (myA - sqrt( myA*myA - 4.0 * (myA-1)*myPhase))/(myA-1) - myPhase;
+				
+				// Papatzacos formula
+				// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
+				real_t k = (1.5 *sigma*W);
+				real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
+				real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
+				PhaseF = myPhase + myH*w/k;
 		}
 	  }
 	} 
