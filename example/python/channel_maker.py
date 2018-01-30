@@ -12,7 +12,7 @@ import sys
 # parametes from the article:
 L = 3 # length of ridge-wall
 S = 6  # length of air-hole
-h = 2  # depth of air-hole
+h = 20  # depth of air-hole
 
 channel_length = 256
 channel_height = 100 # TODO: put 200
@@ -107,7 +107,8 @@ def _build_model(model_node):
     params.set("Perturbation", str(0.01))
     params.set("MidPoint", str(h))
 
-    params.set("GravitationX", str(0.08*channel_length/density_h))
+    # params.set("GravitationX", str(1.0e-6))
+    params.set("GravitationX", str(0.2*(density_h*channel_length)))
 
 
     indent(params)
@@ -142,12 +143,12 @@ def build_channel():
 
 
     failcheck = ET.SubElement(CLBConfig, "Failcheck")
-    failcheck.set("Iterations", str(2000))
+    failcheck.set("Iterations", str(3000))
 
     solve = ET.SubElement(CLBConfig, "Solve")
     solve.set("Iterations", str(10000))
     vtk = ET.SubElement(solve, "VTK")
-    vtk.set("Iterations", str(2000))
+    vtk.set("Iterations", str(1000))
     log = ET.SubElement(solve, "Log")
     log.set("Iterations", str(1000))
 
