@@ -49,7 +49,7 @@ if (Options$Outflow){
 
 #	Stages - processes to run for initialisation and each iteration
 if (Options$RT) {
-	AddStage("PhaseInit" , "Init" 			, save=Fields$name=="PhaseF")
+	AddStage("PhaseInit" , "Init_phase" 			, save=Fields$name=="PhaseF")
 	AddStage("WallInit", "Init_wallNorm"    , save=Fields$group %in% c("nw"))
 	AddStage("calcWall", "calcWallPhase"    , save=Fields$group %in% c("PF"), load=DensityAll$group=="nw") 
 
@@ -61,7 +61,7 @@ if (Options$RT) {
 						 					load=DensityAll$group %in% c("g","h","Vel"))
 } else if (Options$Outflow) {
 	# initialisation
-	AddStage("PhaseInit" , "Init", save="PhaseF")
+	AddStage("PhaseInit" , "Init_phase", save="PhaseF")
 	AddStage("BaseInit"  , "Init_distributions", save=Fields$group %in% c("g","h","Vel","gold","hold"))
 	AddStage("WallInit"  , "Init_wallNorm", save=Fields$group=="nw")
 	# iteration
@@ -71,7 +71,7 @@ if (Options$RT) {
 										load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
 } else {
 	# initialisation
-	AddStage("PhaseInit" , "Init", save="PhaseF")
+	AddStage("PhaseInit" , "Init_phase", save="PhaseF")
 	AddStage("BaseInit"  , "Init_distributions", save=Fields$group %in% c("g","h","Vel"))
 	AddStage("WallInit"  , "Init_wallNorm", save=Fields$group=="nw")
 	# iteration
@@ -88,7 +88,8 @@ AddAction("Init"     , c("PhaseInit","WallInit", "calcWall","BaseInit"))
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
 AddQuantity(name="U",	  unit="m/s",vector=T)
-AddQuantity(name="P",	  unit="Pa")
+AddQuantity(name="NormalizedPressure",	  unit="Pa")
+AddQuantity(name="Pressure",	  unit="Pa")
 AddQuantity(name="Normal", unit="1", vector=T)
 
 #	Initialisation States

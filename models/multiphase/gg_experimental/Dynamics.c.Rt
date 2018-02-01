@@ -58,9 +58,11 @@ CudaDeviceFunction real_t getRho(){
 	rho = Density_l + (Density_h-Density_l) * (PhaseF(0,0) - PhaseField_l)/(PhaseField_h - PhaseField_l);
 	return rho;
 }
+
 CudaDeviceFunction real_t getPhaseField(){
 	return PhaseF(0,0);
 }
+
 CudaDeviceFunction vector_t getU(){
 	vector_t u;
 	u.x = U;
@@ -68,10 +70,21 @@ CudaDeviceFunction vector_t getU(){
 	u.z = 0.0;
 	return u;
 }
-CudaDeviceFunction real_t getP(){
-	real_t p = g[0]+g[1]+g[2]+g[3]+g[4]+g[5]+g[6]+g[7]+g[8];//Normalised pressure
-	real_t d = h[0]+h[1]+h[2]+h[3]+h[4]+h[5]+h[6]+h[7]+h[8];
-	p = p*d/3.0;
+
+CudaDeviceFunction real_t getNormalizedPressure(){
+	// Normalised pressure, eq 32a from "Improved locality of the phase-field lattice Boltzmann 
+	//model for immiscible fluids at high density ratios"
+	real_t p =  <?R C(sum(g)) ?> ;
+	return p;
+}
+
+CudaDeviceFunction real_t getPressure(){
+	// Pressute, defined just eq 17 from "Improved locality of the phase-field lattice Boltzmann 
+	//	model for immiscible fluids at high density ratios"
+	real_t p =  <?R C(sum(g)) ?> ;//Normalised pressure
+	real_t rho = getRho();
+	// real_t rho = h[0]+h[1]+h[2]+h[3]+h[4]+h[5]+h[6]+h[7]+h[8];
+	p = p*rho/3.0; 
 	return p;
 }
 
@@ -169,7 +182,7 @@ CudaDeviceFunction void calcPhaseF(){
 		}
 	// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
 	//	model for immiscible fluids at high density ratios"
-		PhaseF = h[0]+h[1]+h[2]+h[3]+h[4]+h[5]+h[6]+h[7]+h[8];
+	PhaseF = <?R C(sum(h)) ?> ;
 }
 
 CudaDeviceFunction real_t calcWallPhase(){
@@ -280,7 +293,7 @@ CudaDeviceFunction real_t calcF_phi(int i, real_t numerator, real_t nx, real_t n
 }
 
 //	INITIALISATION:
-CudaDeviceFunction void Init() {
+CudaDeviceFunction void Init_phase() {
 	PhaseF = PhaseField_init;// read initial PhaseField distribution from config.xml file
 
 	// RAYLEIGH TAYLOR INSTABILITY
@@ -371,8 +384,7 @@ CudaDeviceFunction void Init_distributions(){
 #ifdef OPTIONS_RT
 	PhaseOld = PhaseF(0,0);
 #endif
-	PhaseF = h[0]+h[1]+h[2]+h[3]+h[4]+h[5]+h[6]+h[7]+h[8];
-
+	PhaseF = <?R C(sum(h)) ?> ;
 #ifdef OPTIONS_Outflow
 	if ((NodeType & NODE_BOUNDARY) == NODE_Convective_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_N){
 		<?R if (Options$Outflow){
@@ -434,6 +446,8 @@ CudaDeviceFunction void Run() {
     }
 }
 
+CudaDeviceFunction bool isHeavierPhase(){}
+
 CudaDeviceFunction void CollisionMRT(){
 #ifdef OPTIONS_RT
     real_t uold = U;
@@ -457,8 +471,9 @@ CudaDeviceFunction void CollisionMRT(){
 	// Find Macroscopic Details
 	// Fluid Properties:
 	mu = calcMu( PhaseF );
+	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
 	rho = Density_l + (PhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
-	p = g[0]+g[1]+g[2]+g[3]+g[4]+g[5]+g[6]+g[7]+g[8];
+	p = <?R C(sum(g)) ?> ;// normlized pressure
 
 	if ( PhaseF < PhaseField_l){
 		tau = tau_l + 0.5;
@@ -483,8 +498,15 @@ CudaDeviceFunction void CollisionMRT(){
 	// Force Calc
 	F_pressure[0] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.x;
 	F_pressure[1] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.y;
-	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
-	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
+	
+	F_body[0] = 0;
+	F_body[1] = 0;
+	// TODO: ugly hack, to apply body force only to heavier fluid
+	if (PhaseF > pfavg)	{
+		F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
+		F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
+	}
+
 	F_surf_tension[0] = mu*gradPhi.x;
 	F_surf_tension[1] = mu*gradPhi.y;
 
@@ -546,7 +568,7 @@ CudaDeviceFunction void CollisionMRT(){
 	#ifdef OPTIONS_RT
 		real_t Req[9];
 	#endif
-	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
+	
 	tmp1 = (1.0 - 4.0*(PhaseF - pfavg)*(PhaseF - pfavg))/W;
 	for (i=0; i< 9; i++){
 		#ifdef OPTIONS_RT
@@ -892,6 +914,8 @@ h[8] = h[6] + ( -Ry + Rx )/6.;
 }
 
 CudaDeviceFunction void MovingNWall(){
+	// TODO: why not incompressible zou he 1993?
+
 	g[4] = g[2];
 	g[7] = g[5] - VelocityX/6.0;
 	g[8] = g[6] + VelocityX/6.0;
