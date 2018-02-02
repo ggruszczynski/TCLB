@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<CLBConfig output="output/">
+        <Geometry nx="128" ny="128">
+                        <MRT><Box/></MRT>
+
+<!--                 <Wall mask="ALL" name="border" >
+                        <Box nx="1"/>
+                        <Box dx="-1"/>
+                        <Box ny="1"/>
+                        <Box dy="-1"/>
+                </Wall> -->
+                <Wall mask="ALL">
+                        <Box dx="50" nx="20" dy="20" ny="20"/>
+                </Wall>
+                <None name="blobb">
+                        <Box dx="80" nx="20" dy="20" ny="30"/>
+                </None>
+        </Geometry>
+        <Model><!-- 
+                <Params VelocityX="0.01" /> -->
+                <!-- <Params nu="0.02"/> -->
+                <Params Density-blobb="0.9"/>
+                <Params G_ff="-0.08"/>
+                <Params G_sf="-0.5"/>
+                <!-- <Params Velocity="0.001" /> -->
+                <Params nu="0.02"/>
+                <Params GravitationX="1e-5"/>
+        </Model>
+        <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
+        <Failcheck Iterations="1000" />
+        <Solve Iterations="30000" output="output/"> <VTK Iterations="500"/> </Solve>
+</CLBConfig>
