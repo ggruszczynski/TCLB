@@ -11,6 +11,7 @@ AddDensity(name="f[8]", dx=1, dy=-1)
 AddField(name="Psi", dx=c(-1,1), dy=c(-1,1)) 
 
 AddQuantity( name="U",    unit="m/s", vector=TRUE )
+AddQuantity( name="Ueq",    unit="m/s", vector=TRUE )
 AddQuantity( name="Rho",  unit="kg/m3" )
 AddQuantity( name="Psi",  unit="1" )
 AddQuantity( name="F_ff", unit="N",vector=TRUE)

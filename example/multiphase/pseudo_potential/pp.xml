@@ -14,17 +14,19 @@
                 </Wall>
                 <None name="blobb">
                         <Box dx="80" nx="20" dy="20" ny="30"/>
+                        <!-- <Sphere ny="30" nx="30" dx="35" dy="60" /> -->
                 </None>
         </Geometry>
-        <Model><!-- 
-                <Params VelocityX="0.01" /> -->
+        <Model>
+                <!-- <Params VelocityX="0.01" /> -->
                 <!-- <Params nu="0.02"/> -->
+                <Params Density="1"/>
                 <Params Density-blobb="0.9"/>
-                <Params G_ff="-0.08"/>
+                <Params G_ff="-0.7"/>
                 <Params G_sf="-0.5"/>
                 <!-- <Params Velocity="0.001" /> -->
-                <Params nu="0.02"/>
-                <Params GravitationX="1e-5"/>
+                <Params nu="0.166"/>
+                <!-- <Params GravitationX="1e-7"/> -->
         </Model>
         <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
         <Failcheck Iterations="1000" />

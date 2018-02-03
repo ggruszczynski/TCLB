@@ -68,7 +68,7 @@ CudaDeviceFunction void BounceBack() {
 CudaDeviceFunction void CollisionBGK() {
     // Here we perform a single relaxation time collision operation.
     // We save memory here by using a single dummy variable
-        real_t u[2], d, f_temp[9];
+        real_t u_eq[2], d, f_temp[9];
         d = getRho();
         // pu* = pu + rG
         Psi = getPsi();
@@ -76,11 +76,13 @@ CudaDeviceFunction void CollisionBGK() {
         vector_t F_ff = getF_ff();
         vector_t F_sf = getF_sf();
 
-        u[0] = ( f[8]-f[7]-f[6]+f[5]-f[3]+f[1] )/d;
-        u[1] = (-f[8]-f[7]+f[6]+f[5]-f[4]+f[2] )/d;
-
-        u[0] += (GravitationX + (F_ff.x + F_sf.x)/d) / omega;
-        u[1] += (GravitationY + (F_ff.y + F_sf.y)/d) / omega;
+        // u_eq - equation 3
+        // 'Numerical investigation on drag reduction wih superhydrophobic surfaces by LBM'
+        // Jing Cui, Weihong Li, Wei-Haur Lam
+        u_eq[0] = ( f[8]-f[7]-f[6]+f[5]-f[3]+f[1] )/d;
+        u_eq[1] = (-f[8]-f[7]+f[6]+f[5]-f[4]+f[2] )/d;
+        u_eq[0] += (GravitationX + (F_ff.x + F_sf.x)/d) / omega;
+        u_eq[1] += (GravitationY + (F_ff.y + F_sf.y)/d) / omega;
 
         f_temp[0] = f[0];
         f_temp[1] = f[1];
@@ -91,7 +93,7 @@ CudaDeviceFunction void CollisionBGK() {
         f_temp[6] = f[6];
         f_temp[7] = f[7];
         f_temp[8] = f[8];
-        SetEquilibrium(d, u); //stores equilibrium distribution in f[0]-f[8]
+        SetEquilibrium(d, u_eq); //stores equilibrium distribution in f[0]-f[8]
         f[0] = f_temp[0] - omega*(f_temp[0]-f[0]);	
         f[1] = f_temp[1] - omega*(f_temp[1]-f[1]);
         f[2] = f_temp[2] - omega*(f_temp[2]-f[2]);
@@ -119,6 +121,21 @@ CudaDeviceFunction vector_t getU() {
     return u;
 }
 
+CudaDeviceFunction vector_t getUeq() {
+        real_t d = getRho();
+        vector_t F_ff = getF_ff();
+        vector_t F_sf = getF_sf();
+        vector_t u_eq;
+
+
+        u_eq.x = ( f[8]-f[7]-f[6]+f[5]-f[3]+f[1] )/d;
+        u_eq.y = (-f[8]-f[7]+f[6]+f[5]-f[4]+f[2] )/d;
+
+        u_eq.x += (GravitationX + (F_ff.x + F_sf.x)/d) / omega;
+        u_eq.y += (GravitationY + (F_ff.y + F_sf.y)/d) / omega;
+        u_eq.z = 0;
+        return u_eq;
+    }
 
 // pseudo-potential stuff
 
@@ -131,20 +148,26 @@ CudaDeviceFunction real_t getPsi() {
 
 CudaDeviceFunction vector_t getF_ff() {
     // fluid - fluid interaction force 
+    // eq 4 from 
+    // 'Numerical investigation on drag reduction wih superhydrophobic surfaces by LBM'
+    // Jing Cui, Weihong Li, Wei-Haur Lam
     vector_t F_ff;
     F_ff.x = 0;
     F_ff.y = 0;
     F_ff.z = 0;
     
-    Psi = Psi(0,0);
     // for (int i=0; i< 9; i++){
     //     F_ff.x += wf[i] * Psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ex[i];
     //     F_ff.y += wf[i] * Psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ey[i];
     // }
-       
-    F_ff.x =  ( Psi(1,-1)-Psi(-1,-1)+Psi(1,1)-Psi(-1,1))*4./36. + (Psi(1,0)-Psi(-1,0))*2./9.;
-    F_ff.y =  (-Psi(1,-1)-Psi(-1,-1)+Psi(1,1)+Psi(-1,1))*4./36. + (Psi(0,1)-Psi(0,-1))*2./9.;
+    
+    F_ff.x =  ( Psi(1,-1)-Psi(-1,-1)+Psi(1,1)-Psi(-1,1))/4 + Psi(1,0)-Psi(-1,0);
+    F_ff.y =  (-Psi(1,-1)-Psi(-1,-1)+Psi(1,1)+Psi(-1,1))/4 + Psi(0,1)-Psi(0,-1);
+    
+    // F_ff.x *= -G_ff*Psi(0,0);
+    // F_ff.y *= -G_ff*Psi(0,0);
 
+    Psi = Psi(0,0);
     F_ff.x *= -G_ff*Psi;
     F_ff.y *= -G_ff*Psi;
 
@@ -153,6 +176,9 @@ CudaDeviceFunction vector_t getF_ff() {
 
 CudaDeviceFunction vector_t getF_sf() {
     // fluid - solid interaction force 
+    // eq 5 from 
+    // 'Numerical investigation on drag reduction wih superhydrophobic surfaces by LBM'
+    // Jing Cui, Weihong Li, Wei-Haur Lam
     vector_t F_sf;
     F_sf.x = 0;
     F_sf.y = 0;
