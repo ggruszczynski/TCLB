@@ -164,11 +164,11 @@ CudaDeviceFunction vector_t getF_ff() {
     F_ff.x =  ( Psi(1,-1)-Psi(-1,-1)+Psi(1,1)-Psi(-1,1))/4 + Psi(1,0)-Psi(-1,0);
     F_ff.y =  (-Psi(1,-1)-Psi(-1,-1)+Psi(1,1)+Psi(-1,1))/4 + Psi(0,1)-Psi(0,-1);
     
-    // F_ff.x *= -G_ff*Psi(0,0);
+    // F_ff.x *= -G_ff*Psi(0,0); // why it doesn't work?
     // F_ff.y *= -G_ff*Psi(0,0);
 
     Psi = Psi(0,0);
-    F_ff.x *= -G_ff*Psi;
+    F_ff.x *= -G_ff*Psi; // this one works...
     F_ff.y *= -G_ff*Psi;
 
     return F_ff;
