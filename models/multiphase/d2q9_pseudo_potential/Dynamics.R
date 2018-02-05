@@ -1,22 +1,39 @@
-AddDensity(name="f[0]", dx=0, dy=0)
-AddDensity(name="f[1]", dx=1, dy=0)
-AddDensity(name="f[2]", dx=0, dy=1)
-AddDensity(name="f[3]", dx=-1, dy=0)
-AddDensity(name="f[4]", dx=0, dy=-1)
-AddDensity(name="f[5]", dx=1, dy=1)
-AddDensity(name="f[6]", dx=-1, dy=1)
-AddDensity(name="f[7]", dx=-1, dy=-1)
-AddDensity(name="f[8]", dx=1, dy=-1)
 
-AddField(name="Psi", dx=c(-1,1), dy=c(-1,1)) 
+# Fluid Density Populations
+AddDensity( name="f[0]", dx= 0, dy= 0, group="f")
+AddDensity( name="f[1]", dx= 1, dy= 0, group="f")
+AddDensity( name="f[2]", dx= 0, dy= 1, group="f")
+AddDensity( name="f[3]", dx=-1, dy= 0, group="f")
+AddDensity( name="f[4]", dx= 0, dy=-1, group="f")
+AddDensity( name="f[5]", dx= 1, dy= 1, group="f")
+AddDensity( name="f[6]", dx=-1, dy= 1, group="f")
+AddDensity( name="f[7]", dx=-1, dy=-1, group="f")
+AddDensity( name="f[8]", dx= 1, dy=-1, group="f")
 
+# Pseudopotential field
+AddField("psi", stencil2d=1, group="pp")
+
+# Stages and Actions
+
+# Initialization	list
+AddStage("BaseInit"     , "Init", save=Fields$group=="f", load=DensityAll$group=="f")
+# Iteration list
+# AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group=="f" | "psi" )
+AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group %in% c("f","pp"))
+AddStage("calcPsi"    , save="psi", load=DensityAll$group %in% c("f","pp"))
+AddAction("Init"     , c("BaseInit",     "calcPsi"))
+AddAction("Iteration", c("BaseIteration","calcPsi"))
+
+
+# Output Values
 AddQuantity( name="U",    unit="m/s", vector=TRUE )
-AddQuantity( name="Ueq",    unit="m/s", vector=TRUE )
+AddQuantity( name="Ueq",  unit="m/s", vector=TRUE )
 AddQuantity( name="Rho",  unit="kg/m3" )
 AddQuantity( name="Psi",  unit="1" )
-AddQuantity( name="F_ff", unit="N",vector=TRUE)
-AddQuantity( name="F_sf", unit="N",vector=TRUE)
+AddQuantity( name="F_ff", unit="N", vector=TRUE)
+AddQuantity( name="F_sf", unit="N", vector=TRUE)
 
+# Model Specific Parameters
 AddSetting( name="omega", comment='inverse of relaxation time')
 AddSetting( name="nu", omega='1.0/(3*nu+0.5)', default=0.16666666, comment='viscosity')
 AddSetting( name="VelocityX",default=0, comment='inlet/outlet/init velocity', zonal=TRUE)

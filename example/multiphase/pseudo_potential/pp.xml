@@ -30,5 +30,5 @@
         </Model>
         <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
         <Failcheck Iterations="1000" />
-        <Solve Iterations="30000" output="output/"> <VTK Iterations="500"/> </Solve>
+        <Solve Iterations="5000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>

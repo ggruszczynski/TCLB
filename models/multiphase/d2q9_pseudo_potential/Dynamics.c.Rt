@@ -9,16 +9,15 @@ CudaDeviceFunction void Init(){
     real_t u[2] = {VelocityX, VelocityY};
     real_t d = Density;
     SetEquilibrium(d,u);
-    Psi = getPsi();
 }
 
 CudaDeviceFunction float2 Color() {
     // used for graphics - can usually ignore function
-            float2 ret;
-            vector_t u = getU();
-            ret.x = sqrt(u.x*u.x + u.y*u.y);
-            ret.y = 1;
-            return ret;
+    float2 ret;
+    vector_t u = getU();
+    ret.x = sqrt(u.x*u.x + u.y*u.y);
+    ret.y = 1;
+    return ret;
     }
     
 
@@ -50,7 +49,7 @@ CudaDeviceFunction void Run() {
 
 CudaDeviceFunction void BounceBack() {
     // Method to reverse distribution functions along the bounding nodes.
-                real_t uf;
+        real_t uf;
         uf = f[3];
         f[3] = f[1];
         f[1] = uf;
@@ -70,8 +69,6 @@ CudaDeviceFunction void CollisionBGK() {
     // We save memory here by using a single dummy variable
         real_t u_eq[2], d, f_temp[9];
         d = getRho();
-        // pu* = pu + rG
-        Psi = getPsi();
 
         vector_t F_ff = getF_ff();
         vector_t F_sf = getF_sf();
@@ -139,12 +136,16 @@ CudaDeviceFunction vector_t getUeq() {
 
 // pseudo-potential stuff
 
-CudaDeviceFunction real_t getPsi() {
-    real_t rho = getRho();
-    real_t psi = 1 - exp(-rho);
-    return psi;
+CudaDeviceFunction void calcPsi() {
+    // Calculate psi at each point so that pseudopotential force
+    // can be found.
+    real_t rho = f[8]+f[7]+f[6]+f[5]+f[4]+f[3]+f[2]+f[1]+f[0];
+    psi = 1 - exp(-rho);
 }
 
+CudaDeviceFunction real_t getPsi(){
+	return psi(0,0);
+}
 
 CudaDeviceFunction vector_t getF_ff() {
     // fluid - fluid interaction force 
@@ -157,19 +158,18 @@ CudaDeviceFunction vector_t getF_ff() {
     F_ff.z = 0;
     
     // for (int i=0; i< 9; i++){
-    //     F_ff.x += wf[i] * Psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ex[i];
-    //     F_ff.y += wf[i] * Psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ey[i];
+    //     F_ff.x += wf[i] * psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ex[i];
+    //     F_ff.y += wf[i] * psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ey[i];
     // }
     
-    F_ff.x =  ( Psi(1,-1)-Psi(-1,-1)+Psi(1,1)-Psi(-1,1))/4 + Psi(1,0)-Psi(-1,0);
-    F_ff.y =  (-Psi(1,-1)-Psi(-1,-1)+Psi(1,1)+Psi(-1,1))/4 + Psi(0,1)-Psi(0,-1);
+    F_ff.x =  ( psi(1,-1)-psi(-1,-1)+psi(1,1)-psi(-1,1))/4 + psi(1,0)-psi(-1,0);
+    F_ff.y =  (-psi(1,-1)-psi(-1,-1)+psi(1,1)+psi(-1,1))/4 + psi(0,1)-psi(0,-1);
     
-    // F_ff.x *= -G_ff*Psi(0,0); // why it doesn't work?
-    // F_ff.y *= -G_ff*Psi(0,0);
+    // F_ff.x *= -G_ff*psi(0,0); // why it doesn't work?
+    // F_ff.y *= -G_ff*psi(0,0);
 
-    Psi = Psi(0,0);
-    F_ff.x *= -G_ff*Psi; // this one works...
-    F_ff.y *= -G_ff*Psi;
+    F_ff.x *= -G_ff*psi; // this one works...
+    F_ff.y *= -G_ff*psi;
 
     return F_ff;
  }
@@ -184,15 +184,15 @@ CudaDeviceFunction vector_t getF_sf() {
     F_sf.y = 0;
     F_sf.z = 0;
 
-    // Psi = Psi(0,0);
+    // psi = psi(0,0);
     // if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
     //     for (int i=0; i< 9; i++){
     //         F_sf.x += wf[i] *d2q9_ex[i];
     //         F_sf.y += wf[i] *d2q9_ey[i];
     //     }
 
-    //     F_sf.x = G_sf*Psi; // notice change of sign
-    //     F_sf.y = G_sf*Psi; // notice change of sign
+    //     F_sf.x = G_sf*psi; // notice change of sign
+    //     F_sf.y = G_sf*psi; // notice change of sign
     // }
 
     return F_sf;
