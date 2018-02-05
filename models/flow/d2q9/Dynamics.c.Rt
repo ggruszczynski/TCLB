@@ -74,6 +74,7 @@ CudaDeviceFunction void SetEquilibrum(real_t rho, real_t Jx, real_t Jy)
 {
 <?R
 	feq = EQ$Req %*% solve(EQ$mat)
+    # executing C( f, feq)
 	C( f, feq)
 ?>
 

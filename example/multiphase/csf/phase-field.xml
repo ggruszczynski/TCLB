@@ -15,10 +15,11 @@
         <Params PhaseField-disc="0.5"/>
         <Params W="0.33333" />
         <Params M="0.001" />
+        <Params sigma="5e-05" />
         <Params Velocity="0.01"/>
     </Model>
     	<VTK />
-	<Solve Iterations="30000" output="output/">
+	<Solve Iterations="3000" output="output/">
 		<VTK Iterations="100"/>
 	</Solve>
 </CLBConfig>

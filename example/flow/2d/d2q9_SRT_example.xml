@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <CLBConfig version="2.0" output="output/">
         <Geometry nx="1024" ny="100">
-		<BGK><Box/></BGK>
-		<WVelocity name="Inlet"><Inlet/></WVelocity>
+		<MRT><Box/></MRT>
+<!-- 		<WVelocity name="Inlet"><Inlet/></WVelocity>
 		<EPressure name="Outlet"><Outlet/></EPressure>
 		<Inlet nx='1' dx='5'><Box/></Inlet>
-		<Outlet nx='1' dx='-5'><Box/></Outlet>
+		<Outlet nx='1' dx='-5'><Box/></Outlet> -->
 		<Wall>
 			<Box ny="1"/>
                         <Box dy="-1"/>
@@ -15,6 +15,7 @@
 		<Params Velocity="0.01" />
 		<Params nu="0.02"/>
 	</Model>
+	<Failcheck Iterations="2000" />
 	<VTK Iterations="1000"/>
 	<Solve Iterations="10000"/>
 </CLBConfig>

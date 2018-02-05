@@ -69,7 +69,7 @@ CudaDeviceFunction void CollisionBGK() {
     // We save memory here by using a single dummy variable
         real_t u_eq[2], d, f_temp[9];
         d = getRho();
-
+    
         vector_t F_ff = getF_ff();
         vector_t F_sf = getF_sf();
 
@@ -161,15 +161,17 @@ CudaDeviceFunction vector_t getF_ff() {
     //     F_ff.x += wf[i] * psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ex[i];
     //     F_ff.y += wf[i] * psi_dyn(d2q9_ex[i], d2q9_ey[i])*d2q9_ey[i];
     // }
-    
+   
     F_ff.x =  ( psi(1,-1)-psi(-1,-1)+psi(1,1)-psi(-1,1))/4 + psi(1,0)-psi(-1,0);
     F_ff.y =  (-psi(1,-1)-psi(-1,-1)+psi(1,1)+psi(-1,1))/4 + psi(0,1)-psi(0,-1);
     
-    // F_ff.x *= -G_ff*psi(0,0); // why it doesn't work?
-    // F_ff.y *= -G_ff*psi(0,0);
+   
+    F_ff.x *= -G_ff*psi(0,0); // why it doesn't work?
+    F_ff.y *= -G_ff*psi(0,0);
 
-    F_ff.x *= -G_ff*psi; // this one works...
-    F_ff.y *= -G_ff*psi;
+    // psi=psi(0,0);
+    // F_ff.x *= -G_ff*psi; // this one works...
+    // F_ff.y *= -G_ff*psi;
 
     return F_ff;
  }

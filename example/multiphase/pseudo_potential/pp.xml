@@ -21,12 +21,12 @@
                 <!-- <Params VelocityX="0.01" /> -->
                 <!-- <Params nu="0.02"/> -->
                 <Params Density="1"/>
-                <Params Density-blobb="0.9"/>
+                <Params Density-blobb="0.8"/>
                 <Params G_ff="-0.7"/>
                 <Params G_sf="-0.5"/>
                 <!-- <Params Velocity="0.001" /> -->
                 <Params nu="0.166"/>
-                <!-- <Params GravitationX="1e-7"/> -->
+                <Params GravitationX="1e-6"/>
         </Model>
         <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
         <Failcheck Iterations="1000" />

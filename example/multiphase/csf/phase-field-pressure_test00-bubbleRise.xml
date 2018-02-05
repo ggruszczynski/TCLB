@@ -4,6 +4,7 @@
 		<MRT><Box /></MRT>
      	<None name="disc">
             <Sphere  ny="100" nx="100" dx="50" dy="50" />
+            <Box nx="200" ny="50"/>
         </None>
 		<Wall mask="ALL" >
 			<Box ny="2" />
@@ -39,7 +40,7 @@
 </Solve>
 
 <Params GravitationY="-0.0000001" />
-<Solve Iterations="50000" output="output/">  
+<Solve Iterations="5000" output="output/">  
 <VTK Iterations="1000"/>
 </Solve>
 </CLBConfig>
