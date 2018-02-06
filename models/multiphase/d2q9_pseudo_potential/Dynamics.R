@@ -19,8 +19,8 @@ AddField("psi", stencil2d=1, group="pp")
 AddStage("BaseInit"     , "Init", save=Fields$group=="f", load=DensityAll$group=="f")
 # Iteration list
 # AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group=="f" | "psi" )
-AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group %in% c("f","pp"))
-AddStage("calcPsi"    , save=Fields$name=="psi", load=DensityAll$group %in% c("f","pp"))
+AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group %in% c("f"))
+AddStage("calcPsi"    , save=Fields$name=="psi", load=DensityAll$group %in% c("f"))
 AddAction("Init"     , c("BaseInit",     "calcPsi"))
 AddAction("Iteration", c("BaseIteration","calcPsi"))
 
