@@ -84,6 +84,11 @@ if (Options$RT) {
 AddAction("Iteration", c("BaseIter", "calcPhase","calcWall"))
 AddAction("Init"     , c("PhaseInit","WallInit", "calcWall","BaseInit"))
 
+# Diffusion of phaseField to smooth out its boundaries
+AddStage("Init_diffusion_stage" , "Init_Diffusion_PhaseF", save="PhaseF")
+AddAction("Init_diffusion"     , c("Init_diffusion_stage"))
+
+
 # 	Outputs:
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
@@ -101,6 +106,8 @@ AddSetting(name="Radius" , default="0", comment='Radius of diffuse interface cir
 AddSetting(name="CenterX", default="0", comment='Circle center x-coord')
 AddSetting(name="CenterY", default="0", comment='Circle Center y-coord')
 AddSetting(name="BubbleType", default="1", comment='Drop/bubble')
+
+AddSetting(name="diffusion_coeff", default="0.005", comment='Pure diffusion eq is used to smooth out the initial phase field ditribution')
 
 #	Inputs: For phasefield evolution
 AddSetting(name="Density_h", comment='High density fluid')
