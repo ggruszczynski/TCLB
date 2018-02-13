@@ -81,12 +81,14 @@ if (Options$RT) {
 										load=DensityAll$group %in% c("g","h","Vel","nw"))
 }
 
+# AddAction("Iteration", c("calcPhase"))
 AddAction("Iteration", c("BaseIter", "calcPhase","calcWall"))
 AddAction("Init"     , c("PhaseInit","WallInit", "calcWall","BaseInit"))
 
 # Diffusion of phaseField to smooth out its boundaries
-AddStage("Init_diffusion_stage" , "Init_Diffusion_PhaseF", save="PhaseF")
-AddAction("Init_diffusion"     , c("Init_diffusion_stage"))
+# AddStage("Init_diffusion_stage" , "Diffusion_PhaseF", save="PhaseF")
+# AddAction("Init_diffusion"     , c("Init_diffusion_stage"))
+# AddAction("Init"     , c("PhaseInit", 100 x Init_diffusion_stage ,"WallInit", "calcWall","BaseInit"))
 
 
 # 	Outputs:
@@ -160,6 +162,8 @@ AddNodeType(name="NPressure", group="BOUNDARY")
 AddNodeType(name="SPressure", group="BOUNDARY")
 AddNodeType(name="EPressure", group="BOUNDARY")
 AddNodeType(name="WPressure", group="BOUNDARY")
+
+AddNodeType(name="Smoothing", group="ADDITIONALS")
 
 if (Options$Outflow) {
 	AddNodeType(name="Convective_E", group="BOUNDARY")

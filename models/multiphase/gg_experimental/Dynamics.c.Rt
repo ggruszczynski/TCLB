@@ -136,56 +136,65 @@ CudaDeviceFunction vector_t calcGradPhi(){
 }
 
 CudaDeviceFunction void calcPhaseF(){
-	#ifdef OPTIONS_RT
-		PhaseOld = PhaseF(0,0);
-	#endif
-		switch (NodeType & NODE_BOUNDARY) {
-		case NODE_Solid:
-		case NODE_Wall:
-			BounceBack();
-			break;
-		case NODE_MovingWall_N:
-			MovingNWall();
-			break;
-		case NODE_MovingWall_S:
-			MovingSWall();
-			break;
-		case NODE_EPressure:
-			EPressure();
-			break;
-		case NODE_WPressure:
-			WPressure();
-			break;
-		case NODE_NVelocity:
-			NVelocity();
-			break;
-		case NODE_SVelocity:
-			SVelocity();
-			break;
-		case NODE_EVelocity:
-			EVelocity();
-			break;
-		case NODE_WVelocity:
-			WVelocity();
-			break;
-	#ifdef OPTIONS_Outflow
-		case NODE_Convective_E:
-			EConvective();
-			break;
-		case NODE_Convective_N:
-			NConvective();
-			break;
-		case NODE_Neumann_E:
-			ENeumann();
-			break;
-	#endif
-		}
-	// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
-	//	model for immiscible fluids at high density ratios"
-	PhaseF = <?R C(sum(h)) ?> ;
+	if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
+		PhaseF_Smoothing();
+	}
+	else{
+		#ifdef OPTIONS_RT
+			PhaseOld = PhaseF(0,0);
+		#endif
+			switch (NodeType & NODE_BOUNDARY) {
+			case NODE_Solid:
+			case NODE_Wall:
+				BounceBack();
+				break;
+			case NODE_MovingWall_N:
+				MovingNWall();
+				break;
+			case NODE_MovingWall_S:
+				MovingSWall();
+				break;
+			case NODE_EPressure:
+				EPressure();
+				break;
+			case NODE_WPressure:
+				WPressure();
+				break;
+			case NODE_NVelocity:
+				NVelocity();
+				break;
+			case NODE_SVelocity:
+				SVelocity();
+				break;
+			case NODE_EVelocity:
+				EVelocity();
+				break;
+			case NODE_WVelocity:
+				WVelocity();
+				break;
+		#ifdef OPTIONS_Outflow
+			case NODE_Convective_E:
+				EConvective();
+				break;
+			case NODE_Convective_N:
+				NConvective();
+				break;
+			case NODE_Neumann_E:
+				ENeumann();
+				break;
+		#endif
+			}
+		// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
+		//	model for immiscible fluids at high density ratios"
+		PhaseF = <?R C(sum(h)) ?> ;
+	}
 }
 
-CudaDeviceFunction real_t calcWallPhase(){
+CudaDeviceFunction void calcWallPhase(){
+	// if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
+	// 	return ;
+	// }
+
 // Contact angle is defined with respect to the high density fluid
 // Contact angle shizzzzz:
 	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
@@ -228,7 +237,7 @@ real_t get_lpPhi()
 	//	model for immiscible fluids at high density ratios"
 	real_t lpPhi = PhaseF(1,1)+PhaseF(-1,1)+PhaseF(1,-1)+PhaseF(-1,-1);
 	lpPhi += 4.0*(PhaseF(1,0)+PhaseF(-1,0)+PhaseF(0,1)+PhaseF(0,-1));
-	lpPhi += 20.0*PhaseF(0,0);
+	lpPhi -= 20.0*PhaseF(0,0);
 	lpPhi /= 6.0;
 
 	return lpPhi;
@@ -402,49 +411,54 @@ CudaDeviceFunction void Init_distributions(){
 }
 
 
-CudaDeviceFunction void Init_Diffusion_PhaseF() { 
-	real_t lap_phi = get_lpPhi();
-	PhaseF = PhaseF(0,0) + diffusion_coeff * diffusion_coeff * lap_phi;
-  
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall){
-		PhaseF = PhaseField_init;
-	}
+CudaDeviceFunction void PhaseF_Smoothing() { 
+	real_t lap_phf = get_lpPhi();
+	PhaseF = PhaseF(0,0) + diffusion_coeff * diffusion_coeff * lap_phf;
+	
+	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall){
+	// 	PhaseF = PhaseField_init;
+	// }
 }
 
 
 //	ITERATION:
 CudaDeviceFunction void Run() {
-	switch (NodeType & NODE_BOUNDARY) {
-		case NODE_Solid:
-		case NODE_Wall:
-			BounceBack();
-			break;
-		case NODE_MovingWall_N:
-			MovingNWall();
-			break;
-		case NODE_MovingWall_S:
-			MovingSWall();
-			break;
-		case NODE_EPressure:
-			EPressure();
-			break;
-		case NODE_WPressure:
-			WPressure();
-			break;
-		case NODE_NVelocity:
-			NVelocity();
-			break;
-		case NODE_SVelocity:
-			SVelocity();
-			break;
-		case NODE_EVelocity:
-			EVelocity();
-			break;
-		case NODE_WVelocity:
-			WVelocity();
-			break;
+	// if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
+	// 	//PhaseF_Smoothing();
+	// 	return; // Dynamics.R specifies that PhaseF is only saved during calcPhaseF stage
+	// }
+	// else{
+		switch (NodeType & NODE_BOUNDARY) {
+			case NODE_Solid:
+			case NODE_Wall:
+				BounceBack();
+				break;
+			case NODE_MovingWall_N:
+				MovingNWall();
+				break;
+			case NODE_MovingWall_S:
+				MovingSWall();
+				break;
+			case NODE_EPressure:
+				EPressure();
+				break;
+			case NODE_WPressure:
+				WPressure();
+				break;
+			case NODE_NVelocity:
+				NVelocity();
+				break;
+			case NODE_SVelocity:
+				SVelocity();
+				break;
+			case NODE_EVelocity:
+				EVelocity();
+				break;
+			case NODE_WVelocity:
+				WVelocity();
+				break;
 
-	#ifdef OPTIONS_Outflow
+		#ifdef OPTIONS_Outflow
 			case NODE_Convective_E:
 				EConvective();
 				break;
@@ -454,14 +468,14 @@ CudaDeviceFunction void Run() {
 			case NODE_Neumann_E:
 				ENeumann();
 				break;
-	#endif
-	}
-	
-    if (NodeType & NODE_MRT) {
-		CollisionMRT();
-    } else if (NodeType & NODE_BGK) {
-		CollisionBGK();
-    }
+		#endif
+		}
+		if (NodeType & NODE_MRT) {
+			CollisionMRT();
+		} else if (NodeType & NODE_BGK) {
+			CollisionBGK();
+		}
+	//}
 }
 
 
