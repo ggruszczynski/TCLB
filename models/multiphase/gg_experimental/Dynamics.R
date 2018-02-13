@@ -49,7 +49,7 @@ if (Options$Outflow){
 
 #	Stages - processes to run for initialisation and each iteration
 if (Options$RT) {
-	AddStage("PhaseInit" , "Init_phase" 			, save=Fields$name=="PhaseF")
+	AddStage("PhaseInit" , "Init_phase" 	, save=Fields$name=="PhaseF")
 	AddStage("WallInit", "Init_wallNorm"    , save=Fields$group %in% c("nw"))
 	AddStage("calcWall", "calcWallPhase"    , save=Fields$group %in% c("PF"), load=DensityAll$group=="nw") 
 
@@ -71,19 +71,23 @@ if (Options$RT) {
 										load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
 } else {
 	# initialisation
-	AddStage("PhaseInit" , "Init_phase", save="PhaseF")
+	AddStage("PhaseInit" , "Init_phase", 		 save="PhaseF")
 	AddStage("BaseInit"  , "Init_distributions", save=Fields$group %in% c("g","h","Vel"))
-	AddStage("WallInit"  , "Init_wallNorm", save=Fields$group=="nw")
+	AddStage("WallInit"  , "Init_wallNorm",		 save=Fields$group=="nw")
 	# iteration
 	AddStage("calcWall"  , "calcWallPhase", save="PhaseF", load=DensityAll$group=="nw")
 	AddStage("calcPhase" , "calcPhaseF",	save="PhaseF", load=DensityAll$group %in% c("g","h") )
-	AddStage("BaseIter"  , "Run"       ,    save=Fields$group %in% c("g","h","Vel","nw"), 
-										load=DensityAll$group %in% c("g","h","Vel","nw"))
+	# AddStage("BaseIter"  , "Run"       ,    save=Fields$name  %in% c("PhaseF") | Fields$group %in% c("g","h","Vel","nw"), 
+	# 									load=DensityAll$group %in% c("g","h","Vel","nw"))
+	AddStage("BaseIter"  , "Run"       , save=Fields$group %in% c("g","h","Vel","nw"), 
+									load=DensityAll$group %in% c("g","h","Vel","nw"))
 }
 
 # AddAction("Iteration", c("calcPhase"))
+# AddAction("Iteration", c("BaseIter", "calcPhase"))
 AddAction("Iteration", c("BaseIter", "calcPhase","calcWall"))
 AddAction("Init"     , c("PhaseInit","WallInit", "calcWall","BaseInit"))
+
 
 # Diffusion of phaseField to smooth out its boundaries
 # AddStage("Init_diffusion_stage" , "Diffusion_PhaseF", save="PhaseF")
