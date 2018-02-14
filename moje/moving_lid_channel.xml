@@ -11,9 +11,9 @@
             <Box ny="25" nx="30" dx="100" dy="0"/>
         </None> 
 
-    <MovingWall_N mask="ALL" name="walltop">
+    <NVelocity mask="ALL" name="walltop">
       <Box dy="-2"/>
-    </MovingWall_N>
+    </NVelocity>
 
     <Wall mask="ALL" name="wallbottom" >
       <Box ny="2" />
@@ -42,13 +42,13 @@
           CenterX="64"
           CenterY="50" /> -->
     <Params  />
-        <!-- <Params GravitationY="-0.00001" /> -->
+        <Params GravitationY="-0.00001" />
         <Params VelocityX-walltop="0.001"/>
     </Model> 
 
 <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
 <Failcheck Iterations="2000" />
-<Solve Iterations="50000" output="output/"> <VTK Iterations="500"/> </Solve>
+<Solve Iterations="10000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>
 
 

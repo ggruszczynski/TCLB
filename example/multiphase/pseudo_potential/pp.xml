@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <CLBConfig output="output/">
         <Geometry nx="128" ny="128">
-                        <MRT><Box/></MRT>
+        <MRT><Box/></MRT>
 
                 <Wall mask="ALL" name="border" >
                         <Box nx="1"/>
