@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="output/">
+<!--Model:	d2q9_pf_velocity_Outflow 
+    Created: 	20-12-2017 
+    By:		T.Mitchell 
+
+    Simulation: Invasion of sinusoidal gap, proof of concept/testing of RunR
+-->
+        <Geometry nx="512" ny="128">
+		<MRT><Box/></MRT>
+		<None name="liquid">
+			<Box nx="32"/>
+		</None>
+		<WVelocity name="inlet">
+			<Box nx="1"/>
+		</WVelocity>
+		<Convective_E>
+			<Box dx="-1"/>
+		</Convective_E>
+	</Geometry>
+	<RunR>
+		X = Solver$Geometry$X
+		Y = Solver$Geometry$Y
+		x = seq(min(X), max(X))
+		tab = data.frame(x=x, y= -16*sin(pi*x/64)+33)
+		tab2 = data.frame(x=x, y= 64 - -16*sin(pi*x/64)+33)
+		sel = rep(FALSE, length(X))
+		sel2 = rep(FALSE, length(X))
+		for (i in 1:nrow(tab)) {
+		sel = sel | tab$y > Y 
+		sel2 = sel2 | Y > tab2$y 
+		}
+		Solver$Geometry$BOUNDARY[sel] = "Wall"
+		Solver$Geometry$COLLISION[sel] = "None"
+		Solver$Geometry$BOUNDARY[sel2] = "Wall"
+		Solver$Geometry$COLLISION[sel2] = "None"
+	</RunR>
+	<Model>
+		<Params VelocityX="0.005"
+			VelocityX-inlet="0.005"
+			VelocityX-liquid="0.005"/>
+		<Params Viscosity_l="0.1"
+			Viscosity_h="0.01"/>
+		<Params Density_h="1"
+			Density_l="0.01"/>
+		<Params PhaseField="0.0"
+			PhaseField-inlet="1.0"
+			PhaseField-liquid="1.0"/>
+		<Params M="0.2"
+			W="6"
+			sigma="5e-5"
+			ContactAngle="90"/>
+		<Params GravitationX="1e-5"/>
+	</Model>
+	<RunR Iterations="100"/>
+	<VTK Iterations="100"/>
+	<Solve Iterations="10000"/>
+</CLBConfig>

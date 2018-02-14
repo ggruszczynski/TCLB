@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="output/">
+    <Geometry nx="200" ny="100">
+		<MRT><Box /></MRT>
+		<WVelocity name="Inlet" nx='1' dx='5'><Box/></WVelocity>
+        <Convective_E name="Outlet" nx='1' dx='-5'><Box/></Convective_E>
+<!--      	<None name="disc">
+            <Box  ny="25" nx="30" dx="100" dy="0"/>
+        </None> -->
+<!-- 		<None name="disc">
+            <Sphere ny="48" nx="48" dx="64" dy="50"/>
+        </None>  -->
+		<Wall mask="ALL" name="wallbottom" >
+			<Box ny="2" />
+			<Box dx="0" fy="25" nx="100" />
+       		<Box dx="130" fy="25" nx="100" />
+		</Wall>
+		<Wall mask="ALL">
+			<Box dy="-2"/>
+		</Wall>
+	</Geometry>
+    <Model>
+		<Params
+				Density_h="1" Density_l="0.1" 
+				Viscosity_h="0.166" Viscosity_l="0.0166"
+				PhaseField_h="1.0" PhaseField_l="0.0" 
+				
+				ContactAngle="135" 
+			
+				PhaseField_init="0.0"
+				PhaseField_init-disc="1.0"
+				
+				/>
+		<Params
+				Radius="24"
+		  		CenterX="64"
+		  		CenterY="50" />
+        <Params W="4" 
+        		M="0.05"
+				sigma="5e-5" />
+        <!-- <Params GravitationY="-0.00001" /> -->
+        <Params VelocityX="0.001"/>
+    </Model>
+
+<Solve Iterations="50" output="output/"> <VTK Iterations="1"/> </Solve>
+ <Failcheck Iterations="2000" />
+<Solve Iterations="4000" output="output/"> <VTK Iterations="1000"/> </Solve>
+</CLBConfig>
+
+

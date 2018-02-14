@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CLBConfig output="output/" version="2.0">
+  <Geometry nx="256" ny="19">
+    <MRT>
+      <Box />
+    </MRT>
+		<!--<WVelocity name="Inlet" nx='1' dx='5'/>-->
+		<!--<EPressure name="Outlet" nx='1' dx='-5'/>-->
+      <WPressure name="inlet" nx='1' dx='5'><Box/></WPressure>
+      <EPressure name="outlet" nx='1' dx='-5'><Box/></EPressure>
+
+      		<!--<WVelocity name=""></WVelocity>-->
+		<!--<EPressure name="Outlet"><Outlet/></EPressure>-->
+		<!--<Inlet nx='1' dx='5'><Box/></Inlet>-->
+		<!--<Outlet nx='1' dx='-5'><Box/></Outlet>-->
+    <Wall mask="ALL" name="upper_wall">
+      <Box dy="-1" />
+    </Wall>
+    <Wall mask="ALL" name="bottom_wall">
+      <Box ny="1" />
+      <Box dx="0" fy="4" nx="10" />
+      <Box dx="18" fy="4" nx="10" />
+      <Box dx="36" fy="4" nx="10" />
+      <Box dx="54" fy="4" nx="10" />
+      <Box dx="72" fy="4" nx="10" />
+      <Box dx="90" fy="4" nx="10" />
+      <Box dx="108" fy="4" nx="10" />
+      <Box dx="126" fy="4" nx="10" />
+      <Box dx="144" fy="4" nx="10" />
+      <Box dx="162" fy="4" nx="10" />
+      <Box dx="180" fy="4" nx="10" />
+      <Box dx="198" fy="4" nx="10" />
+      <Box dx="216" fy="4" nx="10" />
+      <Box dx="234" fy="4" nx="10" />
+    </Wall>
+  </Geometry>
+  <Model>
+      <!--<Params GravitationX="1.0e-6"/>-->
+      <Params Pressure="0.0001"/>
+      <!--<Params VelocityX="0.01"/>-->
+    <Params ContactAngle="45" Density_h="1" Density_l="0.001"
+            M="0.05" MidPoint="4" Period="256" Perturbation="0.01" PhaseField_h="1.0"
+            PhaseField_init="0.0" PhaseField_l="0.0" Viscosity_h="0.0166" Viscosity_l="0.166" W="5" sigma="5e-05" 
+            />
+  </Model>
+  <Failcheck Iterations="2000" />
+  <Solve Iterations="10000">
+    <VTK Iterations="2000" />
+    <Log Iterations="1000" />
+  </Solve>
+</CLBConfig>
+
+
+<!-- This is an automatically generated file --> 
+<!-- usage: to test TCLB result against: --> 
+<!--
+'Incompressible LBGK simulation of flow characterisics
+ in a micro-channel with patterned superhydrophobic surfaces'
+ by Li Bowen, Yao ZHaoHui, Hao PengFei 
+-->
+
+<!-- Model:	models/multiphase/d2q9_pf_velocity -->

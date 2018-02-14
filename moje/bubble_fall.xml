@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="output/">
+    <Geometry nx="100" ny="100">
+		<MRT><Box /></MRT>
+     	<None name="disc">
+            <Sphere  ny="30" nx="30" dx="35" dy="3" />
+			<!-- <Box nx="200" ny="50"/> -->
+        </None>
+
+		<Wall mask="ALL" name="wallbottom" >
+			<Box ny="2" />
+		</Wall>
+		<Wall mask="ALL">
+			<Box dy="-2"/>
+		</Wall>
+	</Geometry>
+    <Model>
+		<Params
+				Density_h="1"
+				Density_l="0.1" 
+
+				Viscosity_h="0.2" 
+				Viscosity_l="0.1" 
+
+				PhaseField_h="1.0"
+				PhaseField_l="0.0" 
+    		
+				PhaseField_init="0.0"
+       			PhaseField_init-disc="1.0"
+				PhaseField_init-wallbottom="0.0"
+
+				ContactAngle="135" 
+				/>
+        <Params W="4" 
+        		M="0.1"
+				sigma="0.0000001" />
+        <Params GravitationY="-0.000001" />
+    </Model>
+<Failcheck Iterations="2000" />
+<Solve Iterations="500" output="output/"> <VTK Iterations="100"/> </Solve>
+<Solve Iterations="40000" output="output/"> <VTK Iterations="1000"/> </Solve>
+</CLBConfig>
+
+

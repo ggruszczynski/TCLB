@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!--Model:	d2q9_pf_velocity_Outflow 
+    Created: 	20-12-2017 
+    By:		T.Mitchell 
+
+    Simulation: Fill a rectangle
+-->
+<CLBConfig version="2.0" output="output/2D_Convective/">
+    <Geometry nx="128" ny="128">
+	<MRT><Box /></MRT>
+	<None name="liquid">
+		<Box ny="32"/>
+		<Box nx="5" dy="64" ny="10"/>
+	</None>
+	<WVelocity name="inlet">
+		<Box nx="1" dy="64" ny="10"/>
+	</WVelocity>
+	<Convective_E name="outlet">
+		<Box dx="-1" dy="100" ny="20"/>
+	</Convective_E>
+        <Wall mask="ALL">
+		<Box dy="-1"/>
+		<Box ny="1"/>
+		<Box dx="-1" fy="100"/>
+		<Box dx="-1" dy="120"/>
+		<Box nx="5" fy="64"/>
+		<Box nx="5" dy="74"/>
+	</Wall>
+    </Geometry>
+    <Model>
+	<Params
+		Density_h="1" 	 Density_l="0.1"
+		PhaseField="0.0"
+	        PhaseField-inlet="1.0"	
+		PhaseField-outlet="0.0"
+		PhaseField-liquid="1.0"
+		Viscosity_l="0.1" 
+		Viscosity_h="0.01"
+		VelocityX="0.0"  
+		VelocityX-inlet="0.01"	
+		
+		W="4"	M="0.05" 
+		sigma="5e-5" 
+		
+		ContactAngle="75"
+		GravitationY="-5e-5"
+		/>
+    </Model>
+<VTK />
+<Failcheck Iterations="200"/>
+<Solve Iterations="100"/>
+<Params Density_l="0.01"/>
+<Solve Iterations="100"/>
+<Params Density_l="0.001"/>
+<Solve Iterations="40000" output="output/2D_Convective/">  
+<VTK   Iterations="1000" />
+</Solve>
+</CLBConfig>
