@@ -300,14 +300,14 @@ CudaDeviceFunction void Init_distributions(){
 		Gamma[i] = calcGamma(i, U, V, mag);
 		F_phi[i] = calcF_phi(i, tmp1, nx, ny);
 		h[i] = myPhaseF * Gamma[i] - 0.5*F_phi[i]; // heq
-		g[i] = wf[i]*p + Gamma[i] - wf[i]; //geq
+		g[i] = Gamma[i] - wf[i]; //geq
 	}
 	
 	#ifdef OPTIONS_RT
 		PhaseOld = myPhaseF;
 	#endif
 
-	// PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless since Init_distributions doesnt save PF ?
+	//PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless since Init_distributions doesnt save PF ?
 	
 	#ifdef OPTIONS_Outflow
 		if ((NodeType & NODE_BOUNDARY) == NODE_Convective_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_N){

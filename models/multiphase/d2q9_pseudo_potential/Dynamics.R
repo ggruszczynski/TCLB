@@ -21,6 +21,7 @@ AddStage("BaseInit"     , "Init", save=Fields$group=="f", load=DensityAll$group=
 # AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group=="f" | "psi" )
 AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group %in% c("f"))
 AddStage("calcPsi"    , save=Fields$name=="psi", load=DensityAll$group %in% c("f"))
+
 AddAction("Init"     , c("BaseInit",     "calcPsi"))
 AddAction("Iteration", c("BaseIteration","calcPsi"))
 
