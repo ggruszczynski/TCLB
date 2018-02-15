@@ -308,7 +308,7 @@ CudaDeviceFunction void Init_distributions(){
 		PhaseOld = myPhaseF;
 	#endif
 
-	PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless since Init_distributions doesnt save PF ?
+	PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless if Init_distributions doesnt save PF ?
 	
 	#ifdef OPTIONS_Outflow
 		if ((NodeType & NODE_BOUNDARY) == NODE_Convective_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_N){

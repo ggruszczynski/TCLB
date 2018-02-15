@@ -64,7 +64,7 @@ if (Options$RT) {
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
-	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","nw","gold","hold","PF"))
+	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold","PF")) # TODO: is PF needed here
 	# iteration
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw","gold","hold"), 
 																 				  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
@@ -79,7 +79,7 @@ if (Options$RT) {
 
 	# iteration
 	# AddStage("BaseIter", "calcHydroIter",   save=Fields$group %in% c("g","h","Vel","nw","PF"), load=DensityAll$group %in% c("g","h","Vel","nw", "PF"))
-	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw") , load=DensityAll$group %in% c("g","h","Vel","nw"))
+	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw") , load=DensityAll$group %in% c("g","h","Vel","nw"))  # TODO: is nw needed here?
 	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("g","h","Vel","nw"))
 	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("nw"))
 	
