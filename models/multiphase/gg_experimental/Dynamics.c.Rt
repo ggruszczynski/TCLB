@@ -2,7 +2,8 @@
 	source("conf.R")
 	c_header();
 	source("lib/feq.R")
-    source("lib/boundary.R")
+	source("lib/boundary.R")
+	source("lib/lattice.R")
 ?>
 
 // 04/02/2017 - Model Developed: A. Fakhari, T. Mitchell
@@ -156,8 +157,7 @@ real_t get_lpPhi(real_t myPhase)
 CudaDeviceFunction real_t calcMu(real_t myPhase){
 	// input myPhase - PhaseF at given node (usually 0,0 or the one from BC)
 
-	real_t pfavg, lpPhi, mu;
-	pfavg = 0.5*(PhaseField_l+PhaseField_h);
+	real_t lpPhi;
 
 	#ifdef OPTIONS_Outflow
 		if ((NodeType & NODE_BOUNDARY) == NODE_Neumann_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_E) {
@@ -187,7 +187,8 @@ CudaDeviceFunction real_t calcMu(real_t myPhase){
 
 	// eq 5 from "Improved locality of the phase-field lattice Boltzmann 
 	//	model for immiscible fluids at high density ratios"
-	mu = 4.0*(12.0*sigma/W)*(myPhase-PhaseField_l)*(myPhase-PhaseField_h)*(myPhase-pfavg)
+	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
+	real_t mu = 4.0*(12.0*sigma/W)*(myPhase-PhaseField_l)*(myPhase-PhaseField_h)*(myPhase-pfavg)
 		   - (1.5 *sigma*W) * lpPhi; 
 	return mu;
 }
@@ -307,7 +308,7 @@ CudaDeviceFunction void Init_distributions(){
 		PhaseOld = myPhaseF;
 	#endif
 
-	//PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless since Init_distributions doesnt save PF ?
+	PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless since Init_distributions doesnt save PF ?
 	
 	#ifdef OPTIONS_Outflow
 		if ((NodeType & NODE_BOUNDARY) == NODE_Convective_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_N){
@@ -670,6 +671,17 @@ CudaDeviceFunction void CollisionMRT(){
 			}
 	}
 
+	if ((NodeType & NODE_BOUNDARY) == NODE_MovingWall_N)
+    {
+		<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> ; 
+		<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> ;
+
+		AddToNMovingWallForce(<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>);	// 'outgoing' distributions - after collision
+		AddToNMovingWallPower(VelocityX*(<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>)); // VelocityX of moving wall
+
+		AddToNMovingWallForce(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8]);	// 'outgoing' distributions - after collision
+		AddToNMovingWallPower(VelocityX*(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8])); // VelocityX of moving wall
+    }
 }
 
 CudaDeviceFunction void CollisionBGK(){
@@ -849,6 +861,9 @@ CudaDeviceFunction void NVelocity()
     // eq 6.58 p253 from The Lattice Boltzmann Method: Principles and Practice
 	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 	// NOTE THAT THIS IS A VELOCITY BASED LBM SO FORMULAS ARE MODIFIED
+	// Fhydro.x=0; // TODO: cant see much difference
+	// Fhydro.y=0;
+
 	g[4] = g[2] -2./3.*VelocityY + Fhydro.y/6.;
 	g[7] = g[5] + (1./2.)*(g[1] - g[3]) - VelocityX/2. - VelocityY/6. + Fhydro.x/4. + Fhydro.y/6.;
 	g[8] = g[6] + (1./2.)*(g[3] - g[1]) + VelocityX/2. - VelocityY/6. - Fhydro.x/4. + Fhydro.y/6.;
@@ -870,6 +885,14 @@ CudaDeviceFunction void NVelocity()
 	h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
 	h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
 	h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
+
+
+	AddToNMovingWallForce( -(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) ); // incoming distributins - before collision
+	AddToNMovingWallPower( -VelocityX*(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) );
+
+	// compiles to
+	// AddToNMovingWallForce( -(-g[6] + g[5]) ); 
+	// AddToNMovingWallPower( -VelocityX*(-g[6] + g[5]) );
 }
 
 CudaDeviceFunction void MovingWall_S_Dirichlet(){

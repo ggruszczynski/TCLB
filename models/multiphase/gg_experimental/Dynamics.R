@@ -52,9 +52,9 @@ if (Options$RT) {
  	AddField('PhaseOld', group="PF")
 
 	# initialisation
-	AddStage("PhaseInit" , "Init_phase" 		, save=Fields$name=="PhaseF")
-	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel") )
+	AddStage("PhaseInit" , "Init_phase" 		, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"    	, save=Fields$group %in% c("nw"))
+	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel"))
 	
 	# iteration
 	AddStage("BaseIter"  , "calcHydroIter" 		, save=Fields$group %in% c("g","h","Vel")		, load=DensityAll$group %in% c("g","h","Vel"))
@@ -63,18 +63,18 @@ if (Options$RT) {
 } else if (Options$Outflow) {
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
-	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group=="nw")
-	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold","PF"))
+	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
+	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","nw","gold","hold","PF"))
 	# iteration
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw","gold","hold"), 
 																 				  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
-	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF"), load=DensityAll$group %in% c("g","h","gold","hold") )
+	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF"), load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
 	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF"), load=DensityAll$group=="nw")
 	
 } else {
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
-	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group=="nw")
+	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
 	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel"))
 
 	# iteration
@@ -85,8 +85,8 @@ if (Options$RT) {
 	
 }
 
-AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 AddAction("Iteration", c("BaseIter", "PhaseIter","WallIter"))
+AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 
 # 	Outputs:
 AddQuantity(name="Rho",	  unit="kg/m3")
@@ -148,6 +148,9 @@ AddNodeType(name="SpikeTrack",group="ADDITIONALS")
 AddNodeType(name="BubbleTrack",group="ADDITIONALS")
 AddGlobal(name="RTIBubble", comment='Bubble Tracker')
 AddGlobal(name="RTISpike",  comment='Spike Tracker')
+
+AddGlobal("NMovingWallForce")
+AddGlobal("NMovingWallPower")
 
 #	Boundary things
 AddNodeType(name="MovingWall_N", group="BOUNDARY")
