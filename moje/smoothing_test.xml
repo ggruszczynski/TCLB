@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <CLBConfig version="2.0" output="output/">
     <Geometry nx="200" ny="100">
-    	<!-- <MRT><Box /></MRT> -->
-      <Smoothing><Box /></Smoothing>
+    	<MRT><Box /></MRT>
+      <!-- <Smoothing><Box /></Smoothing> -->
    
             <None name="air">
                 <Sphere ny="30" nx="30" dx="125" dy="75"/>
@@ -35,16 +35,16 @@
         PhaseField_init-wallbottom="0.0"
         PhaseField_init-walltop="1.0"
 
-        diffusion_coeff="0.05"
+        diffusion_coeff="0.001"
 
         W="4" M="0.05" sigma="5e-5"
         />
     <Params  />
       <!-- <Params GravitationY="-0.00001" /> -->
-      <Params GravitationX="0.00001" />
+      <Params GravitationX="2e-6" />
         <!-- <Params VelocityX-Inlet="0.001"/> -->
     </Model> 
-    <Solve Iterations="1000" output="output/"> <VTK Iterations="10"/> </Solve>
+    <Solve Iterations="10" output="output/"> <VTK Iterations="1"/> </Solve>
 
 <Geometry>
 	<None mask="ADDITIONALS"><Box /></None>
@@ -69,5 +69,5 @@
 
 <Solve Iterations="1000" output="output/"> <VTK Iterations="100"/> </Solve>
 <Failcheck Iterations="2000" />
-<Solve Iterations="10000" output="output/"> <VTK Iterations="500"/> </Solve>
+<Solve Iterations="4000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>

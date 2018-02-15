@@ -49,51 +49,49 @@ if (Options$Outflow){
 
 #	Stages - processes to run for initialisation and each iteration
 if (Options$RT) {
-	AddStage("PhaseInit" , "Init_phase" 		, save=Fields$name=="PhaseF")
-	AddStage("WallInit"  , "Init_wallNorm"    	, save=Fields$group %in% c("nw"))
-	AddStage("WallIter"  , "calcWallPhaseIter"  , save=Fields$group %in% c("PF"), load=DensityAll$group=="nw") 
+ 	AddField('PhaseOld', group="PF")
 
-    AddField('PhaseOld')
-    AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel") )
-    AddStage("PhaseIter" , "calcPhaseF"			, save=Fields$name  %in% c("PhaseF","PhaseOld"), 
-						  						  load=DensityAll$group=="h")
-    AddStage("BaseIter"  , "calcHydroIter" 		, save=Fields$group %in% c("g","h","Vel"), 
-						 						  load=DensityAll$group %in% c("g","h","Vel"))
+	# initialisation
+	AddStage("PhaseInit" , "Init_phase" 		, save=Fields$name=="PhaseF")
+	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel") )
+	AddStage("WallInit"  , "Init_wallNorm"    	, save=Fields$group %in% c("nw"))
+	
+	# iteration
+	AddStage("BaseIter"  , "calcHydroIter" 		, save=Fields$group %in% c("g","h","Vel")		, load=DensityAll$group %in% c("g","h","Vel"))
+    AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$name  %in% c("PhaseF","PhaseOld") , load=DensityAll$group=="h")
+  	AddStage("WallIter"  , "calcWallPhaseIter"  , save=Fields$group %in% c("PF")				, load=DensityAll$group=="nw") 
 } else if (Options$Outflow) {
 	# initialisation
-	AddStage("PhaseInit" , "Init_phase"			, save="PhaseF")
-	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel","gold","hold"))
+	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group=="nw")
+	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold","PF"))
 	# iteration
-	AddStage("WallIter"  , "calcWallPhaseIter"	, save="PhaseF", load=DensityAll$group=="nw")
-	AddStage("PhaseIter" , "calcPhaseFIter"		, save="PhaseF", load=DensityAll$group %in% c("g","h","gold","hold") )
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw","gold","hold"), 
-												  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
+																 				  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
+	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF"), load=DensityAll$group %in% c("g","h","gold","hold") )
+	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF"), load=DensityAll$group=="nw")
+	
 } else {
 	# initialisation
-	AddStage("PhaseInit" , "Init_phase"			, save="PhaseF")
+	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group=="nw")
 	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel"))
 
 	# iteration
-	# AddStage("BaseIter", "Run"       			,    save=Fields$name  %in% c("PhaseF") | Fields$group %in% c("g","h","Vel","nw"), 
-	# 											load=DensityAll$group %in% c("g","h","Vel","nw"))
-	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw"), 
-												  load=DensityAll$group %in% c("g","h","Vel","nw"))
-	AddStage("PhaseIter" , "calcPhaseFIter"		, save="PhaseF", load=DensityAll$group %in% c("g","h") )
-	AddStage("WallIter"  , "calcWallPhaseIter"	, save="PhaseF", load=DensityAll$group=="nw")
+	# AddStage("BaseIter", "calcHydroIter",   save=Fields$group %in% c("g","h","Vel","nw","PF"), load=DensityAll$group %in% c("g","h","Vel","nw", "PF"))
+	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw") , load=DensityAll$group %in% c("g","h","Vel","nw"))
+	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("g","h","Vel","nw"))
+	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("nw"))
 	
 }
 
-# AddAction("Iteration", c("PhaseIter"))
-# AddAction("Iteration", c("BaseIter", "PhaseIter"))
-AddAction("Iteration", c("BaseIter", "PhaseIter","WallIter"))
 AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
+AddAction("Iteration", c("BaseIter", "PhaseIter","WallIter"))
 
 # 	Outputs:
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
-AddQuantity(name="PhaseField_DistributionsSum",unit="1")
+AddQuantity(name="PhaseField_from_h_distributions_sum",unit="1") # debugging
 AddQuantity(name="U",	  unit="m/s",vector=T)
 AddQuantity(name="NormalizedPressure",	  unit="Pa")
 AddQuantity(name="Pressure",	  unit="Pa")
@@ -156,7 +154,6 @@ AddNodeType(name="MovingWall_N", group="BOUNDARY")
 AddNodeType(name="MovingWall_S", group="BOUNDARY")
 AddNodeType(name="NVelocity", group="BOUNDARY")
 AddNodeType(name="WVelocity", group="BOUNDARY")
-
 
 AddNodeType(name="Smoothing", group="ADDITIONALS")
 

@@ -48,7 +48,7 @@
 
 <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
 <Failcheck Iterations="2000" />
-<Solve Iterations="50000" output="output/"> <VTK Iterations="500"/> </Solve>
+<Solve Iterations="5000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>
 
 
