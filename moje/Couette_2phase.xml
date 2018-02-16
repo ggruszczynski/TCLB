@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <CLBConfig version="2.0" output="output/">
-    <Geometry nx="100" ny="80">
+    <Geometry nx="100" ny="100">
     <MRT><Box /></MRT>
 <!--         <WVelocity name="Inlet" nx='1' dx='5'><Box/></WVelocity>
         <Convective_E name="Outlet" nx='1' dx='-5'><Box/></Convective_E>
@@ -11,7 +11,7 @@
             <Box ny="50" />
         </None> 
 
-    <NVelocity mask="ALL" name="walltop">
+    <NVelocity name="walltop">
       <Box dy="-2"/>
     </NVelocity>
 
@@ -39,12 +39,13 @@
         />
 
     <Params  />
-        <Params VelocityX-walltop="0.96e-4"/>
+        <Params VelocityX-walltop="1e-4"/>
     </Model> 
 
 <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>
 <Failcheck Iterations="2000" />
-<Solve Iterations="50000" output="output/"> <VTK Iterations="1000"/> </Solve>
+<Solve Iterations="100000" output="output/"> <VTK Iterations="1000"/> </Solve>
+<!-- <Log Iterations="100"/> -->
 </CLBConfig>
 
 

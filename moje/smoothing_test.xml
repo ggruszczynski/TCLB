@@ -2,7 +2,7 @@
 <CLBConfig version="2.0" output="output/">
     <Geometry nx="200" ny="100">
     	<MRT><Box /></MRT>
-      <!-- <Smoothing><Box /></Smoothing> -->
+      	<Smoothing><Box /></Smoothing>
    
             <None name="air">
                 <Sphere ny="30" nx="30" dx="125" dy="75"/>
@@ -70,4 +70,5 @@
 <Solve Iterations="1000" output="output/"> <VTK Iterations="100"/> </Solve>
 <Failcheck Iterations="2000" />
 <Solve Iterations="4000" output="output/"> <VTK Iterations="500"/> </Solve>
+<Log Iterations="100"/>
 </CLBConfig>

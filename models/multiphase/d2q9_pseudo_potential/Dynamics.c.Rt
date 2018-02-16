@@ -9,7 +9,15 @@ CudaDeviceFunction void Init(){
     real_t u[2] = {VelocityX, VelocityY};
     real_t d = Density;
     SetEquilibrium(d,u);
+
+    neighbour_type=0;
+
+    if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
+        neighbour_type=1;
+        } 
+
 }
+
 
 CudaDeviceFunction float2 Color() {
     // used for graphics - can usually ignore function
@@ -151,6 +159,10 @@ CudaDeviceFunction void calcPsi() {
 CudaDeviceFunction real_t getPsi(){
 	return psi(0,0);
 }
+CudaDeviceFunction real_t getNeighbour_type()
+{
+    return neighbour_type(0,0);
+}
 
 CudaDeviceFunction vector_t getF_ff() {
     // fluid - fluid interaction force 
@@ -183,6 +195,15 @@ CudaDeviceFunction vector_t getF_sf() {
     F_sf.y = 0;
     F_sf.z = 0;
 
+
+    for (int i=0; i< 9; i++){
+        F_sf.x += wf[i] *d2q9_ex[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
+        F_sf.y += wf[i] *d2q9_ey[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
+    }
+
+    F_sf.x *= -G_sf*psi(0,0); // notice change of sign
+    F_sf.y *= -G_sf*psi(0,0); // notice change of sign
+    
     // TODO:
     // if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
     //     for (int i=0; i< 9; i++){

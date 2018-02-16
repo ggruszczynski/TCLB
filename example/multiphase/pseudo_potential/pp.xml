@@ -13,9 +13,8 @@
                         <Box dx="50" nx="20" dy="20" ny="20"/>
                 </Wall> -->
                 <None name="blobb">
-                        <!-- <Box dx="45" nx="38" dy="45" ny="38"/> -->
-                        <Box dx="50" nx="28" dy="50" ny="28"/>
-                        <!-- <Sphere ny="30" nx="30" dx="35" dy="60" /> -->
+                        <!-- <Box dx="50" nx="28" dy="50" ny="28"/> -->
+                        <Sphere ny="28" nx="28" dx="50" dy="5" /> 
                 </None>
         </Geometry>
         <Model>
@@ -26,7 +25,7 @@
                 <Params Density="0.056"/>
                 <Params Density-blobb="2.659"/>
                 <Params G_ff="-6.0"/>
-                <Params G_sf="-0.0"/>
+                <Params G_sf="-0.7"/>
                 <!-- <Params Velocity="0.001" /> -->
                 <Params nu="0.166"/>
                 <Params GravitationY="-1e-5"/>

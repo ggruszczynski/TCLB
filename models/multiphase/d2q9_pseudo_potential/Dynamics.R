@@ -10,20 +10,35 @@ AddDensity( name="f[6]", dx=-1, dy= 1, group="f")
 AddDensity( name="f[7]", dx=-1, dy=-1, group="f")
 AddDensity( name="f[8]", dx= 1, dy=-1, group="f")
 
+
+# AddDensity( name="nt[0]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[1]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[2]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[3]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[4]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[5]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[6]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[7]", dx= 0, dy= 0, group="nt")
+# AddDensity( name="nt[8]", dx= 0, dy= 0, group="nt")
+
 # Pseudopotential field
 AddField("psi", stencil2d=1, group="pp")
+
+AddField("neighbour_type", stencil2d=1, group="neighbour_type_group")
 
 # Stages and Actions
 
 # Initialization	list
-AddStage("BaseInit"     , "Init", save=Fields$group=="f", load=DensityAll$group=="f")
-# Iteration list
-# AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group=="f" | "psi" )
-AddStage("BaseIteration", "Run",  save=Fields$group=="f", load=DensityAll$group %in% c("f"))
-AddStage("calcPsi"    , save=Fields$name=="psi", load=DensityAll$group %in% c("f"))
+AddStage("BaseInit"     , "Init", save=Fields$group %in% c("f", "neighbour_type_group"), load=DensityAll$group=="f")
+# AddStage("NeighbourInit", "InitNeighbours" , save=Fields$group=="nt", load=Fields$group=="neighbour_type_group")
 
-AddAction("Init"     , c("BaseInit",     "calcPsi"))
-AddAction("Iteration", c("BaseIteration","calcPsi"))
+# Iteration list
+AddStage("BaseIteration", "Run"     ,  save=Fields$group=="f" , load=DensityAll$group %in% c("f","neighbour_type_group"))
+AddStage("PsiIteration" , "calcPsi" ,  save=Fields$name=="psi", load=DensityAll$group %in% c("f"))
+
+# AddAction("Init"     , c("BaseInit",     "PsiIteration", "NeighbourInit"))
+AddAction("Init"     , c("BaseInit",      "PsiIteration"))
+AddAction("Iteration", c("BaseIteration", "PsiIteration"))
 
 
 # Output Values
@@ -31,8 +46,10 @@ AddQuantity( name="U",    unit="m/s", vector=TRUE )
 AddQuantity( name="Ueq",  unit="m/s", vector=TRUE )
 AddQuantity( name="Rho",  unit="kg/m3" )
 AddQuantity( name="Psi",  unit="1" )
+AddQuantity( name="Neighbour_type",  unit="1" )
 AddQuantity( name="F_ff", unit="N", vector=TRUE)
 AddQuantity( name="F_sf", unit="N", vector=TRUE)
+
 
 # Model Specific Parameters
 AddSetting( name="omega", comment='inverse of relaxation time')
