@@ -447,7 +447,7 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 	real_t tau = calcTau(PhaseF); // relaxation parameter
 	real_t rho = calcRho(PhaseF); // fluid density
 	real_t mu = calcMu(myPhase);  // chemical potential 
-	real_t p = <?R C(sum(g)) ?> ; // normalized pressure
+	real_t p = getNormalizedPressure() ; // normalized pressure
 
 	// Force Calculations
 	// eq 19
@@ -673,14 +673,12 @@ CudaDeviceFunction void CollisionMRT(){
 
 	if ((NodeType & NODE_BOUNDARY) == NODE_MovingWall_N)
     {
-		<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> ; 
-		<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> ;
-
 		AddToNMovingWallForce(<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>);	// 'outgoing' distributions - after collision
 		AddToNMovingWallPower(VelocityX*(<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>)); // VelocityX of moving wall
 
-		AddToNMovingWallForce(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8]);	// 'outgoing' distributions - after collision
-		AddToNMovingWallPower(VelocityX*(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8])); // VelocityX of moving wall
+		// same as
+		// AddToNMovingWallForce(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8]);	// 'outgoing' distributions - after collision
+		// AddToNMovingWallPower(VelocityX*(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8])); // VelocityX of moving wall
     }
 }
 
