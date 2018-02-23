@@ -32,7 +32,7 @@
         PhaseField_init="1.0"
         PhaseField_init-air="0.0"
         PhaseField_init-wallbottom="0.0"
-        PhaseField_init-walltop="1.0"
+        PhaseField_init-walltop="0.0"
 
         W="4" M="0.05" sigma="5e-5"
         />

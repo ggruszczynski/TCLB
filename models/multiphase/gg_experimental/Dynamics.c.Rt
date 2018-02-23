@@ -426,6 +426,16 @@ CudaDeviceFunction void calcWallPhaseIter(){
 	else { PhaseF = PhaseF(0,0);}
 }
 
+
+CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
+
+	real_t pf = PhaseF(0,0);
+	vector_t gradPhi = calcGradPhi(); // Phase field gradient
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, pf);
+
+	return Fhydro;
+}
+
 CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhase )
 {
 	// arguments:
@@ -819,44 +829,62 @@ CudaDeviceFunction void WVelocity()
 	vector_t gradPhi = calcGradPhi(); // Phase field gradient
 	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF);
 
+	// enforce Poiseuille velocity profile
+	// real_t R = (pipe_diameter / 2) - 2; // subtract top/bottom wall thickness
+	// real_t uInProfileX = VelocityX *(2 * Y* R - Y*Y) / (R*R); // calculate profile
+
     // eq 6.58 p253 from The Lattice Boltzmann Method: Principles and Practice - rotated 90deg
 	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 	// NOTE THAT THIS IS A VELOCITY BASED LBM SO FORMULAS ARE MODIFIED
 
-	real_t R = (pipe_diameter / 2) - 3; // subtract top/bottom wall thickness
-
-	real_t uInProfileX = VelocityX *(2 * Y* R - Y*Y) / (R*R); //poiseulle profile
-
-	g[1] = g[3] + 2./3.*uInProfileX - Fhydro.x/6.;
-	g[5] = g[7] + (1./2.)*(g[4] - g[2]) + VelocityY/2. + uInProfileX/6. - Fhydro.y/4. - Fhydro.x/6.;
-	g[8] = g[6] + (1./2.)*(g[2] - g[4]) - VelocityY/2. + uInProfileX/6. + Fhydro.y/4. - Fhydro.x/6.;
+	// g[1] = g[3] + 2./3.*VelocityX - Fhydro.x/6.;
+	// g[5] = g[7] + (1./2.)*(g[4] - g[2]) + VelocityY/2. + VelocityX/6. - Fhydro.y/4. - Fhydro.x/6.;
+	// g[8] = g[6] + (1./2.)*(g[2] - g[4]) - VelocityY/2. + VelocityX/6. + Fhydro.y/4. - Fhydro.x/6.;
 	
+	// TODO: cant see difference, it seems that Fhydro = 0
+	
+	// alternatively - appendix C16-C23 from
+	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
+	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
+	real_t F_i[9], g_prim[9];
+	real_t rho = calcRho(PhaseF);
+	for (int i=0; i< 9; i++){
+			// eq 15 from "Improved locality of the phase-field lattice Boltzmann 
+			//	model for immiscible fluids at high density ratios"
+			F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho; // eq 15
+			g_prim[i] = g[i] + 0.5 * F_i[i]; // eq C6 		
+	}
+	
+	real_t Gamma[9], heq[9], geq[9];
+	real_t mag = VelocityX*VelocityX + VelocityY*VelocityY; // velocity magnitude
+	real_t p = getNormalizedPressure() ; // normalized pressure
+	
+	for (int i=0; i< 9; i++){
+		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);	 
+		geq[i] = wf[i]*p + Gamma[i] - wf[i]; // eq 17
+		heq[i] = PhaseF * Gamma[i];  // eq 10
+	}
+
+	
+
+	// Excess of momentum (positive value upwards)
+	real_t N = 2; // number of unknown distributions: e[i] * n_tau !=0
+	real_t M = d2q9_ey[2]*(g_prim[2] - geq[2]) + d2q9_ey[4]*(g_prim[4] - geq[4]); // eq C18
+
+	g[1] = -0.5*F_i[1] + g_prim[3] + geq[1] - geq[3] ; // eq C17
+	g[5] = -0.5*F_i[5] + g_prim[7] + geq[5] - geq[7] - d2q9_ey[5] * M / N; // eq C19
+	g[8] = -0.5*F_i[8] + g_prim[6] + geq[8] - geq[6] - d2q9_ey[8] * M / N; // eq C19
 
 	/*********  Zou He boundary condition with force - phaseField ****************/
 	
-	real_t Gamma[9], heq[9], mag;			// equilibrium, phaseField equilibrium, velocity magnitude
-	mag = uInProfileX*uInProfileX + VelocityY*VelocityY;
-	for (int i=0; i < 9; i++){
-		Gamma[i] = calcGamma(i, uInProfileX, VelocityY, mag);
-		heq[i] = PhaseF * Gamma[i]; 
-	}
-
 	// excess density - eq C22 from 
 	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t v = h[4] - heq[4] + h[2] - heq[2];
 
-	h[1] = heq[1] - (h[3]-heq[3]); 			 // eq C23a
-	h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
-	h[5] = heq[5] - (h[7]-heq[7]) - v*0.5;   // eq C23b
-
-}
-CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
-	real_t pf = PhaseF(0,0);
-	vector_t gradPhi = calcGradPhi(); // Phase field gradient
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, pf);
-
-	return Fhydro;
+	h[1] = heq[1] - (h[3]-heq[3]); 		   // eq C23a
+	h[8] = heq[8] - (h[6]-heq[6]) - v/N;   // eq C23b
+	h[5] = heq[5] - (h[7]-heq[7]) - v/N;   // eq C23b
 }
 
 CudaDeviceFunction void NVelocity()
