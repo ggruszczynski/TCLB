@@ -92,10 +92,13 @@ AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
 AddQuantity(name="PhaseField_from_h_distributions_sum",unit="1") # debugging
+AddQuantity(name="TotalHydrodynamicForce",	  unit="N",vector=T) # debugging
 AddQuantity(name="U",	  unit="m/s",vector=T)
 AddQuantity(name="NormalizedPressure",	  unit="Pa")
 AddQuantity(name="Pressure",	  unit="Pa")
 AddQuantity(name="Normal", unit="1", vector=T)
+
+
 
 #	Initialisation States
 AddSetting(name="Period", default="0", comment='Number of cells per cos wave')
@@ -131,6 +134,9 @@ AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comm
 
 #	Inputs: Flow Properties
 AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
+AddSetting(name="pipe_diameter", default=1.0, comment='EXPERIMENTAL: to impose poiseulle velocity inlet BC', zonal=T)
+
+
 AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
 AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX')

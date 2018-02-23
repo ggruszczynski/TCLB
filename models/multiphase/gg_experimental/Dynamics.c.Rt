@@ -822,17 +822,22 @@ CudaDeviceFunction void WVelocity()
     // eq 6.58 p253 from The Lattice Boltzmann Method: Principles and Practice - rotated 90deg
 	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 	// NOTE THAT THIS IS A VELOCITY BASED LBM SO FORMULAS ARE MODIFIED
-	g[1] = g[3] + 2./3.*VelocityX - Fhydro.x/6.;
-	g[5] = g[7] + (1./2.)*(g[4] - g[2]) + VelocityY/2. + VelocityX/6. - Fhydro.y/4. - Fhydro.x/6.;
-	g[8] = g[6] + (1./2.)*(g[2] - g[4]) - VelocityY/2. + VelocityX/6. + Fhydro.y/4. - Fhydro.x/6.;
+
+	real_t R = (pipe_diameter / 2) - 3; // subtract top/bottom wall thickness
+
+	real_t uInProfileX = VelocityX *(2 * Y* R - Y*Y) / (R*R); //poiseulle profile
+
+	g[1] = g[3] + 2./3.*uInProfileX - Fhydro.x/6.;
+	g[5] = g[7] + (1./2.)*(g[4] - g[2]) + VelocityY/2. + uInProfileX/6. - Fhydro.y/4. - Fhydro.x/6.;
+	g[8] = g[6] + (1./2.)*(g[2] - g[4]) - VelocityY/2. + uInProfileX/6. + Fhydro.y/4. - Fhydro.x/6.;
 	
 
 	/*********  Zou He boundary condition with force - phaseField ****************/
 	
 	real_t Gamma[9], heq[9], mag;			// equilibrium, phaseField equilibrium, velocity magnitude
-	mag = VelocityX*VelocityX + VelocityY*VelocityY;
+	mag = uInProfileX*uInProfileX + VelocityY*VelocityY;
 	for (int i=0; i < 9; i++){
-		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);
+		Gamma[i] = calcGamma(i, uInProfileX, VelocityY, mag);
 		heq[i] = PhaseF * Gamma[i]; 
 	}
 
@@ -846,7 +851,13 @@ CudaDeviceFunction void WVelocity()
 	h[5] = heq[5] - (h[7]-heq[7]) - v*0.5;   // eq C23b
 
 }
+CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
+	real_t pf = PhaseF(0,0);
+	vector_t gradPhi = calcGradPhi(); // Phase field gradient
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, pf);
 
+	return Fhydro;
+}
 
 CudaDeviceFunction void NVelocity()
 {
