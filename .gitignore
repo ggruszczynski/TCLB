@@ -20,3 +20,8 @@ p
 .Rproj.user
 .idea/*
 .vscode/*
+moje/python/venv1/*
+
+install_tmp/*
+*.idea/*
+*.vscode/*
