@@ -2,14 +2,12 @@
 <CLBConfig version="2.0" output="output/">
     <Geometry nx="200" ny="100">
     	<MRT><Box /></MRT>
-      	<Smoothing><Box /></Smoothing>
-   
+      <Smoothing><Box /></Smoothing> 
             <None name="air">
                 <Sphere ny="30" nx="30" dx="125" dy="75"/>
-                <Sphere ny="30" nx="30" dx="50" dy="25"/>
+                <Sphere ny="30" nx="30" dx="30" dy="25"/>
                 <Box ny="25" nx="30" dx="100" dy="0"/>
-            </None> 
-            
+            </None>        
 
         <Wall mask="ALL" name="walltop">
           <Box dy="-2"/>
@@ -21,13 +19,12 @@
         </Wall>
    
   </Geometry>
-
     <Model>
     <Params
         Density_h="1" Density_l="0.1" 
         Viscosity_h="0.166" Viscosity_l="0.0166"
         PhaseField_h="1.0" PhaseField_l="0.0" 
-        
+     
         ContactAngle="135" 
       
         PhaseField_init="1.0"
@@ -35,40 +32,29 @@
         PhaseField_init-wallbottom="0.0"
         PhaseField_init-walltop="1.0"
 
-        diffusion_coeff="0.001"
+        diffusion_coeff="0.1"
 
         W="4" M="0.05" sigma="5e-5"
         />
     <Params  />
-      <!-- <Params GravitationY="-0.00001" /> -->
-      <Params GravitationX="2e-6" />
-        <!-- <Params VelocityX-Inlet="0.001"/> -->
+    <Params GravitationX="1e-6" />
     </Model> 
-    <Solve Iterations="10" output="output/"> <VTK Iterations="1"/> </Solve>
+    <Solve Iterations="25" output="output/"> <VTK Iterations="1"/> </Solve>
 
 <Geometry>
-	<None mask="ADDITIONALS"><Box /></None>
-		<MRT ><Box /></MRT>
-		
-        <None name="air">
-            <Sphere ny="30" nx="30" dx="125" dy="75"/>
-            <Sphere ny="30" nx="30" dx="50" dy="25"/>
-            <Box ny="25" nx="30" dx="100" dy="0"/>
-        </None> 
-
-    <Wall mask="ALL" name="walltop">
-      <Box dy="-2"/>
-    </Wall>
-    <Wall mask="ALL" name="wallbottom" >
-      <Box ny="2" />
-      <Box dx="0" fy="25" nx="100" />
-      <Box dx="130" fy="25" nx="100" />
-    </Wall>
-    
+  <None mask="ADDITIONALS">
+    <Box nx="200" ny="100"/>
+    <!-- Suprisingly <Box dx ="150"/> doesnt 'paint' quarter of the domain -->
+  </None>
 </Geometry>
+<!-- <Model/>  --> <!-- it seems that having <Model/> here would overwrite first 25 from previous Solve   -->
 
-<Solve Iterations="1000" output="output/"> <VTK Iterations="100"/> </Solve>
-<Failcheck Iterations="2000" />
-<Solve Iterations="4000" output="output/"> <VTK Iterations="500"/> </Solve>
-<Log Iterations="100"/>
+
+<Solve Iterations="50" output="output/"> <VTK Iterations="1"/> </Solve>
+<Failcheck Iterations="1000" />
+<Solve Iterations="5000" output="output/"> <VTK Iterations="100"/> </Solve>
+
+
+<!-- <Solve Iterations="2500" output="output/"> <VTK Iterations="500"/> </Solve> -->
+
 </CLBConfig>

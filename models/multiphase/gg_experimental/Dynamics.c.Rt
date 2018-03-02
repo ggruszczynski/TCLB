@@ -308,7 +308,7 @@ CudaDeviceFunction void Init_distributions(){
 		PhaseOld = myPhaseF;
 	#endif
 
-	PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless if Init_distributions doesnt save PF ?
+	//PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless if Init_distributions doesnt save PF ?
 	
 	#ifdef OPTIONS_Outflow
 		if ((NodeType & NODE_BOUNDARY) == NODE_Convective_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_N){
@@ -381,9 +381,9 @@ CudaDeviceFunction void calcPhaseFIter(){
 	#ifdef OPTIONS_RT
 		PhaseOld = PhaseF(0,0);
 	#endif
-	
+
 	BC_Switcher();
-		
+
 	// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
 	//	model for immiscible fluids at high density ratios"	
 	PhaseF = getPhaseField_from_h_distributions_sum();
@@ -454,8 +454,8 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 
 	// Find Macroscopic Details
 	// Fluid Properties:
-	real_t tau = calcTau(PhaseF); // relaxation parameter
 	real_t rho = calcRho(PhaseF); // fluid density
+	real_t tau = calcTau(PhaseF, rho); // relaxation parameter
 	real_t mu = calcMu(myPhase);  // chemical potential 
 	real_t p = getNormalizedPressure() ; // normalized pressure
 
@@ -542,7 +542,7 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 	return F_total_hydro;
 }
 
-CudaDeviceFunction real_t calcTau(real_t myPhase)
+CudaDeviceFunction real_t calcTau(real_t myPhase, real_t myRho)
 {
 	real_t tau;
 
@@ -551,14 +551,19 @@ CudaDeviceFunction real_t calcTau(real_t myPhase)
 	} else if (myPhase > PhaseField_h) {
 		tau = tau_h + 0.5;
 	} else {
-		// Inverse update:
-		//tau = (myPhase - PhaseField_l)/(PhaseField_h - PhaseField_l) * (1.0/tau_h - 1.0/tau_l) + 1.0/tau_l;
+		real_t normPhaseF = (myPhase - PhaseField_l)/(PhaseField_h - PhaseField_l);
+
+		// Inverse update: eq22
+		//tau = normPhaseF * (1.0/tau_h - 1.0/tau_l) + 1.0/tau_l;
 		//tau = 1.0/tau + 0.5;
-		// Linear update:
-		tau = 0.5 + tau_l + myPhase*(tau_h - tau_l);
-		// Viscosity update:
-		//real_t DynVisc = Density_l*Viscosity_l + myPhase * (Density_h*Viscosity_h - Density_l*Viscosity_l);
-		//tau = 3.0 * DynVisc / rho + 0.5;
+
+		// Linear update: eq23
+		// tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
+
+		// Viscosity update: eq24 & 25
+
+		real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
+		tau = 3.0 * DynVisc / myRho + 0.5;
 	}
 
 	return tau;
@@ -583,8 +588,8 @@ CudaDeviceFunction void CollisionMRT(){
 	real_t R[9], S[9];				// Populations for MRT relaxation
 
 	// Find Macroscopic Details
-	real_t tau = calcTau(PhaseF);
 	real_t rho = calcRho(PhaseF);
+	real_t tau = calcTau(PhaseF, rho);
 	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
 
 	//  Gradients & Normals

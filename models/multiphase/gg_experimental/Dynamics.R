@@ -64,10 +64,10 @@ if (Options$RT) {
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
-	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold","PF")) # TODO: is PF needed here
+	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold")) # TODO: is PF needed here?
 	# iteration
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw","gold","hold"), 
-																 				  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
+																 				  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold")) # TODO: is PF needed here?
 	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF"), load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
 	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF"), load=DensityAll$group=="nw")
 	
@@ -110,7 +110,7 @@ AddSetting(name="CenterX", default="0", comment='Circle center x-coord')
 AddSetting(name="CenterY", default="0", comment='Circle Center y-coord')
 AddSetting(name="BubbleType", default="1", comment='Drop/bubble')
 
-AddSetting(name="diffusion_coeff", default="0.005", comment='Pure diffusion eq is used to smooth out the initial phase field ditribution')
+AddSetting(name="diffusion_coeff", default="0.005", comment='Pure diffusion eq is used to smooth out the initial phase field ditribution') # TODO
 
 #	Inputs: For phasefield evolution
 AddSetting(name="Density_h", comment='High density fluid')
@@ -133,10 +133,9 @@ AddSetting(name="Viscosity_l", tau_l='(3*Viscosity_l)', default=0.16666666, comm
 AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comment='kinematic viscosity')
 
 #	Inputs: Flow Properties
-AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="pipe_diameter", default=1.0, comment='EXPERIMENTAL: to impose poiseulle velocity inlet BC', zonal=T)
 
-
+AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
 AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX')
