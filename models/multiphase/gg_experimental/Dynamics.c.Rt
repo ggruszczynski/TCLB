@@ -280,6 +280,10 @@ CudaDeviceFunction void Init_wallNorm(){
 }
 
 CudaDeviceFunction void Init_distributions(){
+
+	neighbour_type=0;
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) neighbour_type=1;
+
 	// Find Gradients and normals:
 	real_t myPhaseF = PhaseF(0,0);
 
@@ -303,7 +307,7 @@ CudaDeviceFunction void Init_distributions(){
 		h[i] = myPhaseF * Gamma[i] - 0.5*F_phi[i]; // heq
 		g[i] = Gamma[i] - wf[i]; //geq
 	}
-	
+
 	#ifdef OPTIONS_RT
 		PhaseOld = myPhaseF;
 	#endif
@@ -361,6 +365,8 @@ CudaDeviceFunction void BC_Switcher ()
 }
 
 CudaDeviceFunction void calcHydroIter() {
+	neighbour_type = neighbour_type(0,0);
+
 	if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
 		//PhaseF_Smoothing();
 		Init_distributions();
@@ -391,39 +397,38 @@ CudaDeviceFunction void calcPhaseFIter(){
 
 CudaDeviceFunction void calcWallPhaseIter(){
 // Contact angle is defined with respect to the high density fluid
-// Contact angle shizzzzz:
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
-	   if (nw_x == 0 && nw_y == 0) { 
-			PhaseF = 0.0;
-	   } 
-	   else {
-			real_t myA, myH, myPhase;
-		// in 6.2 replace with dynamic access of fields
-			if      (nw_x ==  1 && nw_y ==  0 ) { myPhase = PhaseF(1,0)  ; myH=1;} 
-			else if (nw_x ==  0 && nw_y ==  1 ) { myPhase = PhaseF(0,1)  ; myH=1;}	
-			else if (nw_x == -1 && nw_y ==  0 ) { myPhase = PhaseF(-1,0) ; myH=1;}	
-			else if (nw_x ==  0 && nw_y == -1 ) { myPhase = PhaseF(0,-1) ; myH=1;}
-			else if (nw_x ==  1 && nw_y ==  1 ) { myPhase = PhaseF(1,1)  ; myH=1.414214;}
-			else if (nw_x == -1 && nw_y ==  1 ) { myPhase = PhaseF(-1,1) ; myH=1.414214;}
-			else if (nw_x == -1 && nw_y == -1 ) { myPhase = PhaseF(-1,-1); myH=1.414214;}
-			else if (nw_x ==  1 && nw_y == -1 ) { myPhase = PhaseF(1,-1) ; myH=1.414214;}
-			
+	
+	PhaseF = PhaseF(0,0);
 
-			if (ContactAngle == 90) { PhaseF = myPhase; } // TODO: 
-			else {   
-				myA = 1 - 0.5*myH * (4.0/W)  * cos(radAngle);
-				PhaseF = (myA - sqrt( myA*myA - 4.0 * (myA-1)*myPhase))/(myA-1) - myPhase;
-				
-				// Papatzacos formula -
-				// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
-				// real_t k = (1.5 *sigma*W);
-				// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
-				// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
-				// PhaseF = myPhase + myH*w/k;
-		}
-	  }
-	} 
-	else { PhaseF = PhaseF(0,0);}
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 1.0;}
+	
+	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
+	// 	real_t myA, myH, myPhase;
+
+	// 	if (nw_x == 0 && nw_y == 0) { 
+	// 		PhaseF = 0.0; // TODO: why cant just set PhaseF = myPhase; ?
+	// 		return;
+	// 	   } 
+		   
+	// 	myPhase = PhaseF_dyn(nw_x, nw_y);
+	// 	myH = sqrt(nw_x*nw_x + nw_y*nw_y );
+		
+	// 	if ( ContactAngle == 90 ) {
+	// 		PhaseF = myPhase;
+	// 	} 
+	// 	else {
+	
+	// 		myA = 1.0 - myH * (4.0/W) * cos(radAngle);
+	// 		PhaseF = ( myA - sqrt( myA*myA - 4.0*(myA - 1.0)*myPhase) )/(myA-1.0) - myPhase; 
+	// 	}
+
+	// 	// Papatzacos formula -
+	// 	// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
+	// 	// real_t k = (1.5 *sigma*W);
+	// 	// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
+	// 	// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
+	// 	// PhaseF = myPhase + myH*w/k;
+	// } 
 }
 
 
@@ -434,6 +439,37 @@ CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
 	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, pf);
 
 	return Fhydro;
+}
+
+CudaDeviceFunction real_t getNeighbour_type()
+{
+    return neighbour_type(0,0);
+}
+
+
+CudaDeviceFunction vector_t getF_sf() {
+    // fluid - solid interaction force 
+    // eq 9.116 p376 from book: 'The Lattice Boltzmann Method: Principles and Practice'
+    // T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+    vector_t F_sf;
+    F_sf.x = 0;
+    F_sf.y = 0;
+    F_sf.z = 0;
+
+    for (int i=0; i< 9; i++){
+        F_sf.x += wf[i] *d2q9_ex[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
+        F_sf.y += wf[i] *d2q9_ey[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
+    }
+
+	// real_t rho = getRho();
+	// real_t d = calcRho(PhaseF(0,0));
+	real_t d = PhaseF(0,0);
+	real_t psi = 1 - exp(-d);
+	
+    F_sf.x *= -G_sf*psi; 
+    F_sf.y *= -G_sf*psi; 
+    
+    return F_sf;
 }
 
 CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhase )
@@ -530,8 +566,10 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 		F_mu[1] = (0.5-tau) * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
 
 		// Total Hydrodynamic Force
-		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0];
-		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1];
+
+		vector_t F_wall = getF_sf();
+		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0];// + F_wall.x;
+		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1];// + F_wall.y;
 		F_total_hydro.z = 0;
 
 		// update velocity and re-iterate
@@ -870,8 +908,6 @@ CudaDeviceFunction void WVelocity()
 		heq[i] = PhaseF * Gamma[i];  // eq 10
 	}
 
-	
-
 	// Excess of momentum (positive value upwards)
 	real_t N = 2; // number of unknown distributions: e[i] * n_tau !=0
 	real_t M = d2q9_ey[2]*(g_prim[2] - geq[2]) + d2q9_ey[4]*(g_prim[4] - geq[4]); // eq C18
@@ -887,47 +923,80 @@ CudaDeviceFunction void WVelocity()
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t v = h[4] - heq[4] + h[2] - heq[2];
 
-	h[1] = heq[1] - (h[3]-heq[3]); 		   // eq C23a
-	h[8] = heq[8] - (h[6]-heq[6]) - v/N;   // eq C23b
-	h[5] = heq[5] - (h[7]-heq[7]) - v/N;   // eq C23b
-}
+	// h[1] = heq[1] - (h[3]-heq[3]); 		   // eq C23a
+	// h[8] = heq[8] - (h[6]-heq[6]) - v/N;   // eq C23b
+	// h[5] = heq[5] - (h[7]-heq[7]) - v/N;   // eq C23b
+	// TODO: eq C23 seems to work only for inlet, not for moving wall
+
+	h[1] = h[3]; 		  
+	h[8] = h[6];
+	h[5] = h[7];
+ }
 
 CudaDeviceFunction void NVelocity()
-{
+{	
 	/********* velocity-type Zou He boundary condition with force - hydrodynamics ****************/
 
 	PhaseF = PhaseField_init; 
 	vector_t gradPhi = calcGradPhi(); // Phase field gradient
 	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF);
 
+	
     // eq 6.58 p253 from The Lattice Boltzmann Method: Principles and Practice
 	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 	// NOTE THAT THIS IS A VELOCITY BASED LBM SO FORMULAS ARE MODIFIED
 	// Fhydro.x=0; // TODO: cant see much difference
 	// Fhydro.y=0;
 
-	g[4] = g[2] -2./3.*VelocityY + Fhydro.y/6.;
-	g[7] = g[5] + (1./2.)*(g[1] - g[3]) - VelocityX/2. - VelocityY/6. + Fhydro.x/4. + Fhydro.y/6.;
-	g[8] = g[6] + (1./2.)*(g[3] - g[1]) + VelocityX/2. - VelocityY/6. - Fhydro.x/4. + Fhydro.y/6.;
+	// g[4] = g[2] -2./3.*VelocityY + Fhydro.y/6.;
+	// g[7] = g[5] + (1./2.)*(g[1] - g[3]) - VelocityX/2.0 - VelocityY/6.0 + Fhydro.x/4.0 + Fhydro.y/6.0;
+	// g[8] = g[6] + (1./2.)*(g[3] - g[1]) + VelocityX/2.0 - VelocityY/6.0 - Fhydro.x/4.0 + Fhydro.y/6.0;
+
+	// alternatively - appendix C16-C23 from
+	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
+	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
+	real_t F_i[9], g_prim[9];
+	real_t rho = calcRho(PhaseF);
+	for (int i=0; i< 9; i++){
+			// eq 15 from "Improved locality of the phase-field lattice Boltzmann 
+			//	model for immiscible fluids at high density ratios"
+			F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho; // eq 15
+			g_prim[i] = g[i] + 0.5 * F_i[i]; // eq C6 		
+	}
+	
+	real_t Gamma[9], heq[9], geq[9];
+	real_t mag = VelocityX*VelocityX + VelocityY*VelocityY; // velocity magnitude
+	real_t p = getNormalizedPressure() ; // normalized pressure
+	
+	for (int i=0; i< 9; i++){
+		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);	 
+		geq[i] = wf[i]*p + Gamma[i] - wf[i]; // eq 17
+		heq[i] = PhaseF * Gamma[i];  // eq 10
+	}
+
+	// Excess of momentum (positive value upwards)
+	real_t N = 2; // number of unknown distributions: e[i] * n_tau !=0
+	real_t M = d2q9_ey[3]*(g_prim[3] - geq[3]) + d2q9_ey[1]*(g_prim[1] - geq[1]); // eq C18
+
+	g[4] = -0.5*F_i[3] + g_prim[2] + geq[4] - geq[2] ; // eq C17
+	g[7] = -0.5*F_i[7] + g_prim[5] + geq[7] - geq[5] - d2q9_ey[7] * M / N; // eq C19
+	g[8] = -0.5*F_i[8] + g_prim[6] + geq[8] - geq[6] - d2q9_ey[8] * M / N; // eq C19
 
 	/*********  Zou He boundary condition with force - phaseField ****************/
 	
-	real_t Gamma[9], heq[9], mag;			// equilibrium, phaseField equilibrium, velocity magnitude
-	mag = VelocityX*VelocityX + VelocityY*VelocityY;
-	for (int i=0; i < 9; i++){
-		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);
-		heq[i] = PhaseF * Gamma[i]; 
-	}
-
 	// excess density - eq C22 from 
 	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
-	real_t v = h[3] - heq[3] + h[1] - heq[1];
+	// real_t v = h[3] - heq[3] + h[1] - heq[1];
 
-	h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
-	h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
-	h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
+	// h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
+	// h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
+	// h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
+	// TODO: eq C23 seems to work only for inlet, not for moving wall
 
+	h[4] = h[2];
+	h[7] = h[5];
+	h[8] = h[6];
 
 	AddToNMovingWallForce( -(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) ); // incoming distributins - before collision
 	AddToNMovingWallPower( -VelocityX*(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) );
