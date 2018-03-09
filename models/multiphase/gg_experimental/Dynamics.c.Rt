@@ -400,7 +400,7 @@ CudaDeviceFunction void calcWallPhaseIter(){
 	
 	PhaseF = PhaseF(0,0);
 
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 0.0;}
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 1.0;}
 	
 	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
 	// 	real_t myA, myH, myPhase;
@@ -410,24 +410,24 @@ CudaDeviceFunction void calcWallPhaseIter(){
 	// 		return;
 	// 	   } 
 		   
-	// 	myPhase = PhaseF_dyn(nw_x, nw_y);
-	// 	myH = sqrt(nw_x*nw_x + nw_y*nw_y );
+		// myPhase = PhaseF_dyn(nw_x, nw_y);
+		// myH = sqrt(nw_x*nw_x + nw_y*nw_y );
 		
-	// 	if ( ContactAngle == 90 ) {
-	// 		PhaseF = myPhase;
-	// 	} 
-	// 	else {
+		// if ( ContactAngle == 90 ) {
+			// PhaseF = myPhase;
+		// } 
+		// else {
 	
-	// 		myA = 1.0 - myH * (4.0/W) * cos(radAngle);
-	// 		PhaseF = ( myA - sqrt( myA*myA - 4.0*(myA - 1.0)*myPhase) )/(myA-1.0) - myPhase; 
-	// 	}
+		// 	myA = 1.0 - myH * (4.0/W) * cos(radAngle);
+		// 	PhaseF = ( myA - sqrt( myA*myA - 4.0*(myA - 1.0)*myPhase) )/(myA-1.0) - myPhase; 
+		// }
 
-	// 	// Papatzacos formula -
-	// 	// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
-	// 	// real_t k = (1.5 *sigma*W);
-	// 	// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
-	// 	// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
-	// 	// PhaseF = myPhase + myH*w/k;
+		// Papatzacos formula -
+		// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
+		// real_t k = (1.5 *sigma*W);
+		// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
+		// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
+		// PhaseF = myPhase + myH*w/k;
 	// } 
 }
 
@@ -463,7 +463,7 @@ CudaDeviceFunction vector_t getF_sf() {
 
 	// real_t rho = getRho();
 	// real_t d = calcRho(PhaseF(0,0));
-	real_t d = PhaseF(0,0);
+	real_t d = <?R C(sum(g)) ?>;
 	real_t psi = 1 - exp(-d);
 	
     F_sf.x *= -G_sf*psi; 
@@ -568,8 +568,8 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 		// Total Hydrodynamic Force
 
 		vector_t F_wall = getF_sf();
-		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0];// + F_wall.x;
-		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1];// + F_wall.y;
+		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0] + F_wall.x;
+		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1] + F_wall.y;
 		F_total_hydro.z = 0;
 
 		// update velocity and re-iterate
