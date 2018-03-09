@@ -400,7 +400,7 @@ CudaDeviceFunction void calcWallPhaseIter(){
 	
 	PhaseF = PhaseF(0,0);
 
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 1.0;}
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 0.0;}
 	
 	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
 	// 	real_t myA, myH, myPhase;
