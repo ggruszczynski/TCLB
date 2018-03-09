@@ -400,7 +400,7 @@ CudaDeviceFunction void calcWallPhaseIter(){
 	
 	PhaseF = PhaseF(0,0);
 
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 1.0;}
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = PhaseField_init;}
 	
 	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
 	// 	real_t myA, myH, myPhase;
@@ -461,9 +461,8 @@ CudaDeviceFunction vector_t getF_sf() {
         F_sf.y += wf[i] *d2q9_ey[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
     }
 
-	// real_t rho = getRho();
-	// real_t d = calcRho(PhaseF(0,0));
-	real_t d = <?R C(sum(g)) ?>;
+	real_t d = calcRho(PhaseF(0,0));
+	// real_t d = <?R C(sum(g)) ?>;
 	real_t psi = 1 - exp(-d);
 	
     F_sf.x *= -G_sf*psi; 

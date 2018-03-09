@@ -8,11 +8,11 @@
 
         <None name="air">
         	<Sphere ny="30" nx="30" dx="80" dy="-50"/>
-            <Sphere ny="30" nx="30" dx="40" dy="1"/>
+            <Sphere ny="30" nx="30" dx="40" dy="5"/>
         </None> 
 
 
-    <Wall mask="ALL">
+    <Wall mask="ALL" name="sciana">
         <Box dy="-2"/>
         <Box ny="2"/>
         <Box nx="2"/>
@@ -25,15 +25,14 @@
         Density_h="1.0" Density_l="0.122" 
         Viscosity_h="1.0" Viscosity_l="15.0"
         PhaseField_h="1.0" PhaseField_l="0.0" 
-
-        ContactAngle="110" 
       
-        PhaseField_init="1.0"
-        PhaseField_init-air="0.0"
-        PhaseField_init-wallbottom="0.0"
-        PhaseField_init-walltop="1.0"
+        PhaseField_init="0.0"
+        PhaseField_init-air="1.0"
 
-        G_sf="0.0"
+        PhaseField_init-sciana="0.0"
+
+
+        G_sf="-0.002"
 
         W="4" M="0.05" sigma="5e-5"
         />
