@@ -281,9 +281,6 @@ CudaDeviceFunction void Init_wallNorm(){
 
 CudaDeviceFunction void Init_distributions(){
 
-	neighbour_type=0;
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) neighbour_type=1;
-
 	// Find Gradients and normals:
 	real_t myPhaseF = PhaseF(0,0);
 
@@ -365,7 +362,6 @@ CudaDeviceFunction void BC_Switcher ()
 }
 
 CudaDeviceFunction void calcHydroIter() {
-	neighbour_type = neighbour_type(0,0);
 
 	if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
 		//PhaseF_Smoothing();
@@ -397,40 +393,32 @@ CudaDeviceFunction void calcPhaseFIter(){
 
 CudaDeviceFunction void calcWallPhaseIter(){
 // Contact angle is defined with respect to the high density fluid
-	
 	PhaseF = PhaseF(0,0);
 
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = 0.0;}
-	
-	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
-	// 	real_t myA, myH, myPhase;
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
+		if (nw_x == 0 && nw_y == 0) { 
+			PhaseF = 0.0;
+			return;
+		} 
+		real_t myA, myH, myPhase;
 
-	// 	if (nw_x == 0 && nw_y == 0) { 
-	// 		PhaseF = 0.0; // TODO: why cant just set PhaseF = myPhase; ?
-	// 		return;
-	// 	   } 
-		   
-	// 	myPhase = PhaseF_dyn(nw_x, nw_y);
-	// 	myH = sqrt(nw_x*nw_x + nw_y*nw_y );
-		
-	// 	if ( ContactAngle == 90 ) {
-	// 		PhaseF = myPhase;
-	// 	} 
-	// 	else {
-	
-	// 		myA = 1.0 - myH * (4.0/W) * cos(radAngle);
-	// 		PhaseF = ( myA - sqrt( myA*myA - 4.0*(myA - 1.0)*myPhase) )/(myA-1.0) - myPhase; 
-	// 	}
+		myPhase = PhaseF_dyn(nw_x, nw_y);
+		myH = sqrt(nw_x*nw_x + nw_y*nw_y );
 
-	// 	// Papatzacos formula -
-	// 	// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
-	// 	// real_t k = (1.5 *sigma*W);
-	// 	// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
-	// 	// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
-	// 	// PhaseF = myPhase + myH*w/k;
-	// } 
+		if (ContactAngle == 90) { PhaseF = myPhase; } 
+		else {   
+			myA = 1.0 - 0.5*myH * (4.0/W)  * cos(radAngle);
+			PhaseF = (myA - sqrt( myA*myA - 4.0 * (myA-1.0)*myPhase))/(myA-1.0) - myPhase;
+			
+			// Papatzacos formula -
+			// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
+			// real_t k = (1.5 *sigma*W);
+			// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
+			// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
+			// PhaseF = myPhase + myH*w/k;
+		}
+	} 	 
 }
-
 
 CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
 
@@ -439,37 +427,6 @@ CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
 	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, pf);
 
 	return Fhydro;
-}
-
-CudaDeviceFunction real_t getNeighbour_type()
-{
-    return neighbour_type(0,0);
-}
-
-
-CudaDeviceFunction vector_t getF_sf() {
-    // fluid - solid interaction force 
-    // eq 9.116 p376 from book: 'The Lattice Boltzmann Method: Principles and Practice'
-    // T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
-    vector_t F_sf;
-    F_sf.x = 0;
-    F_sf.y = 0;
-    F_sf.z = 0;
-
-    for (int i=0; i< 9; i++){
-        F_sf.x += wf[i] *d2q9_ex[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
-        F_sf.y += wf[i] *d2q9_ey[i] * neighbour_type_dyn(d2q9_ex[i], d2q9_ey[i]);
-    }
-
-	// real_t rho = getRho();
-	// real_t d = calcRho(PhaseF(0,0));
-	real_t d = PhaseF(0,0);
-	real_t psi = 1 - exp(-d);
-	
-    F_sf.x *= -G_sf*psi; 
-    F_sf.y *= -G_sf*psi; 
-    
-    return F_sf;
 }
 
 CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhase )
@@ -567,9 +524,9 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 
 		// Total Hydrodynamic Force
 
-		vector_t F_wall = getF_sf();
-		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0];// + F_wall.x;
-		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1];// + F_wall.y;
+		
+		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0];
+		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1];
 		F_total_hydro.z = 0;
 
 		// update velocity and re-iterate
@@ -923,14 +880,15 @@ CudaDeviceFunction void WVelocity()
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t v = h[4] - heq[4] + h[2] - heq[2];
 
-	// h[1] = heq[1] - (h[3]-heq[3]); 		   // eq C23a
-	// h[8] = heq[8] - (h[6]-heq[6]) - v/N;   // eq C23b
-	// h[5] = heq[5] - (h[7]-heq[7]) - v/N;   // eq C23b
-	// TODO: eq C23 seems to work only for inlet, not for moving wall
+	h[1] = heq[1] - (h[3]-heq[3]); 		   // eq C23a 
+	h[8] = heq[8] - (h[6]-heq[6]) - v/N;   // eq C23b
+	h[5] = heq[5] - (h[7]-heq[7]) - v/N;   // eq C23b
 
-	h[1] = h[3]; 		  
-	h[8] = h[6];
-	h[5] = h[7];
+	// TODO: eq C23 work only for inlet; for moving wall use 'standard' bounce back, as one below
+
+	// h[1] = h[3]; 		  
+	// h[8] = h[6];
+	// h[5] = h[7];
  }
 
 CudaDeviceFunction void NVelocity()
@@ -987,16 +945,16 @@ CudaDeviceFunction void NVelocity()
 	// excess density - eq C22 from 
 	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
-	// real_t v = h[3] - heq[3] + h[1] - heq[1];
+	real_t v = h[3] - heq[3] + h[1] - heq[1];
 
-	// h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
-	// h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
-	// h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
-	// TODO: eq C23 seems to work only for inlet, not for moving wall
+	h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
+	h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
+	h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
 
-	h[4] = h[2];
-	h[7] = h[5];
-	h[8] = h[6];
+	// TODO: eq C23 work only for inlet; for moving wall use 'standard' bounce back, as one below
+	// h[4] = h[2];
+	// h[7] = h[5];
+	// h[8] = h[6];
 
 	AddToNMovingWallForce( -(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) ); // incoming distributins - before collision
 	AddToNMovingWallPower( -VelocityX*(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) );
