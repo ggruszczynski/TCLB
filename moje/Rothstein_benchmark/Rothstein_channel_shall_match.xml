@@ -51,6 +51,6 @@
   </None>
 </Geometry>
 <Solve Iterations="50" output="output/"> <VTK Iterations="1"/> </Solve>
-<Failcheck Iterations="1000" />
+<Failcheck Iterations="1000" nx="1024" ny="110"/>
 <Solve Iterations="200000" output="output/"> <VTK Iterations="2000"/> </Solve>
 </CLBConfig>

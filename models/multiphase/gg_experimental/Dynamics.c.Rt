@@ -60,6 +60,12 @@ CudaDeviceFunction real_t getRho(){
 	return rho;
 }
 
+CudaDeviceFunction real_t calcRho(real_t myPhase)
+{
+	real_t rho = Density_l + (PhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
+	return rho;
+}
+
 CudaDeviceFunction real_t getPhaseField(){
 	return PhaseF(0,0);
 }
@@ -607,11 +613,7 @@ CudaDeviceFunction real_t calcTau(real_t myPhase, real_t myRho)
 	return tau;
 }
 
-CudaDeviceFunction real_t calcRho(real_t myPhase)
-{
-	real_t rho = Density_l + (PhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
-	return rho;
-}
+
 
 CudaDeviceFunction void CollisionMRT(){
 	#ifdef OPTIONS_RT

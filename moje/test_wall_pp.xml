@@ -19,10 +19,10 @@
   </Geometry>
     <Model>
     <Params
-        Density_h="1.0" Density_l="0.122" 
-        Viscosity_h="1.0" Viscosity_l="15.0"
-        PhaseField_h="1.0" PhaseField_l="0.0" 
 
+    	Density_h="10.0" Density_l="0.0122" 
+        Viscosity_h="0.5" Viscosity_l="7.5"
+        PhaseField_h="1.0" PhaseField_l="0.0" 
        
       
         PhaseField_init="0.0"
@@ -31,7 +31,7 @@
  
 
 
-        G_sf="-0.004"
+        G_sf="0"
 
         W="4" M="0.05" sigma="5e-5"
         />
