@@ -5,7 +5,7 @@
     <Smoothing><Box /></Smoothing> 
         <None name="bubble">
             <!-- <Sphere ny="30" nx="30" dx="80" dy="-50"/> -->
-            <Sphere ny="30" nx="30" dx="40" dy="1"/>
+            <Sphere ny="30" nx="30" dx="40" dy="92"/>
         </None> 
 
 
@@ -25,9 +25,9 @@
         PhaseField_h="1.0" PhaseField_l="0.0" 
        
       
-        PhaseField_init="0.0"
-        PhaseField_init-sciana="0.0"
-        PhaseField_init-bubble="1.0"
+        PhaseField_init="1.0"
+        PhaseField_init-sciana="1.0"
+        PhaseField_init-bubble="0.0"
  
 
 
@@ -36,7 +36,7 @@
         W="4" M="0.05" sigma="5e-5"
         />
     <Params  />
-        <!-- <Params GravitationY="-0.00001" /> -->
+        <Params GravitationY="-2e-8" />
         <!-- <Params VelocityX-Inlet="0.00316404907"/> -->
     </Model> 
         <Solve Iterations="20" output="output/"> <VTK Iterations="1"/> </Solve>
@@ -49,5 +49,5 @@
 
 <Solve Iterations="50" output="output/"> <VTK Iterations="1"/> </Solve>
 <Failcheck Iterations="1000" nx="128" ny="128"/>
-<Solve Iterations="25000" output="output/"> <VTK Iterations="500"/> </Solve>
+<Solve Iterations="20000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>

@@ -287,8 +287,10 @@ CudaDeviceFunction void Init_wallNorm(){
 
 CudaDeviceFunction void Init_distributions(){
 
-	neighbour_type=0;
-	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) neighbour_type=1;
+	// neighbour_type=0;
+	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) neighbour_type=1;
+
+	neighbour_type = ((NodeType & NODE_BOUNDARY) == NODE_Wall) ? 1 : 0 ;
 
 	// Find Gradients and normals:
 	real_t myPhaseF = PhaseF(0,0);
@@ -408,33 +410,31 @@ CudaDeviceFunction void calcWallPhaseIter(){
 
 	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {PhaseF = PhaseField_init;}
 	
+	// PhaseF = PhaseF(0,0);
+
 	// if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
+	// 	if (nw_x == 0 && nw_y == 0) { 
+	// 		PhaseF = 0.0;
+	// 		return;
+	// 	} 
 	// 	real_t myA, myH, myPhase;
 
-	// 	if (nw_x == 0 && nw_y == 0) { 
-	// 		PhaseF = 0.0; // TODO: why cant just set PhaseF = myPhase; ?
-	// 		return;
-	// 	   } 
-		   
-		// myPhase = PhaseF_dyn(nw_x, nw_y);
-		// myH = sqrt(nw_x*nw_x + nw_y*nw_y );
-		
-		// if ( ContactAngle == 90 ) {
-			// PhaseF = myPhase;
-		// } 
-		// else {
-	
-		// 	myA = 1.0 - myH * (4.0/W) * cos(radAngle);
-		// 	PhaseF = ( myA - sqrt( myA*myA - 4.0*(myA - 1.0)*myPhase) )/(myA-1.0) - myPhase; 
-		// }
+	// 	myPhase = PhaseF_dyn(nw_x, nw_y);
+	// 	myH = sqrt(nw_x*nw_x + nw_y*nw_y );
 
-		// Papatzacos formula -
-		// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
-		// real_t k = (1.5 *sigma*W);
-		// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
-		// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
-		// PhaseF = myPhase + myH*w/k;
-	// } 
+	// 	if (ContactAngle == 90) { PhaseF = myPhase; } 
+	// 	else {   
+	// 		myA = 1.0 - 0.5*myH * (4.0/W)  * cos(radAngle);
+	// 		PhaseF = (myA - sqrt( myA*myA - 4.0 * (myA-1.0)*myPhase))/(myA-1.0) - myPhase;
+			
+	// 		// Papatzacos formula -
+	// 		// Papatzacos, P. (2002). 'Macroscopic two-phase flow in porous media assuming the diffuse-interface model at pore level.'
+	// 		// real_t k = (1.5 *sigma*W);
+	// 		// real_t alfa  = arccos(sin(radAngle)*sin(radAngle)); 
+	// 		// real_t w = 2*signbit(PI.2 - radAngle) * sqrt(cos(radAngle/3)*(1-cos(radAngle/3)))
+	// 		// PhaseF = myPhase + myH*w/k;
+	// 	}
+	// } 	 
 }
 
 
