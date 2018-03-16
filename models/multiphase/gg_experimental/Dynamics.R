@@ -63,10 +63,10 @@ if (Options$RT) {
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
-	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold")) # TODO: is PF needed here?
+	AddStage("BaseInit"  , "Init_distributions"	, save=Fields$group %in% c("g","h","Vel","gold","hold")) 
 	# iteration
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw","gold","hold"), 
-												  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold")) # TODO: is PF needed here?	
+												  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold")) 
 	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF"), load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
 	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF"), load=DensityAll$group=="nw")
 	
@@ -96,8 +96,6 @@ AddQuantity(name="NormalizedPressure",	  unit="Pa")
 AddQuantity(name="Pressure",	  unit="Pa")
 AddQuantity(name="Normal", unit="1", vector=T)
 
-
-
 #	Initialisation States
 AddSetting(name="Period", default="0", comment='Number of cells per cos wave')
 AddSetting(name="Perturbation", default="0", comment='Size of wave perturbation, Perturbation Period')
@@ -109,7 +107,6 @@ AddSetting(name="CenterY", default="0", comment='Circle Center y-coord')
 AddSetting(name="BubbleType", default="1", comment='Drop/bubble')
 
 AddSetting(name="diffusion_coeff", default="0.005", comment='Pure diffusion eq is used to smooth out the initial phase field ditribution') # TODO
-AddSetting( name="G_sf", default=0, comment='fluid-solid interaction strength') # TODO
 
 #	Inputs: For phasefield evolution
 AddSetting(name="Density_h", comment='High density fluid')
@@ -132,7 +129,7 @@ AddSetting(name="Viscosity_l", tau_l='(3*Viscosity_l)', default=0.16666666, comm
 AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comment='kinematic viscosity')
 
 #	Inputs: Flow Properties
-AddSetting(name="pipe_diameter", default=1.0, comment='EXPERIMENTAL: to impose poiseulle velocity inlet BC', zonal=T)
+AddSetting(name="pipe_diameter", default=1.0, comment='EXPERIMENTAL: to impose poiseulle velocity inlet BC', zonal=T) #TODO
 
 AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)

@@ -99,7 +99,6 @@ CudaDeviceFunction vector_t getNormal(){
 	normal.y = nw_y;
 	normal.z = 0.0;
 	return normal;
-
 }
 
 // 	HELPER FUNCTIONS:
@@ -186,7 +185,7 @@ CudaDeviceFunction real_t calcMu(real_t myPhase){
 	#endif
 
 	// eq 5 from "Improved locality of the phase-field lattice Boltzmann 
-	//	model for immiscible fluids at high density ratios"
+	// model for immiscible fluids at high density ratios"
 	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
 	real_t mu = 4.0*(12.0*sigma/W)*(myPhase-PhaseField_l)*(myPhase-PhaseField_h)*(myPhase-pfavg)
 		   - (1.5 *sigma*W) * lpPhi; 
@@ -195,7 +194,7 @@ CudaDeviceFunction real_t calcMu(real_t myPhase){
 
 CudaDeviceFunction real_t calcGamma(int i, real_t u, real_t v, real_t u2mag){
 	// eq 10 from "Improved locality of the phase-field lattice Boltzmann 
-	//	model for immiscible fluids at high density ratios"
+	// model for immiscible fluids at high density ratios"
 	real_t gamma, tmp;
 	tmp = (d2q9_ex[i]*u+d2q9_ey[i]*v);
 
@@ -205,7 +204,7 @@ CudaDeviceFunction real_t calcGamma(int i, real_t u, real_t v, real_t u2mag){
 
 CudaDeviceFunction real_t calcF_phi(int i, real_t numerator, real_t nx, real_t ny){
 	// eq 7 from "Improved locality of the phase-field lattice Boltzmann 
-	//	model for immiscible fluids at high density ratios"
+	// model for immiscible fluids at high density ratios"
 
 	// nx: normalized PhaseField gradient in x direction
 
@@ -308,8 +307,6 @@ CudaDeviceFunction void Init_distributions(){
 	#ifdef OPTIONS_RT
 		PhaseOld = myPhaseF;
 	#endif
-
-	//PhaseF = getPhaseField_from_h_distributions_sum(); // TODO: useless if Init_distributions doesnt save PF ?
 	
 	#ifdef OPTIONS_Outflow
 		if ((NodeType & NODE_BOUNDARY) == NODE_Convective_E || (NodeType & NODE_BOUNDARY) == NODE_Convective_N){
@@ -397,7 +394,7 @@ CudaDeviceFunction void calcWallPhaseIter(){
 
 	if ((NodeType & NODE_BOUNDARY) == NODE_Wall) {
 		if (nw_x == 0 && nw_y == 0) { 
-			PhaseF = 0.0;
+			PhaseF = 0.0; // TODO: why not simply PhaseF = PhaseF(0,0);
 			return;
 		} 
 		real_t myA, myH, myPhase;
@@ -429,59 +426,11 @@ CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
 	return Fhydro;
 }
 
-CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhase )
+CudaDeviceFunction void relaxMRT(real_t R[9], real_t tau )
 {
-	// arguments:
-	// gradPhi - Phase field gradients
-	// myPhase - PhaseField value at cell of interest (0,0 or BC like inlet_PhaseF, moving_wall_PhaseF)
+	real_t S[9]; // Populations for MRT relaxation
 
-	real_t Gamma[9], geq[9], mag;	// equilibrium, pressure equilibrium, velocity magnitude
-	real_t F_pressure[2], F_body[2], F_mu[2], F_surf_tension[2];   // Forces
-	vector_t F_total_hydro;	
-
-	real_t stress[3];				// Stress tensor calculation
-	real_t F_phi[9], heq[9], tmp1;	// Phase field collision terms
-	real_t F_i[9];					// Momentum distribution forcing term
-	real_t R[9], S[9];				// Populations for MRT relaxation
-
-
-	// Find Macroscopic Details
-	// Fluid Properties:
-	real_t rho = calcRho(PhaseF); // fluid density
-	real_t tau = calcTau(PhaseF, rho); // relaxation parameter
-	real_t mu = calcMu(myPhase);  // chemical potential 
-	real_t p = getNormalizedPressure() ; // normalized pressure
-
-	// Force Calculations
-	// eq 19
-	F_pressure[0] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.x;
-	F_pressure[1] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.y;
-	
-	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
-	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
-
-	// eq 4
-	F_surf_tension[0] = mu*gradPhi.x;
-	F_surf_tension[1] = mu*gradPhi.y;
-
-	// Calculate viscous force
-	for (int j=0;j<2;j++){
-	// The j loop was originally implemented with stability in mind. 
-	// The idea was to perform a fixed point iteration style update to assist with the interdependency of the viscous force, 
-	// velocity and g^eq. How necessary it is for accuracy/stability, 
-	// is possibly a little bit questionable as I did do a couple (very quick) tests without looping and retained almost identical results.
-
-	// 	MRT stuff
-		mag = U*U + V*V;
-		for (int i=0; i< 9; i++){
-			Gamma[i] = calcGamma(i, U, V, mag);
-			// geq[i] - eq 17 from "Improved locality of the phase-field lattice Boltzmann 
-			// model for immiscible fluids at high density ratios"
-			geq[i] = wf[i]*p + Gamma[i] - wf[i]; 
-			R[i] = g[i] - geq[i];
-		}
-		
-		// the cofficients (before R[i]) follows from the GramSchmidt transformation matrix:
+	// the cofficients (before R[i]) follows from the GramSchmidt transformation matrix:
 		// eq 10.30 from The Lattice Boltzmann Method: Principles and Practice
     	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 		S[0] = R[8] + R[7] + R[6] + R[5] + R[4] + R[3] + R[2] + R[1] + R[0]; 			// density
@@ -509,6 +458,70 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 		R[6] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( S[6] - S[4] - S[8]*3. + ( S[5] - S[3] )*2. )*3. )/36.;
 		R[7] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( -S[6] - S[4] + S[8]*3. + ( -S[5] - S[3] )*2. )*3. )/36.;
 		R[8] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( -S[6] + S[4] - S[8]*3. + ( -S[5] + S[3] )*2. )*3. )/36.;
+}
+
+CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhaseF )
+{
+	// arguments:
+	// gradPhi - Phase field gradients
+	// myPhaseF - PhaseField value at cell of interest (0,0 or BC like inlet_PhaseF, moving_wall_PhaseF)
+
+	real_t Gamma[9], geq[9], mag;	// equilibrium, pressure equilibrium, velocity magnitude
+	real_t F_pressure[2], F_body[2], F_mu[2], F_surf_tension[2];   // Forces
+	vector_t F_total_hydro;	
+
+	real_t stress[3];				// Stress tensor calculation
+	real_t F_phi[9], heq[9], tmp1;	// Phase field collision terms
+	real_t F_i[9];					// Momentum distribution forcing term
+	real_t R[9];				// Populations for MRT relaxation
+
+
+	// Find Macroscopic Details
+	// Fluid Properties:
+	real_t rho = calcRho(myPhaseF); // fluid density
+	real_t tau = calcTau(myPhaseF, rho); // relaxation parameter
+	real_t mu = calcMu(myPhaseF);  // chemical potential 
+	real_t p = getNormalizedPressure() ; // normalized pressure
+
+	// Force Calculations
+	// eq 19
+	F_pressure[0] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.x;
+	F_pressure[1] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.y;
+	
+	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
+	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
+
+	// TODO: HACK - add gravitation only to higher density fluid ;p
+
+	F_body[0] *= 0.5*tanh(5*myPhaseF-2.5) +0.5;
+	F_body[1] *= 0.5*tanh(5*myPhaseF-2.5) +0.5;
+	if (F_body[0] < 0.01){F_body[0] = 0;}
+	if (F_body[1] < 0.01){F_body[1] = 0;}
+	
+
+
+	// eq 4
+	F_surf_tension[0] = mu*gradPhi.x;
+	F_surf_tension[1] = mu*gradPhi.y;
+
+	// Calculate viscous force
+	for (int j=0;j<2;j++){
+	// The j loop was originally implemented with stability in mind. 
+	// The idea was to perform a fixed point iteration style update to assist with the interdependency of the viscous force, 
+	// velocity and g^eq. How necessary it is for accuracy/stability, 
+	// is possibly a little bit questionable as I did do a couple (very quick) tests without looping and retained almost identical results.
+
+	// 	MRT stuff
+		mag = U*U + V*V;
+		for (int i=0; i< 9; i++){
+			Gamma[i] = calcGamma(i, U, V, mag);
+			// geq[i] - eq 17 from "Improved locality of the phase-field lattice Boltzmann 
+			// model for immiscible fluids at high density ratios"
+			geq[i] = wf[i]*p + Gamma[i] - wf[i]; 
+			R[i] = g[i] - geq[i];
+		}
+		
+		relaxMRT(R, tau);
 
 		// Stress/strain Tensor
 		stress[0] = 0.0;stress[1] = 0.0;stress[2] = 0.0;
@@ -523,8 +536,6 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 		F_mu[1] = (0.5-tau) * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
 
 		// Total Hydrodynamic Force
-
-		
 		F_total_hydro.x = F_surf_tension[0] + F_pressure[0] + F_body[0] + F_mu[0];
 		F_total_hydro.y = F_surf_tension[1] + F_pressure[1] + F_body[1] + F_mu[1];
 		F_total_hydro.z = 0;
@@ -537,16 +548,16 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 	return F_total_hydro;
 }
 
-CudaDeviceFunction real_t calcTau(real_t myPhase, real_t myRho)
+CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 {
 	real_t tau;
 
-	if ( myPhase < PhaseField_l){
+	if ( myPhaseF < PhaseField_l){
 		tau = tau_l + 0.5;
-	} else if (myPhase > PhaseField_h) {
+	} else if (myPhaseF > PhaseField_h) {
 		tau = tau_h + 0.5;
 	} else {
-		real_t normPhaseF = (myPhase - PhaseField_l)/(PhaseField_h - PhaseField_l);
+		real_t normPhaseF = (myPhaseF - PhaseField_l)/(PhaseField_h - PhaseField_l);
 
 		// Inverse update: eq22
 		//tau = normPhaseF * (1.0/tau_h - 1.0/tau_l) + 1.0/tau_l;
@@ -556,7 +567,6 @@ CudaDeviceFunction real_t calcTau(real_t myPhase, real_t myRho)
 		// tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
 
 		// Viscosity update: eq24 & 25
-
 		real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
 		tau = 3.0 * DynVisc / myRho + 0.5;
 	}
@@ -564,9 +574,9 @@ CudaDeviceFunction real_t calcTau(real_t myPhase, real_t myRho)
 	return tau;
 }
 
-CudaDeviceFunction real_t calcRho(real_t myPhase)
+CudaDeviceFunction real_t calcRho(real_t myPhaseF)
 {
-	real_t rho = Density_l + (PhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
+	real_t rho = Density_l + (myPhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
 	return rho;
 }
 
@@ -576,15 +586,15 @@ CudaDeviceFunction void CollisionMRT(){
 		real_t vold = V;
 	#endif
 
-	PhaseF = PhaseF(0,0);
+	real_t myPhaseF = PhaseF(0,0);
 
 	real_t F_phi[9], heq[9];		// Phase field collision terms
 	real_t F_i[9];					// Momentum distribution forcing term
 	real_t R[9], S[9];				// Populations for MRT relaxation
 
 	// Find Macroscopic Details
-	real_t rho = calcRho(PhaseF);
-	real_t tau = calcTau(PhaseF, rho);
+	real_t rho = calcRho(myPhaseF);
+	real_t tau = calcTau(myPhaseF, rho);
 	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
 
 	//  Gradients & Normals
@@ -592,7 +602,7 @@ CudaDeviceFunction void CollisionMRT(){
 	real_t nx = gradPhi.x/gradPhi.z;  // GradPhi normalized in x, y direction
 	real_t ny = gradPhi.y/gradPhi.z;
 
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF);
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF);
 
 	// PHASE FIELD POPULATION UPDATE:
 	#ifdef OPTIONS_RT
@@ -607,16 +617,16 @@ CudaDeviceFunction void CollisionMRT(){
 		geq[i] = wf[i]*p + Gamma[i] - wf[i]; 
 	}
 
-	real_t tmp1 = (1.0 - 4.0*(PhaseF - pfavg)*(PhaseF - pfavg))/W;
+	real_t tmp1 = (1.0 - 4.0*(myPhaseF - pfavg)*(myPhaseF - pfavg))/W;
 	for (int i=0; i< 9; i++){
 		#ifdef OPTIONS_RT
-			Req[i] = 3.0 * wf[i] * (d2q9_ex[i] * (PhaseF*U - PhaseOld*uold)
-				+ d2q9_ey[i] * (PhaseF*V - PhaseOld*vold));
+			Req[i] = 3.0 * wf[i] * (d2q9_ex[i] * (myPhaseF*U - PhaseOld*uold)
+				+ d2q9_ey[i] * (myPhaseF*V - PhaseOld*vold));
 			F_phi[i] = calcF_phi(i, tmp1, nx, ny) + Req[i];
-			heq[i] = PhaseF * wf[i] * (1 + 3.0 * (d2q9_ex[i]*U + d2q9_ey[i]*V) ) - 0.5*F_phi[i];
+			heq[i] = myPhaseF * wf[i] * (1 + 3.0 * (d2q9_ex[i]*U + d2q9_ey[i]*V) ) - 0.5*F_phi[i];
 		#else
 			F_phi[i] = calcF_phi(i, tmp1, nx, ny); // Forcing Terms
-			heq[i] = PhaseF * Gamma[i] - 0.5*F_phi[i];  // heq
+			heq[i] = myPhaseF * Gamma[i] - 0.5*F_phi[i];  // heq
 		#endif
 			h[i] = h[i] - omega_phi * (h[i]-heq[i]) + F_phi[i];	// collision
 		}
@@ -639,30 +649,10 @@ CudaDeviceFunction void CollisionMRT(){
 		// model for immiscible fluids at high density ratios"
 		R[i] = g[i] - (geq[i] - 0.5*F_i[i]);
 	}
-//	Jump Into Momentum space:
-	S[0] = R[8] + R[7] + R[6] + R[5] + R[4] + R[3] + R[2] + R[1] + R[0];
-	S[1] = -R[4] - R[3] - R[2] - R[1] + ( R[8] + R[7] + R[6] + R[5] - R[0]*2. )*2.;
-	S[2] = R[8] + R[7] + R[6] + R[5] + ( -R[4] - R[3] - R[2] - R[1] + R[0]*2. )*2.;
-	S[3] = R[8] - R[7] - R[6] + R[5] - R[3] + R[1];
-	S[4] = R[8] - R[7] - R[6] + R[5] + ( R[3] - R[1] )*2.;
-	S[5] = -R[8] - R[7] + R[6] + R[5] - R[4] + R[2];
-	S[6] = -R[8] - R[7] + R[6] + R[5] + ( R[4] - R[2] )*2.;
-	S[7] = -R[4] + R[3] - R[2] + R[1];
-	S[8] = -R[8] + R[7] - R[6] + R[5];
-//	Relax in Momentum space:
-	S[7] *= 1.0/(tau);
-	S[8] *= 1.0/(tau);
-//	Transform to back to shifted-Pressure space:
-	R[0] = ( S[2] - S[1] + S[0] )/9.;
-	R[1] = ( -S[1] + S[7]*9. + ( -S[2] + S[0]*2. + ( -S[4] + S[3] )*3. )*2. )/36.;
-	R[2] = ( -S[1] - S[7]*9. + ( -S[2] + S[0]*2. + ( -S[6] + S[5] )*3. )*2. )/36.;
-	R[3] = ( -S[1] + S[7]*9. + ( -S[2] + S[0]*2. + ( S[4] - S[3] )*3. )*2. )/36.;
-	R[4] = ( -S[1] - S[7]*9. + ( -S[2] + S[0]*2. + ( S[6] - S[5] )*3. )*2. )/36.;
-	R[5] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( S[6] + S[4] + S[8]*3. + ( S[5] + S[3] )*2. )*3. )/36.;
-	R[6] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( S[6] - S[4] - S[8]*3. + ( S[5] - S[3] )*2. )*3. )/36.;
-	R[7] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( -S[6] - S[4] + S[8]*3. + ( -S[5] - S[3] )*2. )*3. )/36.;
-	R[8] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( -S[6] + S[4] - S[8]*3. + ( -S[5] + S[3] )*2. )*3. )/36.;
-// Collision
+
+	relaxMRT(R, tau);
+
+	// Collision
 	for (int i=0; i< 9; i++) {
 		g[i] = g[i]-R[i]+F_i[i];
 	}
