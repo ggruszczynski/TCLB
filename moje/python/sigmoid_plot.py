@@ -8,10 +8,13 @@ def sigmoid(x):
     It has to match the pressure-inlet pressure-outlet profile
     """
 
-    y = 0.5*np.tanh(5*x-2.5) +0.5
+    y = 0.506*np.tanh(5*x-2.5) +0.5
 
-    if y < 0.01: # clip
+    if y < 0.004: # clip
         y = 0
+
+    if y > 0.996: # clip
+        y = 1
 
     return y
 
