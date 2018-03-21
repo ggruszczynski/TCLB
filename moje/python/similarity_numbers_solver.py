@@ -128,7 +128,7 @@ similarity.calc_residua(U0, rho_h0, Sigma0, g0)
 print("Residua step0: ", similarity.calc_residua(U0, rho_h0, Sigma0, g0))
 
 # solve
-solution = optimize.root(similarity.calc_residua_wrapper, guess, jac=None, tol=1e-5, method='hybr')
+solution = optimize.root(similarity.calc_residua_wrapper, guess, jac=None, tol=1e-10, method='hybr')
 [U, rho_h, Sigma, g] = solution.x
 
 

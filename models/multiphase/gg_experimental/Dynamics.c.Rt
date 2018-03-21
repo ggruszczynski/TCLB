@@ -419,9 +419,13 @@ CudaDeviceFunction void calcWallPhaseIter(){
 
 CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
 
-	real_t pf = PhaseF(0,0);
+	real_t myPhaseF = PhaseF(0,0);
 	vector_t gradPhi = calcGradPhi(); // Phase field gradient
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, pf);
+	real_t rho = calcRho(PhaseF);
+	real_t tau = calcTau(PhaseF, rho);
+	real_t p = getNormalizedPressure() ; // normalized pressure
+
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
 
 	return Fhydro;
 }
@@ -460,11 +464,18 @@ CudaDeviceFunction void relaxMRT(real_t R[9], real_t tau )
 		R[8] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( -S[6] + S[4] - S[8]*3. + ( -S[5] + S[3] )*2. )*3. )/36.;
 }
 
-CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhaseF )
+CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t myPhaseF, 
+	real_t rho, real_t tau, real_t mu, real_t p )
 {
 	// arguments:
 	// gradPhi - Phase field gradients
 	// myPhaseF - PhaseField value at cell of interest (0,0 or BC like inlet_PhaseF, moving_wall_PhaseF)
+
+	//// Fluid Properties: ////
+	// real_t rho - fluid density
+	// real_t tau - relaxation parameter
+	// real_t mu - chemical potential 
+	// real_t p - normalized pressure
 
 	real_t Gamma[9], geq[9], mag;	// equilibrium, pressure equilibrium, velocity magnitude
 	real_t F_pressure[2], F_body[2], F_mu[2], F_surf_tension[2];   // Forces
@@ -475,13 +486,7 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 	real_t F_i[9];					// Momentum distribution forcing term
 	real_t R[9];				// Populations for MRT relaxation
 
-
 	// Find Macroscopic Details
-	// Fluid Properties:
-	real_t rho = calcRho(myPhaseF); // fluid density
-	real_t tau = calcTau(myPhaseF, rho); // relaxation parameter
-	real_t mu = calcMu(myPhaseF);  // chemical potential 
-	real_t p = getNormalizedPressure() ; // normalized pressure
 
 	// Force Calculations
 	// eq 19
@@ -563,11 +568,11 @@ CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 		//tau = 1.0/tau + 0.5;
 
 		// Linear update: eq23
-		// tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
+		tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
 
 		// Viscosity update: eq24 & 25
-		real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
-		tau = 3.0 * DynVisc / myRho + 0.5;
+		// real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
+		// tau = 3.0 * DynVisc / myRho + 0.5;
 	}
 
 	return tau;
@@ -601,7 +606,7 @@ CudaDeviceFunction void CollisionMRT(){
 	real_t nx = gradPhi.x/gradPhi.z;  // GradPhi normalized in x, y direction
 	real_t ny = gradPhi.y/gradPhi.z;
 
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF);
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), getNormalizedPressure());
 
 	// PHASE FIELD POPULATION UPDATE:
 	#ifdef OPTIONS_RT
@@ -816,7 +821,10 @@ CudaDeviceFunction void WVelocity()
 
 	PhaseF = PhaseField_init; 
 	vector_t gradPhi = calcGradPhi(); // Phase field gradient
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF);
+	real_t rho = calcRho(PhaseF);
+	real_t tau = calcTau(PhaseF, rho);
+	real_t p = getNormalizedPressure() ; // normalized pressure
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
 
 	// enforce Poiseuille velocity profile
 	// real_t R = (pipe_diameter / 2) - 2; // subtract top/bottom wall thickness
@@ -846,7 +854,7 @@ CudaDeviceFunction void WVelocity()
 	
 	real_t Gamma[9], heq[9], geq[9];
 	real_t mag = VelocityX*VelocityX + VelocityY*VelocityY; // velocity magnitude
-	real_t p = getNormalizedPressure() ; // normalized pressure
+	
 	
 	for (int i=0; i< 9; i++){
 		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);	 
@@ -885,10 +893,13 @@ CudaDeviceFunction void NVelocity()
 	/********* velocity-type Zou He boundary condition with force - hydrodynamics ****************/
 
 	PhaseF = PhaseField_init; 
-	vector_t gradPhi = calcGradPhi(); // Phase field gradient
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF);
 
-	
+	vector_t gradPhi = calcGradPhi(); // Phase field gradient
+	real_t rho = calcRho(PhaseF);
+	real_t tau = calcTau(PhaseF, rho);
+	real_t p = getNormalizedPressure() ; // normalized pressure
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
+
     // eq 6.58 p253 from The Lattice Boltzmann Method: Principles and Practice
 	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 	// NOTE THAT THIS IS A VELOCITY BASED LBM SO FORMULAS ARE MODIFIED
@@ -913,7 +924,6 @@ CudaDeviceFunction void NVelocity()
 	
 	real_t Gamma[9], heq[9], geq[9];
 	real_t mag = VelocityX*VelocityX + VelocityY*VelocityY; // velocity magnitude
-	real_t p = getNormalizedPressure() ; // normalized pressure
 	
 	for (int i=0; i< 9; i++){
 		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);	 

@@ -353,13 +353,6 @@ CudaDeviceFunction void Init_distributions(){
 
 //	ITERATION:
 CudaDeviceFunction void Run() {
-
-
-	if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
-		//PhaseF_Smoothing();
-		Init_distributions();
-	}
-	else{
 	switch (NodeType & NODE_BOUNDARY) {
 		case NODE_Solid:
 		case NODE_Wall:
@@ -405,8 +398,7 @@ CudaDeviceFunction void Run() {
 		CollisionMRT();
     } else if (NodeType & NODE_BGK) {
 		CollisionBGK();
-	}
-	}
+    }
 }
 
 CudaDeviceFunction void CollisionMRT(){

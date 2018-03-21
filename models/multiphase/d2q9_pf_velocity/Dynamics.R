@@ -146,10 +146,6 @@ AddNodeType(name="SPressure", group="BOUNDARY")
 AddNodeType(name="EPressure", group="BOUNDARY")
 AddNodeType(name="WPressure", group="BOUNDARY")
 
-
-AddNodeType(name="Smoothing", group="ADDITIONALS")
-
-
 if (Options$Outflow) {
 	AddNodeType(name="Convective_E", group="BOUNDARY")
 	AddNodeType(name="Convective_N", group="BOUNDARY")
