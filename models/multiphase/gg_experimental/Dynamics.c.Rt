@@ -824,7 +824,7 @@ CudaDeviceFunction void WVelocity()
 	real_t rho = calcRho(PhaseF);
 	real_t tau = calcTau(PhaseF, rho);
 	real_t p = getNormalizedPressure() ; // normalized pressure
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF, rho, tau,  calcMu(PhaseF), p);
 
 	// enforce Poiseuille velocity profile
 	// real_t R = (pipe_diameter / 2) - 2; // subtract top/bottom wall thickness
@@ -844,7 +844,6 @@ CudaDeviceFunction void WVelocity()
 	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t F_i[9], g_prim[9];
-	real_t rho = calcRho(PhaseF);
 	for (int i=0; i< 9; i++){
 			// eq 15 from "Improved locality of the phase-field lattice Boltzmann 
 			//	model for immiscible fluids at high density ratios"
@@ -854,7 +853,6 @@ CudaDeviceFunction void WVelocity()
 	
 	real_t Gamma[9], heq[9], geq[9];
 	real_t mag = VelocityX*VelocityX + VelocityY*VelocityY; // velocity magnitude
-	
 	
 	for (int i=0; i< 9; i++){
 		Gamma[i] = calcGamma(i, VelocityX, VelocityY, mag);	 
@@ -898,7 +896,7 @@ CudaDeviceFunction void NVelocity()
 	real_t rho = calcRho(PhaseF);
 	real_t tau = calcTau(PhaseF, rho);
 	real_t p = getNormalizedPressure() ; // normalized pressure
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF, rho, tau,  calcMu(PhaseF), p);
 
     // eq 6.58 p253 from The Lattice Boltzmann Method: Principles and Practice
 	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
@@ -914,7 +912,6 @@ CudaDeviceFunction void NVelocity()
 	// "Phase-field-based lattice Boltzmann model for incompressible binary fluid systems
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t F_i[9], g_prim[9];
-	real_t rho = calcRho(PhaseF);
 	for (int i=0; i< 9; i++){
 			// eq 15 from "Improved locality of the phase-field lattice Boltzmann 
 			//	model for immiscible fluids at high density ratios"
