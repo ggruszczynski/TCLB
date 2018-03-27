@@ -6,20 +6,19 @@ import time
 
 
 class Similarity:
-
-    def __init__(self, sim_num, d=85, dyn_visc_h=0.001):
+    def __init__(self, sim_num, d=85, kin_visc_h=0.1):
         # similarity numbers to be matched
         self.simNumDesired = sim_num
-
         self.d = d  # free channel height
-        self.dyn_visc_h = dyn_visc_h
+        self.kin_visc_h = kin_visc_h
 
     def calc_sim_numbers(self, U, rho_h, sigma):
-        kin_visc = self.dyn_visc_h / rho_h
 
-        Re = U * self.d / kin_visc
+        dyn_visc_h = self.kin_visc_h*rho_h
+
+        Re = U * self.d / self.kin_visc_h
         We = rho_h * U * U * self.d / sigma
-        Ca = self.dyn_visc_h * U / sigma
+        Ca = dyn_visc_h * U / sigma
         return [Re, We, Ca]
 
     def calc_residua(self, U, rho_h, sigma):
@@ -57,10 +56,9 @@ def solve(guess, similarity):
     print('rho_h = %10.2e' % rho_h)
     print('Sigma = %10.2e' % Sigma)
 
-    kin_visc = similarity.dyn_visc_h / rho_h
-    g = U * 8 * kin_visc / (similarity.d * similarity.d)
+    gravity = U * 8 * similarity.kin_visc_h / (similarity.d * similarity.d)
 
-    print('kin_visc = %10.2e, g = %10.2e' % (kin_visc, g))
+    print('g = %10.2e' % gravity)
     print_res_sim(U, rho_h, Sigma, similarity)
     print("solution success status:", solution.success)
 
@@ -68,11 +66,11 @@ def solve(guess, similarity):
 print("\n\n ########### now calculate in lb world ############ \n\n")
 
 SimNum = {"Re": 8.5E-01, "We": 1.17E-04, "Ca": 1.37E-04}
-sim = Similarity(SimNum)
+sim = Similarity(SimNum, d=850, kin_visc_h=0.5)
 
 Umax0 = 1.0E-04
-rho_h0 = 1.0E-02
-Sigma0 = 1.00E-04
+rho_h0 = 1.0E-01
+Sigma0 = 1.00E-02
 
 guess0 = [Umax0, rho_h0, Sigma0]
 
@@ -80,7 +78,7 @@ check(guess0, sim)
 solve(guess0, sim)
 
 print("\n\n ############## lb brute force search #####################")
-search_range_ratio = 100
+search_range_ratio = 10
 N = 10
 
 vUmax = np.linspace(Umax0 / search_range_ratio, Umax0 * search_range_ratio, num=N)
@@ -146,7 +144,7 @@ def remove_duplicates(values):
     for value in values:
         # If value has not been encountered yet,
         # ... add it to both list and set.
-        h = hash(tuple(value))  # list are un-hashable since they can change order
+        h = hash(tuple(value))  # convert to tuple, list are un-hashable since they can change order
         if h not in seen:
             output.append(value)
             seen.add(h)
@@ -161,12 +159,11 @@ for i in range(len(history)):
     [U, rho_h, Sigma] = history[i]
     [Re, We, Ca] = sim.calc_sim_numbers(U, rho_h, Sigma)
 
-    kin_visc = sim.dyn_visc_h / rho_h
-    g = U * 8 * kin_visc / (sim.d * sim.d)
+    g = U * 8 * sim.kin_visc_h / (sim.d * sim.d)
 
     print("[U = %10.3e, rho_h = %10.3e, Sigma = %10.3e, kin_visc = %10.2e, g = %10.2e] \t"
           "[Re = %10.1e, We = %10.1e, Ca = %10.1e]:"
-          % (U, rho_h, Sigma, kin_visc, g, Re, We, Ca))
+          % (U, rho_h, Sigma, sim.kin_visc_h, g, Re, We, Ca))
 
 
 # solve(guess=[8.376e-05, 1.194e-01, 1.606e-04], similarity=sim)
