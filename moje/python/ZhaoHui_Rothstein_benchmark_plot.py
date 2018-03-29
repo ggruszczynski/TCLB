@@ -6,7 +6,9 @@ import os
 
 path = "data_for_plots"
 
-data_pf = "Udata_S30L30.csv"
+
+# data_pf = "Udata_rho*54.6_S30L30.csv"
+data_pf = "Udata_rho*820_S30L30.csv"
 data_ZhaoHui = "ZhaoHui_Fig3a.csv"
 data_ZhaoHui_Rothstein = "ZhaoHui_RothStein_Fig3a.csv"
 
@@ -111,8 +113,8 @@ plt.figure(figsize=(12, 8))
 plt.plot(x_ZhaoHui, u_ZhaoHui, color="red", marker=".", linestyle="", label='Reference A) [ZhaoHui]')
 plt.plot(x_pf, u_pf / max(u_pf), color="blue", marker=".", linestyle="",  label='current model')
 plt.plot(x_Rothstein, u_Rothstein, color="green", marker="x", linestyle="",  label='Reference B) [Rothstein]')
-plt.xlabel('x')
-plt.ylabel('y')
+plt.xlabel('y/D')
+plt.ylabel('u/Umax')
 
 plt.title('Normalized velocity profile \n Channel flow')
 plt.grid(True)

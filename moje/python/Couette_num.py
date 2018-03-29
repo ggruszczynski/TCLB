@@ -24,7 +24,7 @@ def u_bottom(y):
 
 
 def u_top(y):
-    ans = y * (u_lid - u_m)/(H-h) + u_m - h*(u_lid - u_m)/(H - h)
+    ans = u_m + (y-h)*(u_lid-u_m)/(H - h)
     return ans
 
 

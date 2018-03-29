@@ -67,10 +67,10 @@ print("\n\n ########### now calculate in lb world ############ \n\n")
 
 # SimNum = {"Re": 8.5E-01, "Ca": 1.37E-04}
 SimNum = {"Re": 1.0E-01, "Ca": 1.0E-02}
-sim = Similarity(SimNum, d=85, kin_visc_h=0.5, rho_h=0.1)
+sim = Similarity(SimNum, d=425, kin_visc_h=0.5, rho_h=1)
 
 Umax0 = 1.0E-04
-Sigma0 = 1.00E-06
+Sigma0 = 1.00E-04
 
 guess0 = [Umax0, Sigma0]
 

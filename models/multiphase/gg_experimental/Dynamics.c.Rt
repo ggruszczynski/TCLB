@@ -497,12 +497,12 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
 
 	// TODO: HACK - add gravitation only to higher density fluid ;p
-	real_t bfsc = 0.506*tanh(5*myPhaseF-2.5) + 0.5; // bfsc - body force smoothing coefficient
-	bfsc = (bfsc < 0.004) ? 0 : bfsc;
-	bfsc = (bfsc > 0.996) ? 1 : bfsc;
+	// real_t bfsc = 0.506*tanh(5*myPhaseF-2.5) + 0.5; // bfsc - body force smoothing coefficient
+	// bfsc = (bfsc < 0.004) ? 0 : bfsc;
+	// bfsc = (bfsc > 0.996) ? 1 : bfsc;
 	
-	F_body[0] *= bfsc;
-	F_body[1] *= bfsc;
+	// F_body[0] *= bfsc;
+	// F_body[1] *= bfsc;
 	
 	// eq 4
 	F_surf_tension[0] = mu*gradPhi.x;

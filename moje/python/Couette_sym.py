@@ -15,7 +15,7 @@ h = Symbol('h')
 
 solved_um = solve(mi_t*(u_t-u_m)/(H-h) - mi_b*u_m/h, u_m)
 
-print(solved_um)
+print("\n\nSolution: \n um =", solved_um)
 
 # x=Symbol('x')
 # y=Symbol('y')

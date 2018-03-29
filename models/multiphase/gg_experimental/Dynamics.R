@@ -89,8 +89,8 @@ AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 # 	Outputs:
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
-AddQuantity(name="PhaseField_from_h_distributions_sum",unit="1") # debugging
-AddQuantity(name="TotalHydrodynamicForce",	  unit="N",vector=T) # debugging
+#AddQuantity(name="PhaseField_from_h_distributions_sum",unit="1") # debugging
+#AddQuantity(name="TotalHydrodynamicForce",	  unit="N",vector=T) # debugging
 AddQuantity(name="U",	  unit="m/s",vector=T)
 AddQuantity(name="NormalizedPressure",	  unit="Pa")
 AddQuantity(name="Pressure",	  unit="Pa")
