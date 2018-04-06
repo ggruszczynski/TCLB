@@ -90,7 +90,7 @@ AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
 #AddQuantity(name="PhaseField_from_h_distributions_sum",unit="1") # debugging
-#AddQuantity(name="TotalHydrodynamicForce",	  unit="N",vector=T) # debugging
+AddQuantity(name="TotalHydrodynamicForce",	  unit="N",vector=T) # debugging
 AddQuantity(name="U",	  unit="m/s",vector=T)
 AddQuantity(name="NormalizedPressure",	  unit="Pa")
 AddQuantity(name="Pressure",	  unit="Pa")
@@ -153,6 +153,9 @@ AddGlobal(name="RTISpike",  comment='Spike Tracker')
 AddGlobal("NMovingWallForce")
 AddGlobal("NMovingWallPower")
 
+AddGlobal("WallForceMeasure")  # experimental
+AddGlobal("CountCells") # experimental
+AddGlobal("TestCounter") # experimental
 #	Boundary things
 AddNodeType(name="MovingWall_N", group="BOUNDARY")
 AddNodeType(name="MovingWall_S", group="BOUNDARY")

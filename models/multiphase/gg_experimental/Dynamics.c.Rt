@@ -374,14 +374,45 @@ CudaDeviceFunction void calcHydroIter() {
 			CollisionBGK();
 		}
 	}
+
+	log_data_from_special_nodes();
 }
+
+
+CudaDeviceFunction void log_data_from_special_nodes ()
+{
+	switch (NodeType & NODE_ADDITIONALS) {
+		real_t location;
+		case NODE_SpikeTrack:
+			if (PhaseF < 0.5 && PhaseF(0,1) > 0.5 ) {
+				location = Y + (PhaseF-0.5)/(PhaseF-PhaseF(0,1) );
+				AddToRTISpike(location);
+			}
+		case NODE_BubbleTrack:
+			if (PhaseF < 0.5 && PhaseF(0,1) > 0.5) {
+				location = Y + (PhaseF-0.5)/(PhaseF-PhaseF(0,1) );
+				AddToRTIBubble(location);
+			}
+	}
+
+	// log data:
+	if ((NodeType & NODE_BOUNDARY) == NODE_Wall)
+	{
+		// real_t relU = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*Fhydro.x/rho;
+		// real_t relU = (g[5]-g[6]) + 0.5*Fhydro.x/rho;
+
+		AddToTestCounter(1);
+		// this shall work on if S wall is the only one
+		real_t rho = calcRho(PhaseF);
+		AddToWallForceMeasure(-2*(g[5]-g[6])*rho); // for bottom wall  -outgoing distributions - after collision
+	}
+}
+
 
 CudaDeviceFunction void calcPhaseFIter(){
 	#ifdef OPTIONS_RT
 		PhaseOld = PhaseF(0,0);
 	#endif
-
-	BC_Switcher();
 
 	// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
 	//	model for immiscible fluids at high density ratios"	
@@ -661,29 +692,17 @@ CudaDeviceFunction void CollisionMRT(){
 		g[i] = g[i]-R[i]+F_i[i];
 	}
 
-	switch (NodeType & NODE_ADDITIONALS) {
-		real_t location;
-		case NODE_SpikeTrack:
-			if (PhaseF < 0.5 && PhaseF(0,1) > 0.5 ) {
-				location = Y + (PhaseF-0.5)/(PhaseF-PhaseF(0,1) );
-				AddToRTISpike(location);
-			}
-		case NODE_BubbleTrack:
-			if (PhaseF < 0.5 && PhaseF(0,1) > 0.5) {
-				location = Y + (PhaseF-0.5)/(PhaseF-PhaseF(0,1) );
-				AddToRTIBubble(location);
-			}
+	if ((NodeType & NODE_BOUNDARY) == NODE_NVelocity)
+    {
+		AddToCountCells(1);
+
+		real_t dJ = <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> * rho + 0.5*Fhydro.x/rho; // 'outgoing' momentum - after collision
+		AddToNMovingWallForce(dJ);	
+		AddToNMovingWallPower(VelocityX*dJ); // VelocityX of moving wallidl
+
+		// <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>;	--compiles to--> 	-g[7] + g[8];
 	}
 
-	if ((NodeType & NODE_BOUNDARY) == NODE_MovingWall_N)
-    {
-		AddToNMovingWallForce(<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>);	// 'outgoing' distributions - after collision
-		AddToNMovingWallPower(VelocityX*(<?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>)); // VelocityX of moving wall
-
-		// same as
-		// AddToNMovingWallForce(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8]);	// 'outgoing' distributions - after collision
-		// AddToNMovingWallPower(VelocityX*(g[7]*d2q9_ex[7] + g[8]*d2q9_ex[8])); // VelocityX of moving wall
-    }
 }
 
 CudaDeviceFunction void CollisionBGK(){
@@ -943,21 +962,19 @@ CudaDeviceFunction void NVelocity()
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t v = h[3] - heq[3] + h[1] - heq[1];
 
-	h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
-	h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
-	h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
+	// h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
+	// h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
+	// h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
 
 	// TODO: eq C23 work only for inlet; for moving wall use 'standard' bounce back, as one below
-	// h[4] = h[2];
-	// h[7] = h[5];
-	// h[8] = h[6];
+	h[4] = h[2];
+	h[7] = h[5];
+	h[8] = h[6];
 
-	AddToNMovingWallForce( -(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) ); // incoming distributins - before collision
-	AddToNMovingWallPower( -VelocityX*(<?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>) );
-
-	// compiles to
-	// AddToNMovingWallForce( -(-g[6] + g[5]) ); 
-	// AddToNMovingWallPower( -VelocityX*(-g[6] + g[5]) );
+	real_t dJ = <?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?> * rho + 0.5*Fhydro.x/rho; // incoming momentum - before collision
+	AddToNMovingWallForce( -dJ ); 
+	AddToNMovingWallPower( -VelocityX * dJ );
+	// <?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>;	--compiles to--> 	-g[6] + g[5];
 }
 
 CudaDeviceFunction void MovingWall_S_Dirichlet(){

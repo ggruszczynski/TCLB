@@ -3,52 +3,41 @@ import numpy as np
 
 u_lid = 0.0001
 
-mi_t = 0.166
-mi_b = 0.0166
 H = 98
-h = 49
-u_m = h * mi_t * u_lid / (H * mi_b - h * mi_b + h * mi_t)
-print(u_m)
-
-# def um(h):
-#     # ans = h*u_t*mi_t /(H*mi_b - h*(mi_b + mi_t))
-#     ans = h * mi_t * u_t / (H * mi_b - h * mi_b + h * mi_t)
-#     return ans
-#     # return np.sin(h)
+h = 46
 
 
-
-def u_bottom(y):
+def u_bottom(y, mi_h, mi_l):
+    u_m = h * mi_h * u_lid / (H * mi_l - h * mi_l + h * mi_h)
     ans = y * u_m / h
     return ans
 
 
-def u_top(y):
+def u_top(y, mi_h, mi_l):
+    u_m = h * mi_h * u_lid / (H * mi_l - h * mi_l + h * mi_h)
     ans = u_m + (y-h)*(u_lid-u_m)/(H - h)
     return ans
 
 
-def u(y):
+def u_Couette_anal(y, mi_h, mi_l):
     if y < h:
-        return u_bottom(y)
+        return u_bottom(y, mi_h, mi_l)
     else:
-        return u_top(y)
+        return u_top(y, mi_h, mi_l)
 
 
-x = np.linspace(0, H, 1000)
+# x = np.linspace(0, H, 1000)
+# y = [u_Couette_anal(x[i]) for i in range(len(x))]
 
-y = [u(x[i]) for i in range(len(x))]
 
+# plt.figure()
+# plt.plot(x, y, "b-")
+#
+# plt.grid(True)
+# plt.xlabel("h")
+# plt.ylabel("u")
+#
+# plt.title("u(h)")
+#
+# plt.show()
 
-plt.figure()
-
-# plt.plot(x, y, "b.")
-plt.plot(x, y, "b-")
-
-plt.grid(True)
-plt.xlabel("h")
-plt.ylabel("u")
-
-plt.title("u(h)")
-
-plt.show()
