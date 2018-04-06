@@ -163,6 +163,11 @@ AddNodeType(name="NVelocity", group="BOUNDARY")
 AddNodeType(name="WVelocity", group="BOUNDARY")
 
 AddNodeType(name="Smoothing", group="ADDITIONALS")
+AddNodeType("Body", "BODY")
+
+AddGlobal(name="FDrag", comment='Force exerted on body in X-direction', unit="N")
+AddGlobal(name="FLift", comment='Force exerted on body in Y-direction', unit="N")
+AddGlobal(name="FTotal", comment='Force exerted on body in X+Y -direction', unit="N")
 
 if (Options$Outflow) {
 	AddNodeType(name="Convective_E", group="BOUNDARY")

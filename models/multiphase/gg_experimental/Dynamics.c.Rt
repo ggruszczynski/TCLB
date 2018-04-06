@@ -398,10 +398,6 @@ CudaDeviceFunction void log_data_from_special_nodes ()
 	// log data:
 	if ((NodeType & NODE_BOUNDARY) == NODE_Wall)
 	{
-		// real_t relU = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*Fhydro.x/rho;
-		// real_t relU = (g[5]-g[6]) + 0.5*Fhydro.x/rho;
-
-		AddToTestCounter(1);
 		// this shall work on if S wall is the only one
 		real_t rho = calcRho(PhaseF);
 		AddToWallForceMeasure(-2*(g[5]-g[6])*rho); // for bottom wall  -outgoing distributions - after collision
@@ -694,9 +690,8 @@ CudaDeviceFunction void CollisionMRT(){
 
 	if ((NodeType & NODE_BOUNDARY) == NODE_NVelocity)
     {
-		AddToCountCells(1);
 
-		real_t dJ = <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> * rho + 0.5*Fhydro.x/rho; // 'outgoing' momentum - after collision
+		real_t dJ = <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> * rho + 0.5*Fhydro.x; // 'outgoing' momentum - after collision
 		AddToNMovingWallForce(dJ);	
 		AddToNMovingWallPower(VelocityX*dJ); // VelocityX of moving wallidl
 
@@ -971,7 +966,7 @@ CudaDeviceFunction void NVelocity()
 	h[7] = h[5];
 	h[8] = h[6];
 
-	real_t dJ = <?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?> * rho + 0.5*Fhydro.x/rho; // incoming momentum - before collision
+	real_t dJ = <?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?> * rho + 0.5*Fhydro.x; // incoming momentum - before collision
 	AddToNMovingWallForce( -dJ ); 
 	AddToNMovingWallPower( -VelocityX * dJ );
 	// <?R C(g[5+1]*d2q9[5+1,1] + g[6+1]*d2q9[6+1,1])?>;	--compiles to--> 	-g[6] + g[5];
@@ -1007,6 +1002,22 @@ CudaDeviceFunction void MovingWall_N_Dirichlet(){
 
 CudaDeviceFunction void BounceBack()
 {
+	vector_t p1,p2;
+	if((NodeType & NODE_BODY) == NODE_Body) {
+		p1.x = g[8] +g[1] +g[5] -g[6] -g[3] -g[7];
+		p1.y = g[5] +g[2] +g[6] -g[7] -g[4] -g[8];
+
+		vector_t gradPhi = calcGradPhi(); // Phase field gradient
+		real_t rho = calcRho(PhaseF);
+		real_t tau = calcTau(PhaseF, rho);
+		real_t p = getNormalizedPressure() ; // normalized pressure
+		vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF, rho, tau,  calcMu(PhaseF), p);
+		p1.x = p1.x*rho + 0.5*Fhydro.x;
+		p1.y = p1.y*rho + 0.5*Fhydro.y;
+	}
+
+	AddToTestCounter(g[8]-g[7]); //OK
+
 	real_t tmp;
 	tmp = g[1];
 	g[1] = g[3];
@@ -1033,6 +1044,27 @@ CudaDeviceFunction void BounceBack()
 	tmp = h[6];
 	h[6] = h[8];
 	h[8] = tmp;
+
+	AddToTestCounter(-(g[5]-g[6]));	//OK
+
+	//Summing the difference in momentum before/after collision
+	if((NodeType & NODE_BODY) == NODE_Body) {
+		p2.x = g[8] +g[1] +g[5] -g[6] -g[3] -g[7];
+		p2.y = g[5] +g[2] +g[6] -g[7] -g[4] -g[8];
+
+		vector_t gradPhi = calcGradPhi(); // Phase field gradient
+		real_t rho = calcRho(PhaseF);
+		real_t tau = calcTau(PhaseF, rho);
+		real_t p = getNormalizedPressure() ; // normalized pressure
+		vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, PhaseF, rho, tau,  calcMu(PhaseF), p);
+
+		p2.x = p2.x*rho + 0.5*Fhydro.x;
+		p2.y = p2.y*rho + 0.5*Fhydro.y;
+
+		AddToFDrag(-(p2.x-p1.x));
+		AddToFLift(-(p2.y-p1.y));
+		AddToFTotal(sqrt((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y)));
+	}
 }
 
 //	MISCELLANIOUS FUNCTIONS:
