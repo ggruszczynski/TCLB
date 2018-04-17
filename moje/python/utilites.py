@@ -1,6 +1,20 @@
 import numpy as np
 
 
+def remove_duplicates(values):
+    output = []
+    seen = set()
+    for value in values:
+        # If value has not been encountered yet,
+        # ... add it to both list and set.
+        value_rounded = [round(value[i], 12) for i in range(len(value))]  # 12 decimal digits is enough
+        h = hash(tuple(value_rounded))  # convert to tuple, list are un-hashable since they can change order
+        if h not in seen:
+            output.append(value)
+            seen.add(h)
+    return output
+
+
 def normalize(x, shift=25):
     x -= shift
     x /= max(x)

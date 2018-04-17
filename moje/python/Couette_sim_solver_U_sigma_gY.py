@@ -11,13 +11,13 @@ class Similarity:
     def __init__(self, sim_num, d=85, kin_visc_h=0.1, rho_h=1.0):
         # similarity numbers to be matched
         self.simNumDesired = sim_num
-        self.d = d  # free channel height
+        self.d = d  # free channel height --> Re
+
         self.kin_visc_h = kin_visc_h
         self.rho_h = rho_h
 
-    def calc_sim_numbers(self, U,  sigma):
-
-        dyn_visc_h = self.kin_visc_h*self.rho_h
+    def calc_sim_numbers(self, U, sigma):
+        dyn_visc_h = self.kin_visc_h * self.rho_h
 
         Re = U * self.d / self.kin_visc_h
         Ca = dyn_visc_h * U / sigma
@@ -25,7 +25,7 @@ class Similarity:
         return [Re, Ca]
 
     def calc_residua(self, U, sigma):
-        (Re, Ca) = self.calc_sim_numbers(U,  sigma)
+        (Re, Ca) = self.calc_sim_numbers(U, sigma)
         residua = [0.1 * (Re - self.simNumDesired["Re"]),
                    1 * (Ca - self.simNumDesired["Ca"])]
         return residua
@@ -58,26 +58,26 @@ def solve(guess, similarity):
     print('rho_h = %10.2e' % similarity.rho_h)
     print('Sigma = %10.2e' % Sigma)
 
-    gX = U * 8 * similarity.kin_visc_h / (similarity.d * similarity.d)
-    gY = SimNum["Eo"] * Sigma * s / (rho_h - rho_l)
+    # gX = U * 8 * similarity.kin_visc_h / (similarity.d * similarity.d)
+    gY = SimNum["Eo"] * Sigma * s*s / (rho_h - rho_l)
 
-    print('gX = %10.2e \t gY = %10.2e' % (gX, gY))
+    print('gY = %10.2e' % gY)
     print_res_sim(U, Sigma, similarity)
     print("solution success status:", solution.success)
 
 
 print("\n\n ########### now calculate in lb world ############ \n\n")
 
-# SimNum = {"Re": 8.5E-01, "Ca": 1.37E-04, Eo": 3.43E-04}
-SimNum = {"Re": 1.0E-01, "Ca": 1.0E-02, "Eo": 1.0E-04}
+# SimNum = {"Re": 8.5E-01, "Ca": 1.37E-04}
+SimNum = {"Re": 1.0E-01, "Ca": 1.0E-02, "Eo": 3.43E-04}
 
 kin_visc_h = 0.5
-rho_h = 1.0
+rho_h = 1
 rho_l = rho_h / 54.6
-
-d = 170  # channel height
+d = 85  # channel height
 s = d * (30 / 85)  # length of air-water interface
-sim = Similarity(SimNum, d=d, kin_visc_h=kin_visc_h, rho_h=rho_h)
+
+sim = Similarity(SimNum, d=d, kin_visc_h=0.5, rho_h=1)
 
 Umax0 = 1.0E-04
 Sigma0 = 1.00E-04
@@ -89,7 +89,7 @@ solve(guess0, sim)
 
 print("\n\n ############## lb brute force search #####################")
 search_range_ratio = 100
-N = 20
+N = 10
 
 vUmax = np.linspace(Umax0 / search_range_ratio, Umax0 * search_range_ratio, num=N)
 vSigma = np.linspace(Sigma0 / search_range_ratio, Sigma0 * search_range_ratio, num=N)
@@ -111,7 +111,6 @@ def check_solution(guess, similarity):
 
 
 start = time.time()
-
 
 # for i in range(N):
 #     for j in range(N):
@@ -145,20 +144,15 @@ print("time [s]: ", end - start)
 history = remove_duplicates(history)
 history.sort(key=lambda x: x[1], reverse=True)  # U, rho, sigma
 
-
+print("=== U \t\t\t\t Sigma \t\t\t\t gY === \n")
 for i in range(len(history)):
     [U, Sigma] = history[i]
     [Re, Ca] = sim.calc_sim_numbers(U, Sigma)
 
-    gX = U * 8 * sim.kin_visc_h / (sim.d * sim.d)
-
-    # extras - solved explicitly
-    gY = SimNum["Eo"] * Sigma * (rho_h - rho_l)/(s*s)
-
-    Eo = (rho_h - rho_l) * gY * s * s / Sigma
+    # gX = U * 8 * sim.kin_visc_h / (sim.d * sim.d)
     We = sim.rho_h * U * U * sim.d / Sigma
+    gY = SimNum["Eo"] * Sigma * s / (rho_h - rho_l)
 
-    print("[ U=%10.3e, Sigma=%10.3e ] \t"
-          "[ Re=%10.1e, Ca=%10.2e ] \t "
-          "[ gX=%10.2e, gY=%10.2e, We=%10.2e ] "
-          % (U, Sigma, Re, Ca, gX, gY, We))
+    print("[U_lid = %10.3e, Sigma = %10.3e, gY = %10.2e] \t"
+          "[Re = %10.1e, Ca = %10.2e,  We = %10.2e]:"
+          % (U, Sigma, gY, Re, Ca, We))

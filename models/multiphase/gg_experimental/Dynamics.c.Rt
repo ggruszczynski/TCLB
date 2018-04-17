@@ -460,19 +460,19 @@ CudaDeviceFunction vector_t getTotalHydrodynamicForce(){
 CudaDeviceFunction void relaxMRT(real_t R[9], real_t tau )
 {
 	real_t S[9]; // Populations for MRT relaxation
-
+		
 	// the cofficients (before R[i]) follows from the GramSchmidt transformation matrix:
 		// eq 10.30 from The Lattice Boltzmann Method: Principles and Practice
     	// T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
-		S[0] = R[8] + R[7] + R[6] + R[5] + R[4] + R[3] + R[2] + R[1] + R[0]; 			// density
+		S[0] = R[8] + R[7] + R[6] + R[5] + R[4] + R[3] + R[2] + R[1] + R[0]; 			// density - m00
 		S[1] = -R[4] - R[3] - R[2] - R[1] + ( R[8] + R[7] + R[6] + R[5] - R[0]*2. )*2.; // energy
 		S[2] = R[8] + R[7] + R[6] + R[5] + ( -R[4] - R[3] - R[2] - R[1] + R[0]*2. )*2.; // energy^2
-		S[3] = R[8] - R[7] - R[6] + R[5] - R[3] + R[1]; 		// x momentum flux
+		S[3] = R[8] - R[7] - R[6] + R[5] - R[3] + R[1]; 		// x momentum flux - m10 
 		S[4] = R[8] - R[7] - R[6] + R[5] + ( R[3] - R[1] )*2.;  // x energy flux
-		S[5] = -R[8] - R[7] + R[6] + R[5] - R[4] + R[2];        // y momentum flux
+		S[5] = -R[8] - R[7] + R[6] + R[5] - R[4] + R[2];        // y momentum flux - m01
 		S[6] = -R[8] - R[7] + R[6] + R[5] + ( R[4] - R[2] )*2.; // y energy flux
 		S[7] = -R[4] + R[3] - R[2] + R[1]; // stress tensor xx (diagonal)
-		S[8] = -R[8] + R[7] - R[6] + R[5]; // stress tensor xy (off-diagonal)
+		S[8] = -R[8] + R[7] - R[6] + R[5]; // stress tensor xy (off-diagonal) - m11
 		// Relax in Momentum space:
 		// eq 10.34 - nonzero terms from the diagonal GramSchmidt relaxation matrix
 		S[7] *= 1.0/(tau);

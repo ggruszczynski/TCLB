@@ -1,0 +1,53 @@
+<!-- 
+[Re =    1.0e-01, Ca =   1.00e-02,  We =   1.00e-03]:
+ -->
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="output/">
+    <Geometry nx="120" ny="230">
+    	<MRT><Box /></MRT>
+      <Smoothing><Box /></Smoothing> 
+        <None name="air">
+            <Box ny="50" />
+        </None>        
+
+        <Wall mask="ALL" name="walltop">
+          <Box dy="-2"/>
+        </Wall>
+        <Wall mask="ALL" name="wallbottom" >
+          <Box ny="2" />
+          <Box dx="0" fy="50" nx="30" />
+          <Box dx="90" fy="50" nx="120" />
+        </Wall>
+   
+  </Geometry>
+    <Model>
+    <Params
+        Density_h="1.0" Density_l="0.01831" 
+        Viscosity_h="0.5" Viscosity_l="0.5"
+        PhaseField_h="1.0" PhaseField_l="0.0" 
+
+        ContactAngle="110" 
+      
+        PhaseField_init="1.0"
+        PhaseField_init-air="0.0"
+        PhaseField_init-wallbottom="0.0"
+        PhaseField_init-walltop="1.0"
+
+        W="4" M="0.05" sigma="1.47E-02"
+        />
+    <Params  />
+    <Params GravitationY="4.17E-03" />
+    <Params GravitationX="4.07E-08" />
+    </Model> 
+    <Solve Iterations="25" output="output/"> <VTK Iterations="10"/> </Solve>
+
+<Geometry>
+  <None mask="ADDITIONALS">
+    <Box nx="300" ny="550"/>
+  </None>
+</Geometry>
+<Solve Iterations="50" output="output/"> <VTK Iterations="10"/> </Solve>
+<Failcheck Iterations="2000" nx="120" ny="230"/>
+<Solve Iterations="100000" output="output/"> <VTK Iterations="1000"/> </Solve>
+</CLBConfig>
+

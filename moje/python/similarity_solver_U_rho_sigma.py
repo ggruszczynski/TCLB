@@ -4,6 +4,8 @@ from joblib import Parallel, delayed
 import multiprocessing
 import time
 
+from utilites import remove_duplicates
+
 
 class Similarity:
     def __init__(self, sim_num, d=85, kin_visc_h=0.1):
@@ -136,20 +138,6 @@ history = sum(history_list, [])
 
 end = time.time()
 print("time [s]: ", end - start)
-
-
-def remove_duplicates(values):
-    output = []
-    seen = set()
-    for value in values:
-        # If value has not been encountered yet,
-        # ... add it to both list and set.
-        h = hash(tuple(value))  # convert to tuple, list are un-hashable since they can change order
-        if h not in seen:
-            output.append(value)
-            seen.add(h)
-    return output
-
 
 history = remove_duplicates(history)
 history.sort(key=lambda x: x[1], reverse=True)  # U, rho, sigma
