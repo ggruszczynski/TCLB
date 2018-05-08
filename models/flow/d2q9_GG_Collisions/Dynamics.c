@@ -59,8 +59,8 @@ CudaDeviceFunction void Run() {
 	// Set as if MRT as majority of examples specify
 	// solution zone as MRT box, so avoid changing 
 	// input files.
-		CollisionBGK();
-		// CollisionCM();
+		// CollisionBGK();
+		CollisionCM();
 	}
 }
 

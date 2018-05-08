@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="output/">
+        <Geometry nx="512" ny="100">
+		<MRT><Box/></MRT>
+<!-- 		<WVelocity name="Inlet" nx='1' dx='5'><Box/></WVelocity>
+		<EPressure name="Outlet" nx='1' dx='-5'><Box/></EPressure> -->
+		<Wall  mask="ALL">
+			<Box ny="1"/>
+            <Box dy="-1"/>
+
+            <Wedge dx="120" nx="20" dy="50" ny="20" direction="LowerRight"/>
+			<Wedge dx="120" nx="20" dy="30" ny="20" direction="UpperRight"/>
+			<Wedge dx="140" nx="20" dy="50" ny="20" direction="LowerLeft"/>
+			<Wedge dx="140" nx="20" dy="30" ny="20" direction="UpperLeft"/>
+		</Wall>
+	</Geometry>
+	<Model>
+		<Params nu="0.1"/>
+		<Params GravitationX="1E-05" />
+		<!-- <Params Velocity_x="0.01"/> -->
+	</Model>
+	<Failcheck Iterations="2000" />
+	<VTK Iterations="100"/>
+	<Solve Iterations="20000"/>
+</CLBConfig>

@@ -9,8 +9,8 @@
                         <Box dy="-1"/>
                 </Wall>
                 <None name="blobb">
-                        <!-- <Box dx="50" nx="28" dy="50" ny="28"/> -->
-                        <Sphere ny="48" nx="48" dx="40" dy="0" /> 
+                        <Box dx="50" nx="28" dy="50" ny="28"/>
+                        <!-- <Sphere ny="48" nx="48" dx="40" dy="0" />  -->
                 </None>
         </Geometry>
         <Model>
@@ -24,6 +24,6 @@
         </Model>
         <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve> 
         <Solve Iterations="1000" output="output/"> <VTK Iterations="10"/> </Solve> 
-        <Failcheck Iterations="1000" />
-        <Solve Iterations="10000" output="output/"> <VTK Iterations="500"/> </Solve>
+        <Failcheck Iterations="1000" nx="128" ny="128"/>
+        <Solve Iterations="300000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>
