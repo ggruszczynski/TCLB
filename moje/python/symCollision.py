@@ -10,7 +10,7 @@ init_printing(use_unicode=False, wrap_line=False, no_global=True)
 
 """
 M - distributions to raw moment transformation matrix
-N - raw moment to central moments transformation matrix
+N - raw moments to central moments transformation matrix
 
 based on:
 'Modeling incompressible thermal flows using a central-moment-based lattice Boltzmann method' 
@@ -20,15 +20,21 @@ Linlin Fei, Kai Hong Luo, Chuandong Lin, Qing Li
 
 
 # HELPERS:
-def print_as_vector(some_matrix, print_symbol='default_symbol1'):
-    rows = some_matrix._mat
-
+def print_u2():
     ux2 = "ux2"
     print("real_t %s = %s*%s;" % (ux2, ux, ux))
     uy2 = "uy2"
     print("real_t %s = %s*%s;" % (uy2, uy, uy))
     uxuy = "uxuy"
     print("real_t %s = %s*%s;" % (uxuy, ux, uy))
+    print("")
+
+
+def print_as_vector_re(some_matrix, print_symbol='default_symbol1'):
+    rows = some_matrix._mat
+    ux2 = "ux2"
+    uy2 = "uy2"
+    uxuy = "uxuy"
 
     for i in range(len(rows)):
         row = str(rows[i])
@@ -40,13 +46,23 @@ def print_as_vector(some_matrix, print_symbol='default_symbol1'):
         # print("%s[%d] = %s;" % (print_symbol, i, rows[i]))
 
 
+def print_as_vector_raw(some_matrix, print_symbol='default_symbol1'):
+    rows = some_matrix._mat
+
+    for i in range(len(rows)):
+        row = str(rows[i])
+        print("%s[%d] = %s;" % (print_symbol, i, row))
+        # raw
+        # print("%s[%d] = %s;" % (print_symbol, i, rows[i]))
+
+
 def get_populations(print_symbol='default_symbol2'):
     symbols_ = [Symbol("%s[%d]" % (print_symbol, i)) for i in range(9)]
 
     return Matrix(symbols_)
 
 
-def get_m00(print_symbol='default_symbol2'):
+def get_m00(print_symbol='default_symbol3'):
     m00 = Symbol("%s[%d]" % (print_symbol, 0))
 
     for i in range(1,9):
@@ -65,6 +81,8 @@ feq = get_populations('f_eq')
 sv = Symbol('s_v')  # s_v = 1 /(tau + 0.5)
 sb = 2.  # results in bulk viscosity = 0 since : zeta = (1/sb -0.5)*cs^2
 
+# TRANSFORMATIONS:
+
 # this matrix will produce raw moments (m=M*f) in the following order:
 # [m00, m10, m01, m20, m02, m11, m21, m12, m22]
 Mraw = Matrix([
@@ -79,6 +97,16 @@ Mraw = Matrix([
             [0,  0,  0,  0,  0,  1,  1,  1,  1]
             ])
 
+# raw moments - interpretation
+# real_t m00 = f[0] + f[1] + f[2] + f[3] + f[4] + f[5] + f[6] + f[7]  + f[8];  // m00 - m0: density
+# real_t m10 =        f[1]        - f[3]        + f[5] - f[6] - f[7]  + f[8];  // m10 - m1: x momentum flux
+# real_t m01 =             + f[2]        - f[4] + f[5] + f[6] - f[7]  - f[8];  // m01 - m2: y momentum flux
+# real_t m20 =        f[1]        + f[3]        + f[5] + f[6] + f[7]  + f[8];  // m20 - m3
+# real_t m02 =               f[2]        + f[4] + f[5] + f[6] + f[7]  + f[8];  // m02 - m4
+# real_t m11 =                                    f[5] - f[6] + f[7]  - f[8];  // m11 - m5: stress tensor xy (off-diagonal)
+# real_t m21 =                                    f[5] + f[6] - f[7]  - f[8];  // m21 - m6
+# real_t m12 =                                    f[5] + f[6] - f[7]  - f[8];  // m12 - m7
+# real_t m22 =                                    f[5] + f[6] + f[7]  + f[8];  // m22 - m8
 
 # shift matrix
 N = Matrix([
@@ -103,43 +131,95 @@ S[3, 4] = s_minus
 S[4, 3] = s_minus
 
 
-force_in_cm_space = Matrix([0,
+force_in_cm_space = Matrix([
+            0,
             Symbol('Fhydro.x'),
             Symbol('Fhydro.y'),
             0,
             0,
             0,
-            Symbol('Fhydro.y/3.'),
-            Symbol('Fhydro.x/3.'),
+            Symbol('(Fhydro.y/3.)'),
+            Symbol('(Fhydro.x/3.)'),
             0,
             ])
 
 
-# ============ COLLISION ================
+# ============ COLLISION all at once ;D ================
 cm = N * Mraw * f_in
 # cm_eq = N*Mraw*feq
 cm_eq = Matrix([Symbol('m00'),
                 0,
                 0,
-                Symbol('m00/3.'),
-                Symbol('m00/3.'),
+                Symbol('(m00/3.)'),
+                Symbol('(m00/3.)'),
                 0,
                 0,
                 0,
-                Symbol('m00/9.'),
+                Symbol('(m00/9.)'),
                 ])
 
-# cm_after_collision = (eye(9)-S)*cm + cm_eq + (eye(9)-S/2)*body_force  # eq 8
-cm_after_collision = (eye(9)-S)*cm + cm_eq + force_in_cm_space  # eq 8
+# cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*N*Mraw*body_force  # eq 8
+cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space  # eq 8
 
 # back to densities space
 f_after_collision = Mraw.inv() * N.inv()*cm_after_collision
 
-print("\n\nPRETTY CODE\n\n")
-print_ccode(get_m00('f_in'), assign_to='m00')
+print("\n\n=== PRETTY CODE all at once ;D ===\n\n")
+print_ccode(get_m00('f_in'), assign_to='real_t m00')
 print("")
-print_as_vector(f_after_collision, "f_out")
+print_u2()
+print_as_vector_re(f_after_collision, "f_out")
 
 # print("\n\nby print_ccode \n")
 # for i in range(len(f_after_collision)):
 #     print_ccode(f_after_collision[i], assign_to='f_out[%s]' % i)
+
+
+# ============ COLLISION separate ================
+print("\n\n=== PRETTY CODE separate ===\n\n")
+
+pop_in_str = 'f_in'  # symbol defining populations
+pop_out_str = 'f_out'  # symbol defining populations
+
+print("CudaDeviceFunction void relax_central_moments("
+      "real_t %s[9], "
+      "real_t %s[9], "
+      "real_t tau, "
+      "vector_t Fhydro, "
+      "vector_t u) \n{"
+      % (pop_out_str, pop_in_str))
+
+print("real_t %s = 1. / (tau +0.5);" % sv)
+print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
+print_u2()
+
+populations = get_populations(pop_in_str)
+m = Mraw * populations
+print("\n//raw moments from density-probability functions")
+print_as_vector_raw(m, pop_in_str)
+print("\n//central moments from moments")
+
+cm = N * populations
+print_as_vector_re(cm, pop_in_str)
+
+print("\n//collision in central moments space")
+cm_after_collision = (eye(9)-S)*populations + S*cm_eq + (eye(9)-S/2)*force_in_cm_space  # eq 8
+print_as_vector_raw(cm_after_collision, pop_in_str)
+
+print("\n//back to raw moments")
+m = N.inv()*populations
+print_as_vector_re(m, pop_in_str)
+
+print("\n//back to density-probability functions")
+populations = Mraw.inv()*populations
+print_as_vector_raw(populations, "f_out")
+
+print("\n}\n")
+
+
+# // real_t F_i[9];
+# // for ( int i=0; i < 9; i++){
+# //         // F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
+# //         F_i[i] = f_eq[i]*3.0*(Fhydro.x*(d2q9_ex[i]-u.x) + Fhydro.y*(d2q9_ey[i]-u.y))/rho;  // eq 11 - He et al. forcing scheme
+# // }
+
