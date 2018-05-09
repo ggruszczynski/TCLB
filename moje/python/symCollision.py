@@ -52,8 +52,6 @@ def print_as_vector_raw(some_matrix, print_symbol='default_symbol1'):
     for i in range(len(rows)):
         row = str(rows[i])
         print("%s[%d] = %s;" % (print_symbol, i, row))
-        # raw
-        # print("%s[%d] = %s;" % (print_symbol, i, rows[i]))
 
 
 def get_populations(print_symbol='default_symbol2'):
@@ -108,7 +106,7 @@ Mraw = Matrix([
 # real_t m12 =                                    f[5] + f[6] - f[7]  - f[8];  // m12 - m7
 # real_t m22 =                                    f[5] + f[6] + f[7]  + f[8];  // m22 - m8
 
-# shift matrix
+# SHIFT MATRIX
 N = Matrix([
             [1,                      0,           0,     0,     0,       0,     0,     0, 0],
             [-ux,                    1,           0,     0,     0,       0,     0,     0, 0],
@@ -122,7 +120,7 @@ N = Matrix([
             ])
 
 
-# Relaxation matrix
+# RELAXATION MATRIX
 s_plus = (sb+sv)/2
 s_minus = (sb-sv)/2
 
@@ -143,10 +141,6 @@ force_in_cm_space = Matrix([
             0,
             ])
 
-
-# ============ COLLISION all at once ;D ================
-cm = N * Mraw * f_in
-# cm_eq = N*Mraw*feq
 cm_eq = Matrix([Symbol('m00'),
                 0,
                 0,
@@ -158,63 +152,84 @@ cm_eq = Matrix([Symbol('m00'),
                 Symbol('(m00/9.)'),
                 ])
 
-# cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*N*Mraw*body_force  # eq 8
-cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space  # eq 8
-
-# back to densities space
-f_after_collision = Mraw.inv() * N.inv()*cm_after_collision
-
-print("\n\n=== PRETTY CODE all at once ;D ===\n\n")
-print_ccode(get_m00('f_in'), assign_to='real_t m00')
-print("")
-print_u2()
-print_as_vector_re(f_after_collision, "f_out")
-
-# print("\n\nby print_ccode \n")
-# for i in range(len(f_after_collision)):
-#     print_ccode(f_after_collision[i], assign_to='f_out[%s]' % i)
+# # ============ COLLISION all at once ;D ================
+# cm = N * Mraw * f_in
+# # cm_eq = N*Mraw*feq
+# # cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*N*Mraw*body_force  # eq 8
+# cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space  # eq 8
+#
+# # back to densities space
+# f_after_collision = Mraw.inv() * N.inv()*cm_after_collision
+#
+# print("\n\n=== PRETTY CODE all at once ;D ===\n\n")
+# print_ccode(get_m00('f_in'), assign_to='real_t m00')
+# print("")
+# print_u2()
+# print_as_vector_re(f_after_collision, "f_out")
+#
+# # print("\n\nby print_ccode \n")
+# # for i in range(len(f_after_collision)):
+# #     print_ccode(f_after_collision[i], assign_to='f_out[%s]' % i)
 
 
 # ============ COLLISION separate ================
 print("\n\n=== PRETTY CODE separate ===\n\n")
 
 pop_in_str = 'f_in'  # symbol defining populations
-pop_out_str = 'f_out'  # symbol defining populations
+temp_pop_str = 'temp'  # symbol defining populations
 
 print("CudaDeviceFunction void relax_central_moments("
-      "real_t %s[9], "
       "real_t %s[9], "
       "real_t tau, "
       "vector_t Fhydro, "
       "vector_t u) \n{"
-      % (pop_out_str, pop_in_str))
+      % pop_in_str)
 
-print("real_t %s = 1. / (tau +0.5);" % sv)
-print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
 print_u2()
+print("real_t %s = 1./tau;" % sv)
+
+print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
+
+print("real_t %s[9];\n"
+      "for (int i = 0; i < 9; i++) {\n\t"
+      "%s[i] = %s[i];}" % (temp_pop_str, temp_pop_str, pop_in_str))
 
 populations = get_populations(pop_in_str)
-m = Mraw * populations
-print("\n//raw moments from density-probability functions")
-print_as_vector_raw(m, pop_in_str)
-print("\n//central moments from moments")
+temp_populations = get_populations(temp_pop_str)
+m = Mraw * temp_populations
 
+print("\n//raw moments from density-probability functions")
+print("//[m00, m10, m01, m20, m02, m11, m21, m12, m22]")
+print_as_vector_raw(m, print_symbol=pop_in_str)
+
+print("\n//central moments from raw moments")
 cm = N * populations
-print_as_vector_re(cm, pop_in_str)
+print_as_vector_re(cm, print_symbol=temp_pop_str)
+
+# print("\n\n//central moments from raw moments - by print_ccode \n")
+# for i in range(len(cm)):
+#     print_ccode(cm[i], assign_to='%s[%s]' % (temp_pop_str, i))
 
 print("\n//collision in central moments space")
-cm_after_collision = (eye(9)-S)*populations + S*cm_eq + (eye(9)-S/2)*force_in_cm_space  # eq 8
-print_as_vector_raw(cm_after_collision, pop_in_str)
+cm_after_collision = (eye(9)-S)*temp_populations + S*cm_eq + (eye(9)-S/2)*force_in_cm_space  # eq 8
+print_as_vector_raw(cm_after_collision, print_symbol=pop_in_str)
 
 print("\n//back to raw moments")
 m = N.inv()*populations
-print_as_vector_re(m, pop_in_str)
+print_as_vector_re(m, print_symbol=temp_pop_str)
+
+# print("\n\n//back to raw moments - by print_ccode \n")
+# for i in range(len(m)):
+#     print_ccode(m[i], assign_to='%s[%s]' % (temp_pop_str, i))
 
 print("\n//back to density-probability functions")
-populations = Mraw.inv()*populations
-print_as_vector_raw(populations, "f_out")
+populations = Mraw.inv()*temp_populations
+print_as_vector_raw(populations, print_symbol=pop_in_str)
 
 print("\n}\n")
+
+
+
 
 
 # // real_t F_i[9];
