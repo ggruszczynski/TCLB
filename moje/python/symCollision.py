@@ -77,7 +77,7 @@ feq = get_populations('f_eq')
 # body_force = get_populations('F_i')
 
 sv = Symbol('s_v')  # s_v = 1 /(tau + 0.5)
-sb = 2.  # results in bulk viscosity = 0 since : zeta = (1/sb -0.5)*cs^2
+sb = 0.5  # results in bulk viscosity = 1/6 since : zeta = (1/sb - 0.5)*cs^2*dt
 
 # TRANSFORMATIONS:
 

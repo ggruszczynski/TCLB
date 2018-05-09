@@ -16,10 +16,10 @@
 	</Geometry>
 	<Model>
 		<Params nu="0.16666666"/>
-		<!-- <Params GravitationX="1E-06" /> -->
+		<Params GravitationX="1E-06" />
 		<!-- <Params Velocity_x="0.01"/> -->
 	</Model>
 	<Failcheck Iterations="2000" />
-	<VTK Iterations="1"/>
-	<Solve Iterations="200"/>
+	<VTK Iterations="500"/>
+	<Solve Iterations="20000"/>
 </CLBConfig>

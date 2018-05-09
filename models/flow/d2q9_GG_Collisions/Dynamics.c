@@ -97,13 +97,13 @@ CudaDeviceFunction void relax_central_moments(real_t f_in[9], real_t tau, vector
 	temp[6] = -f_in[0]*ux2*u.y + 2*f_in[1]*uxuy + f_in[2]*ux2 - f_in[3]*u.y - 2*f_in[5]*u.x + f_in[6];
 	temp[7] = -f_in[0]*u.x*uy2 + f_in[1]*uy2 + 2*f_in[2]*uxuy - f_in[4]*u.x - 2*f_in[5]*u.y + f_in[7];
 	temp[8] = f_in[0]*ux2*uy2 - 2*f_in[1]*u.x*uy2 - 2*f_in[2]*ux2*u.y + f_in[3]*uy2 + f_in[4]*ux2 + 4*f_in[5]*uxuy - 2*f_in[6]*u.y - 2*f_in[7]*u.x + f_in[8];
-
+	
 	//collision in central moments space
 	f_in[0] = m00;
 	f_in[1] = Fhydro.x/2;
 	f_in[2] = Fhydro.y/2;
-	f_in[3] = (m00/3.)*(-s_v/2 + 1.0) + (m00/3.)*(s_v/2 + 1.0) - s_v*temp[3]/2 + temp[4]*(s_v/2 - 1.0);
-	f_in[4] = (m00/3.)*(-s_v/2 + 1.0) + (m00/3.)*(s_v/2 + 1.0) - s_v*temp[4]/2 + temp[3]*(s_v/2 - 1.0);
+	f_in[3] = (m00/3.)*(-s_v/2 + 0.25) + (m00/3.)*(s_v/2 + 0.25) + temp[3]*(-s_v/2 + 0.75) + temp[4]*(s_v/2 - 0.25);
+	f_in[4] = (m00/3.)*(-s_v/2 + 0.25) + (m00/3.)*(s_v/2 + 0.25) + temp[3]*(s_v/2 - 0.25) + temp[4]*(-s_v/2 + 0.75);
 	f_in[5] = temp[5]*(-s_v + 1);
 	f_in[6] = (Fhydro.y/3.)/2;
 	f_in[7] = (Fhydro.x/3.)/2;

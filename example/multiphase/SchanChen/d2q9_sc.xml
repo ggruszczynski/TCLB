@@ -14,12 +14,14 @@
                 </None>
         </Geometry>
         <Model>
-                <Params Density="0.056"/>
+          <!--       <Params Density="0.056"/>
                 <Params Density-blobb="2.659"/>
                 <Params G_ff="-6.0"/>
-                <Params G_sf="-0.3"/>
-<!--                 <Params G_ff="-6.0"/>
-                <Params G_sf="-2.7"/> -->
+                <Params G_sf="-0.3"/> -->
+                <Params Density="0.056"/>
+                <Params Density-blobb="2.659"/>
+                <Params G_ff="-4.0"/>
+                <Params G_sf="-0.0"/> 
                 
                 <Params viscosity="0.166"/>
                 <!-- <Params GravitationY="-1e-5"/> -->
@@ -27,5 +29,5 @@
         <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve> 
         <Solve Iterations="1000" output="output/"> <VTK Iterations="10"/> </Solve> 
         <Failcheck Iterations="1000" nx="128" ny="128"/>
-        <Solve Iterations="150000" output="output/"> <VTK Iterations="500"/> </Solve>
+        <Solve Iterations="25000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>
