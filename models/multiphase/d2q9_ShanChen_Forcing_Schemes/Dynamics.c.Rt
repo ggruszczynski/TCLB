@@ -72,8 +72,8 @@ CudaDeviceFunction void Run() {
     {
        // CollisionBGK_SCforcing();
         // CollisionBGK_EDM_forcing();
-          CollisionCM();
-        // CollisionCM_EDM_forcing();
+        //   CollisionCM();
+        CollisionCM_EDM_forcing();
         // CollisionCumulant_EDM_forcing();
         // CollisionCumulant();
     }
@@ -265,8 +265,11 @@ CudaDeviceFunction void CollisionCM_EDM_forcing() {
     dummy_force.y=0;
     
     vector_t u;
-    u.x += force_total.x/d;
-    u.y += force_total.y/d;
+    u.x = u0.x + force_total.x/d;
+    u.y = u0.y + force_total.y/d;
+
+    // u.x += force_total.x/d;  //dziala Oo
+    // u.y += force_total.y/d;
     SetEquilibrium(f_eq_full,  d, u); //stores equilibrium distribution in f_eq_full[0]-f_eq_full[8]
 
     real_t fdummy[9];
