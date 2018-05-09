@@ -77,7 +77,7 @@ feq = get_populations('f_eq')
 # body_force = get_populations('F_i')
 
 sv = Symbol('s_v')  # s_v = 1 /(tau + 0.5)
-sb = 0.5  # results in bulk viscosity = 1/6 since : zeta = (1/sb - 0.5)*cs^2*dt
+sb = Symbol('s_b') # results in bulk viscosity = 1/6 since : zeta = (1/sb - 0.5)*cs^2*dt
 
 # TRANSFORMATIONS:
 
@@ -173,7 +173,7 @@ cm_eq = Matrix([Symbol('m00'),
 
 
 # ============ COLLISION separate ================
-print("\n\n=== PRETTY CODE separate ===\n\n")
+print("\n\n=== PRETTY CODE ===\n\n")
 
 pop_in_str = 'f_in'  # symbol defining populations
 temp_pop_str = 'temp'  # symbol defining populations
@@ -187,10 +187,12 @@ print("CudaDeviceFunction void relax_central_moments("
 
 print_u2()
 print("real_t %s = 1./tau;" % sv)
-
+print("real_t bulk_visc = 1./6. ;")
+print("real_t %s = 1./(3*bulk_visc + 0.5);" % sb)  # s_b = 0.5; works good
+print("")
 print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
 
-print("real_t %s[9];\n"
+print("\nreal_t %s[9];\n"
       "for (int i = 0; i < 9; i++) {\n\t"
       "%s[i] = %s[i];}" % (temp_pop_str, temp_pop_str, pop_in_str))
 

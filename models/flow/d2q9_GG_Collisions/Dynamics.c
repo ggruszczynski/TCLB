@@ -70,7 +70,11 @@ CudaDeviceFunction void relax_central_moments(real_t f_in[9], real_t tau, vector
 	real_t uxuy = u.x*u.y;
 	
 	real_t s_v = 1./tau;
+	real_t bulk_visc = 1./6. ;
+	real_t s_b = 1./(3*bulk_visc + 0.5);
+	
 	real_t m00 = f_in[0] + f_in[1] + f_in[2] + f_in[3] + f_in[4] + f_in[5] + f_in[6] + f_in[7] + f_in[8];
+	
 	real_t temp[9];
 	for (int i = 0; i < 9; i++) {
 		temp[i] = f_in[i];}
@@ -102,8 +106,8 @@ CudaDeviceFunction void relax_central_moments(real_t f_in[9], real_t tau, vector
 	f_in[0] = m00;
 	f_in[1] = Fhydro.x/2;
 	f_in[2] = Fhydro.y/2;
-	f_in[3] = (m00/3.)*(-s_v/2 + 0.25) + (m00/3.)*(s_v/2 + 0.25) + temp[3]*(-s_v/2 + 0.75) + temp[4]*(s_v/2 - 0.25);
-	f_in[4] = (m00/3.)*(-s_v/2 + 0.25) + (m00/3.)*(s_v/2 + 0.25) + temp[3]*(s_v/2 - 0.25) + temp[4]*(-s_v/2 + 0.75);
+	f_in[3] = (m00/3.)*(s_b/2 - s_v/2) + (m00/3.)*(s_b/2 + s_v/2) + temp[3]*(-s_b/2 - s_v/2 + 1) + temp[4]*(-s_b/2 + s_v/2);
+	f_in[4] = (m00/3.)*(s_b/2 - s_v/2) + (m00/3.)*(s_b/2 + s_v/2) + temp[3]*(-s_b/2 + s_v/2) + temp[4]*(-s_b/2 - s_v/2 + 1);
 	f_in[5] = temp[5]*(-s_v + 1);
 	f_in[6] = (Fhydro.y/3.)/2;
 	f_in[7] = (Fhydro.x/3.)/2;
