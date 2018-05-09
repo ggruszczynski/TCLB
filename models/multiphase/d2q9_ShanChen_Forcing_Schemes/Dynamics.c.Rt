@@ -70,12 +70,12 @@ CudaDeviceFunction void Run() {
     }
     if (NodeType & NODE_MRT) 
     {
-        CollisionBGK_SCforcing();
+        //CollisionBGK_SCforcing();
         // CollisionBGK_EDM_forcing();
         // CollisionCM();
         // CollisionCM_EDM_forcing();
         // CollisionCumulant_EDM_forcing();
-        //CollisionCumulant();
+        CollisionCumulant();
     }
 
     neighbour_type = neighbour_type(0,0);
@@ -302,7 +302,7 @@ CudaDeviceFunction void CollisionCumulant_EDM_forcing() {
     dummy_force.x = 0; dummy_force.y = 0;
     real_t dummy_rho =1;
 
-    relax_cumulants(1./omega, dummy_force, dummy_rho );
+    relax_cumulants(f, 1./omega, dummy_force, dummy_rho );
     // add forcing - edm
     for (int i=0; i< 9; i++) {
         f[i] = f[i] + (f_eq_full[i]-f_eq0[i]);	
@@ -322,7 +322,7 @@ CudaDeviceFunction void CollisionCumulant() {
     u.x = ( f[8]-f[7]-f[6]+f[5]-f[3]+f[1] )/d ;
     u.y = (-f[8]-f[7]+f[6]+f[5]-f[4]+f[2] )/d ;
 
-    relax_cumulants(1./omega, force_total, d );
+    relax_cumulants(f, 1./omega, force_total, d );
 }
 
 CudaDeviceFunction void BounceBack() {
@@ -417,8 +417,7 @@ CudaDeviceFunction vector_t getF_sf() {
 
 
 // ------------------------------ experimental stuff --------------------------------------------- //
-
-CudaDeviceFunction void relax_cumulants(real_t tau, vector_t fhydro, real_t rho)
+CudaDeviceFunction void relax_cumulants(real_t f_in[9], real_t tau, vector_t fhydro, real_t rho)
 {
 
 real_t c[9];
@@ -428,37 +427,37 @@ if ((NodeType & NODE_BOUNDARY) == NODE_Wall) w_relax[0] = 1.0/(3*nubugger+0.5);
 
 //First determing moments from density-probability function
   
-  f[0] = f[3] + f[1] + f[0]; 
-  f[1] = -f[3] + f[1];
-  f[3] = f[1] + f[3]*2.; 
-  f[2] = f[6] + f[5] + f[2];
-  f[5] = -f[6] + f[5];
-  f[6] = f[5] + f[6]*2.; 
-  f[4] = f[7] + f[8] + f[4];
-  f[8] = -f[7] + f[8];
-  f[7] = f[8] + f[7]*2.; 
+  f_in[0] = f_in[3] + f_in[1] + f_in[0]; 
+  f_in[1] = -f_in[3] + f_in[1];
+  f_in[3] = f_in[1] + f_in[3]*2.; 
+  f_in[2] = f_in[6] + f_in[5] + f_in[2];
+  f_in[5] = -f_in[6] + f_in[5];
+  f_in[6] = f_in[5] + f_in[6]*2.; 
+  f_in[4] = f_in[7] + f_in[8] + f_in[4];
+  f_in[8] = -f_in[7] + f_in[8];
+  f_in[7] = f_in[8] + f_in[7]*2.; 
 
-  f[0] = f[4] + f[2] + f[0];
-  f[2] = -f[4] + f[2];
-  f[4] = f[2] + f[4]*2.; 
-  f[1] = f[8] + f[5] + f[1];
-  f[5] = -f[8] + f[5];
-  f[8] = f[5] + f[8]*2.; 
-  f[3] = f[7] + f[6] + f[3];
-  f[6] = -f[7] + f[6];
-  f[7] = f[6] + f[7]*2.; 
+  f_in[0] = f_in[4] + f_in[2] + f_in[0];
+  f_in[2] = -f_in[4] + f_in[2];
+  f_in[4] = f_in[2] + f_in[4]*2.; 
+  f_in[1] = f_in[8] + f_in[5] + f_in[1];
+  f_in[5] = -f_in[8] + f_in[5];
+  f_in[8] = f_in[5] + f_in[8]*2.; 
+  f_in[3] = f_in[7] + f_in[6] + f_in[3];
+  f_in[6] = -f_in[7] + f_in[6];
+  f_in[7] = f_in[6] + f_in[7]*2.; 
   
 
 //Cumulant calculation from moments
-  c[0] = f[0];
-  c[1] = f[1]/f[0];
-  c[3] = ( -c[1]*f[1] + f[3] )/f[0];
-  c[2] = f[2]/f[0];
-  c[5] = ( -c[1]*f[2] + f[5] )/f[0];
-  c[6] = ( -c[5]*f[1] - c[3]*f[2] - c[1]*f[5] + f[6] )/f[0];
-  c[4] = ( -c[2]*f[2] + f[4] )/f[0];
-  c[8] = ( -c[1]*f[4] + f[8] - c[5]*f[2]*2. )/f[0];
-  c[7] = ( -c[8]*f[1] - c[3]*f[4] - c[1]*f[8] + f[7] + ( -c[6]*f[2] - c[5]*f[5] )*2. )/f[0];
+  c[0] = f_in[0];
+  c[1] = f_in[1]/f_in[0];
+  c[3] = ( -c[1]*f_in[1] + f_in[3] )/f_in[0];
+  c[2] = f_in[2]/f_in[0];
+  c[5] = ( -c[1]*f_in[2] + f_in[5] )/f_in[0];
+  c[6] = ( -c[5]*f_in[1] - c[3]*f_in[2] - c[1]*f_in[5] + f_in[6] )/f_in[0];
+  c[4] = ( -c[2]*f_in[2] + f_in[4] )/f_in[0];
+  c[8] = ( -c[1]*f_in[4] + f_in[8] - c[5]*f_in[2]*2. )/f_in[0];
+  c[7] = ( -c[8]*f_in[1] - c[3]*f_in[4] - c[1]*f_in[8] + f_in[7] + ( -c[6]*f_in[2] - c[5]*f_in[5] )*2. )/f_in[0];
 //Cumulant relaxation:
  real_t  a = (c[3] + c[4]);
  real_t  b = (c[3] - c[4]);
@@ -484,37 +483,37 @@ if ((NodeType & NODE_BOUNDARY) == NODE_Wall) w_relax[0] = 1.0/(3*nubugger+0.5);
 
 // Moment calculation from cummulants
 
-  f[0] = f[0];
-  f[1] = c[1]*f[0];
-  f[3] = c[3]*f[0] + c[1]*f[1];
-  f[2] = c[2]*f[0];
-  f[5] = c[5]*f[0] + c[1]*f[2];
-  f[6] = c[6]*f[0] + c[5]*f[1] + c[3]*f[2] + c[1]*f[5];
-  f[4] = c[4]*f[0] + c[2]*f[2];
-  f[8] = c[8]*f[0] + c[1]*f[4] + c[5]*f[2]*2.;
-  f[7] = c[7]*f[0] + c[8]*f[1] + c[3]*f[4] + c[1]*f[8] + ( c[6]*f[2] + c[5]*f[5] )*2.;
+  f_in[0] = f_in[0];
+  f_in[1] = c[1]*f_in[0];
+  f_in[3] = c[3]*f_in[0] + c[1]*f_in[1];
+  f_in[2] = c[2]*f_in[0];
+  f_in[5] = c[5]*f_in[0] + c[1]*f_in[2];
+  f_in[6] = c[6]*f_in[0] + c[5]*f_in[1] + c[3]*f_in[2] + c[1]*f_in[5];
+  f_in[4] = c[4]*f_in[0] + c[2]*f_in[2];
+  f_in[8] = c[8]*f_in[0] + c[1]*f_in[4] + c[5]*f_in[2]*2.;
+  f_in[7] = c[7]*f_in[0] + c[8]*f_in[1] + c[3]*f_in[4] + c[1]*f_in[8] + ( c[6]*f_in[2] + c[5]*f_in[5] )*2.;
  
  //Transformation from moment to density distribution function
 
-  f[0] = -f[3] + f[0];
-  f[1] = ( f[3] + f[1] )/2.;
-  f[3] = f[3] - f[1]; 
-  f[2] = -f[6] + f[2];
-  f[5] = ( f[6] + f[5] )/2.;
-  f[6] = f[6] - f[5]; 
-  f[4] = -f[7] + f[4];
-  f[8] = ( f[7] + f[8] )/2.;
-  f[7] = f[7] - f[8]; 
+  f_in[0] = -f_in[3] + f_in[0];
+  f_in[1] = ( f_in[3] + f_in[1] )/2.;
+  f_in[3] = f_in[3] - f_in[1]; 
+  f_in[2] = -f_in[6] + f_in[2];
+  f_in[5] = ( f_in[6] + f_in[5] )/2.;
+  f_in[6] = f_in[6] - f_in[5]; 
+  f_in[4] = -f_in[7] + f_in[4];
+  f_in[8] = ( f_in[7] + f_in[8] )/2.;
+  f_in[7] = f_in[7] - f_in[8]; 
 
-  f[0] = -f[4] + f[0];
-  f[2] = ( f[4] + f[2] )/2.;
-  f[4] = f[4] - f[2]; 
-  f[1] = -f[8] + f[1];
-  f[5] = ( f[8] + f[5] )/2.;
-  f[8] = f[8] - f[5]; 
-  f[3] = -f[7] + f[3];
-  f[6] = ( f[7] + f[6] )/2.;
-  f[7] = f[7] - f[6]; 
+  f_in[0] = -f_in[4] + f_in[0];
+  f_in[2] = ( f_in[4] + f_in[2] )/2.;
+  f_in[4] = f_in[4] - f_in[2]; 
+  f_in[1] = -f_in[8] + f_in[1];
+  f_in[5] = ( f_in[8] + f_in[5] )/2.;
+  f_in[8] = f_in[8] - f_in[5]; 
+  f_in[3] = -f_in[7] + f_in[3];
+  f_in[6] = ( f_in[7] + f_in[6] )/2.;
+  f_in[7] = f_in[7] - f_in[6]; 
 
 }
 
