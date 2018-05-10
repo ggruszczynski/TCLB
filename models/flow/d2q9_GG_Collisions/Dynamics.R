@@ -19,8 +19,12 @@ AddQuantity( name="U",unit="m/s", vector=TRUE )
 AddQuantity( name="Rho",unit="kg/m3" )
 
 # Add the settings which describes system constants defined in a .xml file
-AddSetting( name="omega", comment='inverse of relaxation time')
-AddSetting( name="nu", omega='1.0/(3*nu+0.5)', default=0.16666666, comment='viscosity')
+AddSetting( name="omega",     comment='inverse of relaxation time')
+AddSetting( name="viscosity", omega='1.0/(3*viscosity+0.5)',       default=0.16666666, comment='kinematic viscosity')
+
+AddSetting( name="omega_bulk", comment='inverse of bulk relaxation time')
+AddSetting( name="bulk_visc",  omega_bulk='1.0/(3*bulk_visc+0.5)', default=0.16666666, comment='bulk viscosity')
+
 AddSetting( name="Velocity_x",default=0, comment='inlet/outlet/init velocity in x', zonal=TRUE )
 AddSetting( name="Velocity_y",default=0, comment='inlet/outlet/init velocity in y', zonal=TRUE )
 AddSetting( name="GravitationX",default=0, comment='body/external acceleration', zonal=TRUE)

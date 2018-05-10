@@ -9,24 +9,28 @@
                         <Box dy="-1"/>
                 </Wall>
                 <None name="blobb">
-                        <Box dx="50" nx="28" dy="50" ny="28"/>
-                        <!-- <Sphere ny="48" nx="48" dx="40" dy="0" />  -->
+                        <!-- <Box dx="50" nx="28" dy="50" ny="28"/> -->
+                        <Sphere ny="48" nx="48" dx="40" dy="0" /> 
                 </None>
         </Geometry>
         <Model>
-          <!--       <Params Density="0.056"/>
+          <!--   <Params Density="0.056"/>
                 <Params Density-blobb="2.659"/>
                 <Params G_ff="-6.0"/>
                 <Params G_sf="-0.3"/> -->
+
                 <Params Density="0.056"/>
                 <Params Density-blobb="2.659"/>
                 <Params G_ff="-4.0"/>
                 <Params G_sf="-0.0"/> 
                 
-                <Params viscosity="0.166"/>
-                <!-- <Params GravitationY="-1e-5"/> -->
+        <Params viscosity="0.16666666"/>
+        <!-- <Params bulk_visc="0.16666666"/> -->
+        <Params omega_bulk="1.0"/>
+
+        <!-- <Params GravitationY="-1e-5"/> -->
         </Model>
-        <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve> 
+        <!-- <Solve Iterations="100" output="output/"> <VTK Iterations="1"/> </Solve>  -->
         <Solve Iterations="1000" output="output/"> <VTK Iterations="10"/> </Solve> 
         <Failcheck Iterations="1000" nx="128" ny="128"/>
         <Solve Iterations="250000" output="output/"> <VTK Iterations="500"/> </Solve>

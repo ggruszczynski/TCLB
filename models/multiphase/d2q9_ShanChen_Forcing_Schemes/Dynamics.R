@@ -34,6 +34,10 @@ AddQuantity( name="Psi",  unit="1" )
 # Model Specific Parameters
 AddSetting( name="omega", comment='inverse of relaxation time')
 AddSetting( name="viscosity", omega='1.0/(3*viscosity+0.5)', default=0.16666666, comment='kinematic viscosity')
+
+AddSetting( name="omega_bulk", comment='inverse of bulk relaxation time')
+AddSetting(name="bulk_visc", omega_bulk='1.0/(3*bulk_visc+0.5)', default=0.16666666, comment='bulk viscosity')
+
 AddSetting( name="VelocityX",default=0, comment='inlet/outlet/init velocity', zonal=TRUE)
 AddSetting( name="VelocityY",default=0, comment='inlet/outlet/init velocity', zonal=TRUE)
 AddSetting( name="GravitationX",default=0, comment='body/external acceleration', zonal=TRUE)

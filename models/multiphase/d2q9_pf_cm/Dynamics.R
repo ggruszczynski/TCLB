@@ -128,6 +128,9 @@ AddSetting(name="tau_h", comment='relaxation time (high density fluid)')
 AddSetting(name="Viscosity_l", tau_l='(3*Viscosity_l)', default=0.16666666, comment='kinematic viscosity')
 AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comment='kinematic viscosity')
 
+AddSetting(name="omega_bulk", comment='inverse of bulk relaxation time')
+AddSetting(name="bulk_visc", omega_bulk='1.0/(3*bulk_visc+0.5)', default=0.16666666, comment='bulk viscosity')
+
 #	Inputs: Flow Properties
 AddSetting(name="pipe_diameter", default=1.0, comment='EXPERIMENTAL: to impose poiseulle velocity inlet BC', zonal=T) #TODO
 
