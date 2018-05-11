@@ -168,7 +168,6 @@ CudaDeviceFunction void relax_central_moments(real_t f_in[9], real_t tau, vector
     f_in[6] = -temp[5]/4 + temp[6]/4 - temp[7]/4 + temp[8]/4;
     f_in[7] = temp[5]/4 - temp[6]/4 - temp[7]/4 + temp[8]/4;
     f_in[8] = -temp[5]/4 - temp[6]/4 + temp[7]/4 + temp[8]/4;
-    
 }
 
 CudaDeviceFunction void relax_CM_neq(real_t f_neq[9], real_t tau, vector_t Fhydro, vector_t u) 

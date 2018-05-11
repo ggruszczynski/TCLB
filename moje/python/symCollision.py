@@ -136,20 +136,20 @@ force_in_cm_space = Matrix([
             0,
             0,
             0,
-            Symbol('(Fhydro.y/3.)'),
-            Symbol('(Fhydro.x/3.)'),
+            Symbol('Fhydro.y/3.'),
+            Symbol('Fhydro.x/3.'),
             0,
             ])
 
 cm_eq = Matrix([Symbol('m00'),
                 0,
                 0,
-                Symbol('(m00/3.)'),
-                Symbol('(m00/3.)'),
+                Symbol('m00/3.'),
+                Symbol('m00/3.'),
                 0,
                 0,
                 0,
-                Symbol('(m00/9.)'),
+                Symbol('m00/9.'),
                 ])
 
 # # ============ COLLISION all at once ;D ================
@@ -173,13 +173,13 @@ cm_eq = Matrix([Symbol('m00'),
 
 
 # ============ COLLISION separate ================
-print("\n\n=== PRETTY CODE ===\n\n")
+print("\n\n=== PRETTY CODE relax and collide ===\n\n")
 
 pop_in_str = 'f_in'  # symbol defining populations
 temp_pop_str = 'temp'  # symbol defining populations
 
 # eq8 : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
-print("CudaDeviceFunction void relax_central_moments("
+print("CudaDeviceFunction void relax_and_collide_CM("
       "real_t %s[9], "
       "real_t tau, "
       "vector_t Fhydro, "
@@ -235,10 +235,10 @@ print("\n}\n")
 
 
 # ============ COLLISION separate ================
-print("\n\n=== PRETTY CODE - version for phase-field model ===\n\n")
+print("\n\n=== PRETTY CODE relax ===\n\n")
 
 
-pop_in_str = 'f_neq'  # symbol defining non_eq populations: f_neq = f - f_eq
+pop_in_str = 'f_in'  # symbol defining non_eq populations: f_neq = f - f_eq
 temp_pop_str = 'temp'  # symbol defining populations
 
 
@@ -255,7 +255,7 @@ print("real_t %s = 1./tau;" % sv)
 print("real_t %s = omega_bulk;" % sb)  # s_b = 1./(3*bulk_visc + 0.5)
 print("")
 
-# print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
+print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
 
 print("\nreal_t %s[9];\n"
       "for (int i = 0; i < 9; i++) {\n\t"
@@ -278,9 +278,8 @@ print_as_vector_re(cm_non_eq, print_symbol=temp_pop_str)
 #     print_ccode(cm[i], assign_to='%s[%s]' % (temp_pop_str, i))
 
 print("\n//collision in central moments space")
-cm_after_collision = -S*temp_populations - (eye(9)-S/2)*force_in_cm_space
+cm_after_collision = -S*(temp_populations - cm_eq) + (eye(9)-S/2)*force_in_cm_space  # nie dziala hmm
 print_as_vector_raw(cm_after_collision, print_symbol=pop_in_str)
-
 print("\n//back to raw moments")
 m = N.inv()*populations
 print_as_vector_re(m, print_symbol=temp_pop_str)
@@ -294,11 +293,6 @@ populations = Mraw.inv()*temp_populations
 print_as_vector_raw(populations, print_symbol=pop_in_str)
 
 print("\n}\n")
-
-
-
-
-
 
 
 
