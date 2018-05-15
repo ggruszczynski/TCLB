@@ -368,8 +368,8 @@ CudaDeviceFunction void calcHydroIter() {
 		BC_Switcher();
 
 		if (NodeType & NODE_MRT) {
-			//  CollisionMRT();
-			 CollisionCM();
+			 CollisionMRT();
+			//  CollisionCM();
 			//  CollisionBGK();
 		} 
 		else if (NodeType & NODE_BGK) {
@@ -493,20 +493,20 @@ CudaDeviceFunction void relaxMRT(real_t R[9], real_t tau )
 		R[8] = ( S[2] + ( S[1] + S[0]*2. )*2. + ( -S[6] + S[4] - S[8]*3. + ( -S[5] + S[3] )*2. )*3. )/36.;
 }
 
-
 CudaDeviceFunction void relax_CM_neq(real_t f_neq[9], real_t tau, vector_t Fhydro, vector_t u) 
 {
 	real_t ux2 = u.x*u.x;
 	real_t uy2 = u.y*u.y;
 	real_t uxuy = u.x*u.y;
-	
+
 	real_t s_v = 1./tau;
 	real_t s_b = omega_bulk;
-	
+
+
 	real_t temp[9];
 	for (int i = 0; i < 9; i++) {
 		temp[i] = f_neq[i];}
-	
+
 	//raw moments from density-probability functions
 	//[m00, m10, m01, m20, m02, m11, m21, m12, m22]
 	f_neq[0] = temp[0] + temp[1] + temp[2] + temp[3] + temp[4] + temp[5] + temp[6] + temp[7] + temp[8];
@@ -518,7 +518,7 @@ CudaDeviceFunction void relax_CM_neq(real_t f_neq[9], real_t tau, vector_t Fhydr
 	f_neq[6] = temp[5] + temp[6] - temp[7] - temp[8];
 	f_neq[7] = temp[5] - temp[6] - temp[7] + temp[8];
 	f_neq[8] = temp[5] + temp[6] + temp[7] + temp[8];
-	
+
 	//central moments from raw moments
 	temp[0] = f_neq[0];
 	temp[1] = -f_neq[0]*u.x + f_neq[1];
@@ -529,18 +529,18 @@ CudaDeviceFunction void relax_CM_neq(real_t f_neq[9], real_t tau, vector_t Fhydr
 	temp[6] = -f_neq[0]*ux2*u.y + 2*f_neq[1]*uxuy + f_neq[2]*ux2 - f_neq[3]*u.y - 2*f_neq[5]*u.x + f_neq[6];
 	temp[7] = -f_neq[0]*u.x*uy2 + f_neq[1]*uy2 + 2*f_neq[2]*uxuy - f_neq[4]*u.x - 2*f_neq[5]*u.y + f_neq[7];
 	temp[8] = f_neq[0]*ux2*uy2 - 2*f_neq[1]*u.x*uy2 - 2*f_neq[2]*ux2*u.y + f_neq[3]*uy2 + f_neq[4]*ux2 + 4*f_neq[5]*uxuy - 2*f_neq[6]*u.y - 2*f_neq[7]*u.x + f_neq[8];
-	
+
 	//collision in central moments space
-	f_neq[0] = temp[0];
-	f_neq[1] = Fhydro.x/2 + temp[1];
-	f_neq[2] = Fhydro.y/2 + temp[2];
-	f_neq[3] = temp[3]*(s_b/2 + s_v/2) + temp[4]*(s_b/2 - s_v/2);
-	f_neq[4] = temp[3]*(s_b/2 - s_v/2) + temp[4]*(s_b/2 + s_v/2);
-	f_neq[5] = s_v*temp[5];
-	f_neq[6] = (Fhydro.y/3.)/2 + temp[6];
-	f_neq[7] = (Fhydro.x/3.)/2 + temp[7];
-	f_neq[8] = temp[8];
-	
+	f_neq[0] = -temp[0];
+	f_neq[1] = Fhydro.x/2 - temp[1];
+	f_neq[2] = Fhydro.y/2 - temp[2];
+	f_neq[3] = temp[3]*(-s_b/2 - s_v/2) + temp[4]*(-s_b/2 + s_v/2);
+	f_neq[4] = temp[3]*(-s_b/2 + s_v/2) + temp[4]*(-s_b/2 - s_v/2);
+	f_neq[5] = -s_v*temp[5];
+	f_neq[6] = Fhydro.y/3./2 - temp[6];
+	f_neq[7] = Fhydro.x/3./2 - temp[7];
+	f_neq[8] = -temp[8];
+
 	//back to raw moments
 	temp[0] = f_neq[0];
 	temp[1] = f_neq[0]*u.x + f_neq[1];
@@ -551,7 +551,7 @@ CudaDeviceFunction void relax_CM_neq(real_t f_neq[9], real_t tau, vector_t Fhydr
 	temp[6] = f_neq[0]*ux2*u.y + 2*f_neq[1]*uxuy + f_neq[2]*ux2 + f_neq[3]*u.y + 2*f_neq[5]*u.x + f_neq[6];
 	temp[7] = f_neq[0]*u.x*uy2 + f_neq[1]*uy2 + 2*f_neq[2]*uxuy + f_neq[4]*u.x + 2*f_neq[5]*u.y + f_neq[7];
 	temp[8] = f_neq[0]*ux2*uy2 + 2*f_neq[1]*u.x*uy2 + 2*f_neq[2]*ux2*u.y + f_neq[3]*uy2 + f_neq[4]*ux2 + 4*f_neq[5]*uxuy + 2*f_neq[6]*u.y + 2*f_neq[7]*u.x + f_neq[8];
-	
+
 	//back to density-probability functions
 	f_neq[0] = temp[0] - temp[3] - temp[4] + temp[8];
 	f_neq[1] = temp[1]/2 + temp[3]/2 - temp[7]/2 - temp[8]/2;
@@ -562,7 +562,6 @@ CudaDeviceFunction void relax_CM_neq(real_t f_neq[9], real_t tau, vector_t Fhydr
 	f_neq[6] = -temp[5]/4 + temp[6]/4 - temp[7]/4 + temp[8]/4;
 	f_neq[7] = temp[5]/4 - temp[6]/4 - temp[7]/4 + temp[8]/4;
 	f_neq[8] = -temp[5]/4 - temp[6]/4 + temp[7]/4 + temp[8]/4;
-	
 }
 
 CudaDeviceFunction void relax_CM(real_t f_in[9], real_t tau, vector_t Fhydro, vector_t u) 
@@ -570,16 +569,16 @@ CudaDeviceFunction void relax_CM(real_t f_in[9], real_t tau, vector_t Fhydro, ve
 	real_t ux2 = u.x*u.x;
 	real_t uy2 = u.y*u.y;
 	real_t uxuy = u.x*u.y;
-	
+
 	real_t s_v = 1./tau;
 	real_t s_b = omega_bulk;
-	
+
 	real_t m00 = f_in[0] + f_in[1] + f_in[2] + f_in[3] + f_in[4] + f_in[5] + f_in[6] + f_in[7] + f_in[8];
-	
+
 	real_t temp[9];
 	for (int i = 0; i < 9; i++) {
 		temp[i] = f_in[i];}
-	
+
 	//raw moments from density-probability functions
 	//[m00, m10, m01, m20, m02, m11, m21, m12, m22]
 	f_in[0] = temp[0] + temp[1] + temp[2] + temp[3] + temp[4] + temp[5] + temp[6] + temp[7] + temp[8];
@@ -591,7 +590,7 @@ CudaDeviceFunction void relax_CM(real_t f_in[9], real_t tau, vector_t Fhydro, ve
 	f_in[6] = temp[5] + temp[6] - temp[7] - temp[8];
 	f_in[7] = temp[5] - temp[6] - temp[7] + temp[8];
 	f_in[8] = temp[5] + temp[6] + temp[7] + temp[8];
-	
+
 	//central moments from raw moments
 	temp[0] = f_in[0];
 	temp[1] = -f_in[0]*u.x + f_in[1];
@@ -602,32 +601,17 @@ CudaDeviceFunction void relax_CM(real_t f_in[9], real_t tau, vector_t Fhydro, ve
 	temp[6] = -f_in[0]*ux2*u.y + 2*f_in[1]*uxuy + f_in[2]*ux2 - f_in[3]*u.y - 2*f_in[5]*u.x + f_in[6];
 	temp[7] = -f_in[0]*u.x*uy2 + f_in[1]*uy2 + 2*f_in[2]*uxuy - f_in[4]*u.x - 2*f_in[5]*u.y + f_in[7];
 	temp[8] = f_in[0]*ux2*uy2 - 2*f_in[1]*u.x*uy2 - 2*f_in[2]*ux2*u.y + f_in[3]*uy2 + f_in[4]*ux2 + 4*f_in[5]*uxuy - 2*f_in[6]*u.y - 2*f_in[7]*u.x + f_in[8];
-	
-	//collision in central moments space
-	// cm_after_collision = -S*(temp_populations - cm_eq) + (eye(9)-S/2)*force_in_cm_space
-	// f_in[0] = m00 - temp[0];
-	// f_in[1] = Fhydro.x/2 - temp[1];
-	// f_in[2] = Fhydro.y/2 - temp[2];
-	// f_in[3] = (-m00/3. + temp[3])*(-s_b/2 - s_v/2) + (-m00/3. + temp[4])*(-s_b/2 + s_v/2);
-	// f_in[4] = (-m00/3. + temp[3])*(-s_b/2 + s_v/2) + (-m00/3. + temp[4])*(-s_b/2 - s_v/2);
-	// f_in[5] = -s_v*temp[5];
-	// f_in[6] = Fhydro.y/3./2 - temp[6];
-	// f_in[7] = Fhydro.x/3./2 - temp[7];
-	// f_in[8] = m00/9. - temp[8];
-	// ------------- ^^ zle Oo
-	
 
-	//g[i] = g[i]+R[i]; // - takie sobie Oo
+	//collision in central moments space
 	f_in[0] = m00 - temp[0];
-	f_in[1] = -Fhydro.x/2 - temp[1];
-	f_in[2] = -Fhydro.y/2 - temp[2];
+	f_in[1] = Fhydro.x/2 - temp[1];
+	f_in[2] = Fhydro.y/2 - temp[2];
 	f_in[3] = (-m00/3. + temp[3])*(-s_b/2 - s_v/2) + (-m00/3. + temp[4])*(-s_b/2 + s_v/2);
 	f_in[4] = (-m00/3. + temp[3])*(-s_b/2 + s_v/2) + (-m00/3. + temp[4])*(-s_b/2 - s_v/2);
 	f_in[5] = -s_v*temp[5];
-	f_in[6] = -Fhydro.y/3./2 - temp[6];
-	f_in[7] = -Fhydro.x/3./2 - temp[7];
+	f_in[6] = Fhydro.y/3./2 - temp[6];
+	f_in[7] = Fhydro.x/3./2 - temp[7];
 	f_in[8] = m00/9. - temp[8];
-
 
 	//back to raw moments
 	temp[0] = f_in[0];
@@ -639,7 +623,7 @@ CudaDeviceFunction void relax_CM(real_t f_in[9], real_t tau, vector_t Fhydro, ve
 	temp[6] = f_in[0]*ux2*u.y + 2*f_in[1]*uxuy + f_in[2]*ux2 + f_in[3]*u.y + 2*f_in[5]*u.x + f_in[6];
 	temp[7] = f_in[0]*u.x*uy2 + f_in[1]*uy2 + 2*f_in[2]*uxuy + f_in[4]*u.x + 2*f_in[5]*u.y + f_in[7];
 	temp[8] = f_in[0]*ux2*uy2 + 2*f_in[1]*u.x*uy2 + 2*f_in[2]*ux2*u.y + f_in[3]*uy2 + f_in[4]*ux2 + 4*f_in[5]*uxuy + 2*f_in[6]*u.y + 2*f_in[7]*u.x + f_in[8];
-	
+
 	//back to density-probability functions
 	f_in[0] = temp[0] - temp[3] - temp[4] + temp[8];
 	f_in[1] = temp[1]/2 + temp[3]/2 - temp[7]/2 - temp[8]/2;
@@ -650,10 +634,9 @@ CudaDeviceFunction void relax_CM(real_t f_in[9], real_t tau, vector_t Fhydro, ve
 	f_in[6] = -temp[5]/4 + temp[6]/4 - temp[7]/4 + temp[8]/4;
 	f_in[7] = temp[5]/4 - temp[6]/4 - temp[7]/4 + temp[8]/4;
 	f_in[8] = -temp[5]/4 - temp[6]/4 + temp[7]/4 + temp[8]/4;
-	
 }
 
-CudaDeviceFunction void relax_and_collide_CM(real_t f_in[9], real_t tau, vector_t Fhydro, vector_t u)
+CudaDeviceFunction void relax_and_collide_CM(real_t f_in[9], real_t tau, vector_t Fhydro, vector_t u, real_t rho)
 {
     real_t ux2 = u.x*u.x;
     real_t uy2 = u.y*u.y;
@@ -691,7 +674,8 @@ CudaDeviceFunction void relax_and_collide_CM(real_t f_in[9], real_t tau, vector_
     temp[7] = -f_in[0]*u.x*uy2 + f_in[1]*uy2 + 2*f_in[2]*uxuy - f_in[4]*u.x - 2*f_in[5]*u.y + f_in[7];
     temp[8] = f_in[0]*ux2*uy2 - 2*f_in[1]*u.x*uy2 - 2*f_in[2]*ux2*u.y + f_in[3]*uy2 + f_in[4]*ux2 + 4*f_in[5]*uxuy - 2*f_in[6]*u.y - 2*f_in[7]*u.x + f_in[8];
     
-    //collision in central moments space
+	//collision in central moments space
+	// original
     f_in[0] = m00;
     f_in[1] = Fhydro.x/2;
     f_in[2] = Fhydro.y/2;
@@ -701,6 +685,17 @@ CudaDeviceFunction void relax_and_collide_CM(real_t f_in[9], real_t tau, vector_
     f_in[6] = (Fhydro.y/3.)/2;
     f_in[7] = (Fhydro.x/3.)/2;
 	f_in[8] = (m00/9.);
+
+	// tests - still doesnt work
+	// f_in[0] = m00;
+    // f_in[1] = Fhydro.x/(2.*rho);
+    // f_in[2] = Fhydro.y/(2.*rho);
+    // f_in[3] = (m00/3.)*(s_b/2 - s_v/2) + (m00/3.)*(s_b/2 + s_v/2) + temp[3]*(-s_b/2 - s_v/2 + 1) + temp[4]*(-s_b/2 + s_v/2);
+    // f_in[4] = (m00/3.)*(s_b/2 - s_v/2) + (m00/3.)*(s_b/2 + s_v/2) + temp[3]*(-s_b/2 + s_v/2) + temp[4]*(-s_b/2 - s_v/2 + 1);
+    // f_in[5] = temp[5]*(-s_v + 1);
+    // f_in[6] = Fhydro.y/(6.*rho);
+    // f_in[7] = Fhydro.x/(6.*rho);
+	// f_in[8] = (m00/9.);
 	
     //back to raw moments
     temp[0] = f_in[0];
@@ -871,7 +866,7 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 	F_surf_tension[1] = mu*gradPhi.y;
 
 	// Calculate viscous force
-	for (int j=0;j<2;j++){
+	for (int j=0;j<1;j++){
 	// The j loop was originally implemented with stability in mind. 
 	// The idea was to perform a fixed point iteration style update to assist with the interdependency of the viscous force, 
 	// velocity and g^eq. How necessary it is for accuracy/stability, 
@@ -936,11 +931,11 @@ CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 		//tau = 1.0/tau + 0.5;
 
 		// Linear update: eq23
-		tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
+		// tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
 
 		// Viscosity update: eq24 & 25
-		// real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
-		// tau = 3.0 * DynVisc / myRho + 0.5;
+		real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
+		tau = 3.0 * DynVisc / myRho + 0.5;
 	}
 
 	return tau;
@@ -1099,14 +1094,12 @@ CudaDeviceFunction void CollisionCM(){
 			Gamma[i] = calcGamma(i, U, V, mag);
 			geq[i] = wf[i]*p + Gamma[i] - wf[i];
 			R[i] = g[i] - geq[i];
-			// R[i] = g[i];
 		}
 
-		// u.x = U;
-		// u.y = V;
+		u.x = U;
+		u.y = V;
 
-		// relax_and_collide_CM(R, tau, dummy_force, u);
-		// relax_CM(R, tau, dummy_force, u) ;
+		relax_CM_neq(R, tau, dummy_force, u); // maybe there should be: '-R' ?
 		// relaxMRT(R, tau);
 
 		// Stress/strain Tensor
@@ -1118,12 +1111,12 @@ CudaDeviceFunction void CollisionCM(){
 		}
 
 		//BGK
-		F_mu[0] = (0.5-tau)/tau * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
-		F_mu[1] = (0.5-tau)/tau * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
+		// F_mu[0] = (0.5-tau)/tau * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
+		// F_mu[1] = (0.5-tau)/tau * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
 
-		//MRT/CM Viscous force
-		// F_mu[0] = (0.5-tau) * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
-		// F_mu[1] = (0.5-tau) * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
+		//MRT or CM Viscous force
+		F_mu[0] = (0.5-tau) * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
+		F_mu[1] = (0.5-tau) * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
 
 		Fhydro.x = mu*gradPhi.x + F_pressure[0] + F_body[0] + F_mu[0];
 		Fhydro.y = mu*gradPhi.y + F_pressure[1] + F_body[1] + F_mu[1];
@@ -1141,48 +1134,94 @@ CudaDeviceFunction void CollisionCM(){
 	u.x = U;
 	u.y = V;
 
+	// =========== CM phase field neq collision  - doesnt work ==========
 	// vector_t F_phi_xy;
 	// F_phi_xy.x = F_phi[1]-F_phi[3]+F_phi[5]-F_phi[6]-F_phi[7]+F_phi[8];
-	// F_phi_xy.x = F_phi[2]-F_phi[4]+F_phi[5]+F_phi[6]-F_phi[7]-F_phi[8];
-
+	// F_phi_xy.y = F_phi[2]-F_phi[4]+F_phi[5]+F_phi[6]-F_phi[7]-F_phi[8];
 	// for (int i=0; i< 9; i++) {
-	// 	R[i] = h[i];
+	// 	heq[i] = myPhaseF * Gamma[i]; 
+	// 	R[i] = h[i] - heq[i];
 	// }
-	// relax_CM(R, tau, F_phi_xy, u) ; // nie dziala
-	// for (int i=0; i< 9; i++) {
-	// 	h[i] = h[i]-R[i];
+	// relax_CM_neq(R, 1./omega_phi, F_phi_xy, u);
+	// for (int i=0; i< 9; i++){
+	// 	g[i] = g[i]+R[i];
 	// }
 
 
 	// PRESSURE EVOLUTION UPDATE:
-	// for (int i=0; i< 9; i++) { //BGK
+ 	// =========== BGK - Guo===========
+	// for (int i=0; i< 9; i++) {
 	// 	F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
 	// 	g[i] = g[i]-(g[i]-(geq[i]-0.5*F_i[i]))/tau+F_i[i];
 	// }
+	// =========== BGK ===========
 
+		
+	// =========== CM - Guo - OK ==========
+	// for (int i=0; i< 9; i++) {
+	// 	F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
+	// 	R[i] = g[i] - (geq[i]-0.5*F_i[i]);
+	// }
+	// relax_CM_neq(R, tau, dummy_force, u);
+	// for (int i=0; i< 9; i++){
+	// 	g[i] = g[i]+R[i]+F_i[i];
+	// }
+	// =========== CM - Guo	===========
+
+	// =========== CM neq collision	- OK ===========
+	for (int i=0; i< 9; i++) {
+		R[i] = g[i] - geq[i];
+	}
+	relax_CM_neq(R, tau, Fhydro, u);
+	for (int i=0; i< 9; i++){
+		g[i] = g[i]+R[i];
+	}
+	// =========== CM neq collision	===========
+
+	// =========== CM - EDM ok, but worse than Guo ==========
+	// real_t g_eq0[9], g_eq_full[9];
+
+	// U = g[1]-g[3]+g[5]-g[6]-g[7]+g[8];
+	// V = g[2]-g[4]+g[5]+g[6]-g[7]-g[8];
+	// u.x = U;
+	// u.y = V;
+
+	// mag = U*U + V*V;
+	// for (int i=0; i< 9; i++){
+	// 	Gamma[i] = calcGamma(i, U, V, mag);
+	// 	g_eq0[i] = wf[i]*p + Gamma[i] - wf[i];
+	// 	R[i] = g[i] - g_eq0[i];
+	// }
+
+	// relax_CM_neq(R, tau, dummy_force, u);
+	
+	// U += Fhydro.x/rho;
+	// V += Fhydro.x/rho;
+	// mag = U*U + V*V;
+	// for (int i=0; i< 9; i++){
+	// 	Gamma[i] = calcGamma(i, U, V, mag);
+	// 	g_eq_full[i] = wf[i]*p + Gamma[i] - wf[i];
+	// }
+
+	// for (int i=0; i< 9; i++) {
+    //     g[i] = g[i] + R[i] + g_eq_full[i]-g_eq0[i];	
+    // }
+	// =========== CM - EDM	===========
+
+
+	// =========== CM eq collision - BAD ===========
 	// for (int i=0; i< 9; i++) {
 	// 	R[i] = g[i];
 	// }
-	// relax_CM(R, tau, Fhydro, u) ;
-	// for (int i=0; i< 9; i++) {
-	// 	g[i] = g[i]-R[i];
-	//  }
+	// relax_CM(R, tau, Fhydro, u);
+	// for (int i=0; i< 9; i++){
+	// 	g[i] = g[i]+R[i];
+	// }
+	// =========== CM eq collision	===========
 
-	relax_and_collide_CM(g, tau, Fhydro, u); //ok
-	// relax_and_collide_cumulants(g, tau, Fhydro, rho);
+	// relax_and_collide_CM(g, tau, Fhydro, u, rho); // BAD
+	// relax_and_collide_cumulants(g, tau, Fhydro, rho); // BAD
 
-
-/////////////////////////////////////
-
-	for (int i=0; i< 9; i++) {
-		R[i] = g[i];
-	}
-
-	relax_CM(R, tau, dummy_force, u) ;
-
-	for (int i=0; i< 9; i++) {
-		g[i] = g[i]-R[i];
-	}
 }
 
 
@@ -1234,7 +1273,7 @@ CudaDeviceFunction void CollisionBGK(){
 	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
 
 	// Finding viscous force:
-	for (j=0;j<2;j++) {
+	for (j=0;j<1;j++) {
 		// GAMMA AND EQUILIBRIUM
 		mag = U*U + V*V;
 		for (i=0; i< 9; i++){

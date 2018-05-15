@@ -20,11 +20,10 @@
   </Geometry>
     <Model>
       <!-- <Params Density_h="1.0" Density_l="1.0" /> -->
-       <Params Density_h="1.0" Density_l="0.01831" />
+       <Params Density_h="1.0" Density_l="1.0" />
     <Params
-        
-
-        Viscosity_h="0.5" Viscosity_l="0.5"
+      
+        Viscosity_h="0.1666" Viscosity_l="0.1666"
         PhaseField_h="1.0" PhaseField_l="0.0" 
 
         ContactAngle="110" 
@@ -38,8 +37,9 @@
         />
     <Params  />
      <Params omega_bulk="1.0"/>
-    <Params GravitationY="4.17E-10" />
-    <Params GravitationX="4.07E-08" />
+    <!-- <Params GravitationY="4.17E-10" /> -->
+  <!--   <Params GravitationX="4.07E-08" /> -->
+  <Params GravitationX="1.0E-06" />
     </Model> 
     <Solve Iterations="25" output="output/"> <VTK Iterations="10"/> </Solve>
 

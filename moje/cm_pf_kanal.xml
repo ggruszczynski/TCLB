@@ -1,17 +1,22 @@
 <?xml version="1.0"?>
 <CLBConfig version="2.0" output="output/">
-        <Geometry nx="512" ny="100">
+        <Geometry nx="1024" ny="100">
 		<MRT><Box/></MRT>
-<!-- 		<WVelocity name="Inlet" nx='1' dx='5'><Box/></WVelocity>
-		<EPressure name="Outlet" nx='1' dx='-5'><Box/></EPressure> -->
+		<WVelocity name="Inlet" nx='1' dx='5'><Box/></WVelocity>
+		<EConvective name="Outlet" nx='1' dx='-5'><Box/></EConvective>
 		<Wall  mask="ALL">
 			<Box ny="1"/>
             <Box dy="-1"/>
 
-            <Wedge dx="120" nx="20" dy="50" ny="20" direction="LowerRight"/>
+<!--             <Wedge dx="120" nx="20" dy="50" ny="20" direction="LowerRight"/>
 			<Wedge dx="120" nx="20" dy="30" ny="20" direction="UpperRight"/>
 			<Wedge dx="140" nx="20" dy="50" ny="20" direction="LowerLeft"/>
-			<Wedge dx="140" nx="20" dy="30" ny="20" direction="UpperLeft"/>
+			<Wedge dx="140" nx="20" dy="30" ny="20" direction="UpperLeft"/> -->
+
+			<Wedge dx="220" nx="20" dy="50" ny="20" direction="LowerRight"/>
+			<Wedge dx="220" nx="20" dy="30" ny="20" direction="UpperRight"/>
+			<Wedge dx="240" nx="20" dy="50" ny="20" direction="LowerLeft"/>
+			<Wedge dx="240" nx="20" dy="30" ny="20" direction="UpperLeft"/>
 		</Wall>
 
 		<None name="bubble">
@@ -22,7 +27,7 @@
 
     <Params
         Density_h="1.0" Density_l="1.0" 
-        Viscosity_h="1.0" Viscosity_l="1.0"
+        Viscosity_h="0.1666" Viscosity_l="0.1666"
         PhaseField_h="1.0" PhaseField_l="0.0" 
         ContactAngle="135" 
       
@@ -34,18 +39,20 @@
         />
     <Params  />
      <Params omega_bulk="1.0"/>
+
 <!--     <Params GravitationY="4.17E-10" />
     <Params GravitationX="4.07E-08" /> -->
-    <Params GravitationX="1E-06" />
+    <!-- <Params GravitationX="1E-06" /> -->
+    <Params VelocityX="0.01" />
     </Model> 
     <Solve Iterations="25" output="output/"> <VTK Iterations="5"/> </Solve>
 
 <Geometry>
   <None mask="ADDITIONALS">
-    <Box nx="256" ny="256"/>
+    <Box nx="1024" ny="100"/>
   </None>
 </Geometry>
 <Solve Iterations="50" output="output/"> <VTK Iterations="10"/> </Solve>
-<Failcheck Iterations="1000" nx="256" ny="256"/>
+<Failcheck Iterations="1000" nx="1024" ny="100"/>
 <Solve Iterations="20000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>

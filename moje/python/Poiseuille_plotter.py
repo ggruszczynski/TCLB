@@ -18,7 +18,7 @@ with open(filename, 'r') as csvfile:
     headers = next(reader, None)  # returns the headers or `None` if the input is empty
 
     for row in reader:
-        x  = np.append(x,  float(row[0]))
+        x = np.append(x,  float(row[0]))
         u1 = np.append(u1, float(row[1]))
         u2 = np.append(u2, float(row[2]))
 

@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import csv
 import numpy as np
 import os
-from Couette_num import u_Couette_anal
-from utilites import clip_x, normalize, remove_duplicates_y
+from Couette.Couette_num import u_Couette_anal
+from utilites import remove_duplicates_y
 
 
 def read_data(filename):
@@ -46,7 +46,7 @@ plt.figure(figsize=(12, 8))
 
 
 plt.plot(x_rho/max(x_rho), u_anal/max(u_anal), color="red", label=r'$u_{analytical}$')
-plt.plot(x_rho/max(x_rho), u_rho/max(u_anal), color="green", linestyle="--", label=r'$rho^* = 10$')
+plt.plot(x_rho/max(x_rho), u_rho/max(u_anal), color="green", linestyle="--", label=r'$\rho^* = 10$')
 plt.plot(x_v/max(x_v), u_v/max(u_anal), color="blue",  linestyle="--", label=r'$v^* = 10$')
 
 
