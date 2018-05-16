@@ -1,12 +1,13 @@
 
 from SymbolicCollision.sym_col_utils import *
-
+from SymbolicCollision.symCMeq_calculator import get_cm_eq_vector
 
 # ============ COLLISION separate ================
 print("\n\n=== PRETTY CODE relax and collide ===\n\n")
 
 pop_in_str = 'f_in'  # symbol defining populations
 temp_pop_str = 'temp'  # symbol defining populations
+cm_eq_pop_str = 'cm_eq'  # symbol defining populations
 
 # eq8 : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
 print("CudaDeviceFunction void relax_and_collide_CM("
@@ -25,12 +26,13 @@ print("")
 
 print_ccode(get_m00(pop_in_str), assign_to='real_t m00')
 
-print("\nreal_t %s[9];\n"
-      "for (int i = 0; i < 9; i++) {\n\t"
-      "%s[i] = %s[i];}" % (temp_pop_str, temp_pop_str, pop_in_str))
+print("\nreal_t %s[9]; real_t %s[9];\n" % (temp_pop_str, cm_eq_pop_str))
+print("for (int i = 0; i < 9; i++) {\n\t"
+      "%s[i] = %s[i];}" % (temp_pop_str, pop_in_str))
 
 populations = get_populations(pop_in_str)
 temp_populations = get_populations(temp_pop_str)
+cm_eq = get_populations(cm_eq_pop_str)
 m = Mraw * temp_populations
 
 print("\n//raw moments from density-probability functions")
@@ -46,6 +48,9 @@ print_as_vector_re(cm, print_symbol=temp_pop_str)
 #     print_ccode(cm[i], assign_to='%s[%s]' % (temp_pop_str, i))
 
 print("\n//collision in central moments space")
+print("//calculate equilibrium distributions in cm space")
+print_as_vector_re(get_cm_eq_vector(), cm_eq_pop_str)
+print("//collide")
 cm_after_collision = (eye(9)-S)*temp_populations + S*cm_eq + (eye(9)-S/2)*force_in_cm_space  # eq 8
 print_as_vector_raw(cm_after_collision, print_symbol=pop_in_str)
 

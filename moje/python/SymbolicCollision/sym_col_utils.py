@@ -17,6 +17,21 @@ import re
 import numpy as np
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
 
+
+# SYMBOLS:
+ux = Symbol('u.x')
+uy = Symbol('u.y')
+
+sv = Symbol('s_v')  # s_v = 1 /(tau + 0.5)
+sb = Symbol('s_b')  # results in bulk viscosity = 1/6 since : zeta = (1/sb - 0.5)*cs^2*dt
+
+ex = Matrix([0, 1, 0, -1, 0, 1, -1, -1, 1])
+ey = Matrix([0, 0, 1, 0, -1, 1, 1, -1, -1])
+
+p_star = Symbol('m00')
+w = Matrix([4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36])
+
+
 # HELPERS:
 def print_u2():
     ux2 = "ux2"
@@ -39,6 +54,10 @@ def print_as_vector_re(some_matrix, print_symbol='default_symbol1'):
         row = re.sub("%s\*\*2" % ux, '%s' % ux2, row)
         row = re.sub("%s\*\*2" % uy, '%s' % uy2, row)
         row = re.sub("%s\*%s" % (ux, uy), '%s' % uxuy, row)
+
+        row = re.sub("0.333333333333333", "1./3.", row)
+        row = re.sub("0.111111111111111", "1./9.", row)
+        row = re.sub("1.0\*", "", row)
         print("%s[%d] = %s;" % (print_symbol, i, row))
         # raw
         # print("%s[%d] = %s;" % (print_symbol, i, rows[i]))
@@ -67,17 +86,10 @@ def get_m00(print_symbol='default_symbol3'):
     return m00
 
 
-# SYMBOLS:
-ux = Symbol('u.x')
-uy = Symbol('u.y')
+# TRANSFORMATIONS:
 f_in = get_populations('f_in')
 feq = get_populations('f_eq')
 # body_force = get_populations('F_i')
-
-sv = Symbol('s_v')  # s_v = 1 /(tau + 0.5)
-sb = Symbol('s_b') # results in bulk viscosity = 1/6 since : zeta = (1/sb - 0.5)*cs^2*dt
-
-# TRANSFORMATIONS:
 
 # this matrix will produce raw moments (m=M*f) in the following order:
 # [m00, m10, m01, m20, m02, m11, m21, m12, m22]
@@ -139,13 +151,13 @@ force_in_cm_space = Matrix([
             0,
             ])
 
-cm_eq = Matrix([Symbol('m00'),
-                0,
-                0,
-                Symbol('m00/3.'),
-                Symbol('m00/3.'),
-                0,
-                0,
-                0,
-                Symbol('m00/9.'),
-                ])
+# cm_eq = Matrix([Symbol('m00'),
+#                 0,
+#                 0,
+#                 Symbol('m00/3.'),
+#                 Symbol('m00/3.'),
+#                 0,
+#                 0,
+#                 0,
+#                 Symbol('m00/9.'),
+#                 ])

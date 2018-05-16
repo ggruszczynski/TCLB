@@ -3,7 +3,7 @@
         <Geometry nx="1024" ny="100">
 		<MRT><Box/></MRT>
 		<WVelocity name="Inlet" nx='1' dx='5'><Box/></WVelocity>
-		<EConvective name="Outlet" nx='1' dx='-5'><Box/></EConvective>
+		<Convective_E name="Outlet" nx='1' dx='-5'><Box/></Convective_E>
 		<Wall  mask="ALL">
 			<Box ny="1"/>
             <Box dy="-1"/>

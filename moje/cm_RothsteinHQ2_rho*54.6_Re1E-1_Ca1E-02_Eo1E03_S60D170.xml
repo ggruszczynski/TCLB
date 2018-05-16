@@ -20,7 +20,7 @@
   </Geometry>
     <Model>
       <!-- <Params Density_h="1.0" Density_l="1.0" /> -->
-       <Params Density_h="1.0" Density_l="1.0" />
+       <Params Density_h="1.0" Density_l="0.01" />
     <Params
       
         Viscosity_h="0.1666" Viscosity_l="0.1666"
@@ -39,7 +39,7 @@
      <Params omega_bulk="1.0"/>
     <!-- <Params GravitationY="4.17E-10" /> -->
   <!--   <Params GravitationX="4.07E-08" /> -->
-  <Params GravitationX="1.0E-08" />
+  <Params GravitationX="1.0E-07" />
     </Model> 
     <Solve Iterations="25" output="output/"> <VTK Iterations="10"/> </Solve>
 
