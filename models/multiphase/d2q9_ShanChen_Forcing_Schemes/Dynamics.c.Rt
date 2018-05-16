@@ -70,13 +70,13 @@ CudaDeviceFunction void Run() {
     }
     if (NodeType & NODE_MRT) 
     {
-        // CollisionBGK_SCforcing();
+        // CollisionBGK_SCforcing(); // OK
         // CollisionBGK_EDM_forcing();
         // CollisionCM();
-        CollisionCM_neq();
-        // CollisionCM_EDM_forcing();
-        // CollisionCumulant_EDM_forcing();
-        // CollisionCumulant();
+        // CollisionCM_neq();
+        // CollisionCM_EDM_forcing(); // OK
+        // CollisionCumulant_EDM_forcing(); // OK
+        // CollisionCumulant(); // OK
     }
 
     neighbour_type = neighbour_type(0,0);
@@ -282,10 +282,7 @@ CudaDeviceFunction void CollisionCM_neq() {
 	for (int i=0; i< 9; i++) {
         R[i] = f[i] - f_eq[i];	
 	}
-
 	relax_CM_neq(R, 1./omega, force_total, u);
-	
-
 	for (int i=0; i< 9; i++) {
 		f[i] = f[i] + R[i];	
 	}

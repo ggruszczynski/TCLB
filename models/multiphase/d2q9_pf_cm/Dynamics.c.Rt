@@ -368,8 +368,8 @@ CudaDeviceFunction void calcHydroIter() {
 		BC_Switcher();
 
 		if (NodeType & NODE_MRT) {
-			 CollisionMRT();
-			//  CollisionCM();
+			//   CollisionMRT();
+			CollisionCM();
 			//  CollisionBGK();
 		} 
 		else if (NodeType & NODE_BGK) {
@@ -646,7 +646,7 @@ CudaDeviceFunction void relax_and_collide_CM(real_t f_in[9], real_t tau, vector_
     real_t s_b = omega_bulk;
 
     real_t m00 = f_in[0] + f_in[1] + f_in[2] + f_in[3] + f_in[4] + f_in[5] + f_in[6] + f_in[7] + f_in[8];
-    
+
     real_t temp[9];
     for (int i = 0; i < 9; i++) {
         temp[i] = f_in[i];}
@@ -886,9 +886,10 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForce(vector_t gradPhi, real_t 
 		// vector_t dummy_force; 
 		// dummy_force.x = 0; dummy_force.y =0;
 		// vector_t u;
-		// u.x = U;
-		// u.y = V;
-		// relax_CM_neq(R, tau, dummy_force, u) ;
+		// 	u.x = U;
+		// 	u.y = V;
+	 	//relax_CM_neq(R, tau, dummy_force, u); // maybe there should be: '-R' ?
+
 
 		// Stress/strain Tensor
 		stress[0] = 0.0;stress[1] = 0.0;stress[2] = 0.0;
@@ -931,11 +932,11 @@ CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 		//tau = 1.0/tau + 0.5;
 
 		// Linear update: eq23
-		// tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
+		tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
 
 		// Viscosity update: eq24 & 25
-		real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
-		tau = 3.0 * DynVisc / myRho + 0.5;
+		// real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
+		// tau = 3.0 * DynVisc / myRho + 0.5;
 	}
 
 	return tau;
@@ -970,7 +971,7 @@ CudaDeviceFunction void CollisionMRT(){
 	real_t ny = gradPhi.y/gradPhi.z;
 
 	real_t p = getNormalizedPressure(); // normlized pressure
-	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), getNormalizedPressure());
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
 
 	// PHASE FIELD POPULATION UPDATE:
 	#ifdef OPTIONS_RT
@@ -1019,10 +1020,10 @@ CudaDeviceFunction void CollisionMRT(){
 	}
 
 	relaxMRT(R, tau);
-		// Collision
-		for (int i=0; i< 9; i++) {
-			g[i] = g[i]-R[i]+F_i[i];
-		}
+	// Collision
+	for (int i=0; i< 9; i++) {
+		g[i] = g[i]-R[i]+F_i[i];
+	}
 // ---------------------- MRT ---------------------------
 
 	vector_t u;
@@ -1071,68 +1072,22 @@ CudaDeviceFunction void CollisionCM(){
 	real_t nx = gradPhi.x/gradPhi.z;  // GradPhi normalized in x, y direction
 	real_t ny = gradPhi.y/gradPhi.z;
 
-
 	// CALCULATE FORCES:
-	vector_t Fhydro;
-	real_t F_pressure[2], F_body[2], F_mu[2], F_total[2]; // Forces
-	real_t tmp1, stress[3];				// Stress tensor calculation
+	vector_t dummy_force; dummy_force.x = 0; dummy_force.y =0;
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
 
-	F_pressure[0] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.x;
-	F_pressure[1] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.y;
-	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
-	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
-
-	vector_t dummy_force; 
-	dummy_force.x = 0; dummy_force.y =0;
-
-	vector_t u;
-	// Finding viscous force:
-	for (int j=0;j<1;j++) {
-		// GAMMA AND EQUILIBRIUM
-		mag = U*U + V*V;
-		for (int i=0; i< 9; i++){
-			Gamma[i] = calcGamma(i, U, V, mag);
-			geq[i] = wf[i]*p + Gamma[i] - wf[i];
-			R[i] = g[i] - geq[i];
-		}
-
-		u.x = U;
-		u.y = V;
-
-		relax_CM_neq(R, tau, dummy_force, u); // maybe there should be: '-R' ?
-		// relaxMRT(R, tau);
-
-		// Stress/strain Tensor
-		stress[0] = 0.0;stress[1] = 0.0;stress[2] = 0.0;
-		for (int i=0; i< 9; i++){
-			stress[0] += R[i]*d2q9_ex[i]*d2q9_ex[i];
-			stress[1] += R[i]*d2q9_ex[i]*d2q9_ey[i];
-			stress[2] += R[i]*d2q9_ey[i]*d2q9_ey[i];      
-		}
-
-		//BGK
-		// F_mu[0] = (0.5-tau)/tau * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
-		// F_mu[1] = (0.5-tau)/tau * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
-
-		//MRT or CM Viscous force
-		F_mu[0] = (0.5-tau) * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
-		F_mu[1] = (0.5-tau) * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
-
-		Fhydro.x = mu*gradPhi.x + F_pressure[0] + F_body[0] + F_mu[0];
-		Fhydro.y = mu*gradPhi.y + F_pressure[1] + F_body[1] + F_mu[1];
-		U = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*Fhydro.x/rho;
-		V = g[2]-g[4]+g[5]+g[6]-g[7]-g[8] + 0.5*Fhydro.y/rho;
-	}
 	// PHASE FIELD POPULATION UPDATE:
-	tmp1 = (1.0 - 4.0*(myPhaseF - pfavg)*(myPhaseF - pfavg))/W;
+	for (int i=0; i< 9; i++){
+		Gamma[i] = calcGamma(i, U, V, mag);
+		geq[i] = wf[i]*p + Gamma[i] - wf[i]; 
+	}
+
+	real_t tmp1 = (1.0 - 4.0*(myPhaseF - pfavg)*(myPhaseF - pfavg))/W;
 	for (int i=0; i< 9; i++){
 		F_phi[i] = calcF_phi(i, tmp1, nx, ny); // Forcing Terms
 		heq[i] = myPhaseF * Gamma[i] - 0.5*F_phi[i];  // heq
 		h[i] = h[i] - omega_phi * (h[i]-heq[i]) + F_phi[i];	// collision
 	}
-
-	u.x = U;
-	u.y = V;
 
 	// =========== CM phase field neq collision  - doesnt work ==========
 	// vector_t F_phi_xy;
@@ -1147,16 +1102,18 @@ CudaDeviceFunction void CollisionCM(){
 	// 	g[i] = g[i]+R[i];
 	// }
 
-
 	// PRESSURE EVOLUTION UPDATE:
- 	// =========== BGK - Guo===========
+	vector_t u;
+	u.x = U;
+	u.y = V;
+
+ 	// =========== BGK - Guo (original - OK)===========
 	// for (int i=0; i< 9; i++) {
 	// 	F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
 	// 	g[i] = g[i]-(g[i]-(geq[i]-0.5*F_i[i]))/tau+F_i[i];
 	// }
 	// =========== BGK ===========
-
-		
+	
 	// =========== CM - Guo - OK ==========
 	// for (int i=0; i< 9; i++) {
 	// 	F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
@@ -1167,6 +1124,17 @@ CudaDeviceFunction void CollisionCM(){
 	// 	g[i] = g[i]+R[i]+F_i[i];
 	// }
 	// =========== CM - Guo	===========
+
+	// =========== MRT - Guo - OK ==========
+	// for (int i=0; i< 9; i++){
+	// 	F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
+	// 	R[i] = g[i] - (geq[i] - 0.5*F_i[i]);
+	// }
+	// relaxMRT(R, tau);
+	// for (int i=0; i< 9; i++) {
+	// 	g[i] = g[i]-R[i]+F_i[i];
+	// }
+	// =========== MRT - Guo - OK ==========
 
 	// =========== CM neq collision	- OK ===========
 	for (int i=0; i< 9; i++) {
