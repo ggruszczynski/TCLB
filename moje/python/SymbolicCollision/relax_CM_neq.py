@@ -18,7 +18,7 @@ print("CudaDeviceFunction void relax_CM_neq("
       "vector_t u) \n{"
       % pop_in_str)
 
-print_u2()
+print_u2_u3()
 print("real_t %s = 1./tau;" % sv)
 print("real_t %s = omega_bulk;" % sb)  # s_b = 1./(3*bulk_visc + 0.5)
 print("")

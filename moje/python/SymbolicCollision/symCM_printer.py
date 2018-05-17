@@ -1,0 +1,39 @@
+
+from SymbolicCollision.sym_col_utils import *
+
+print('// welcome to cm! \n ')
+
+print('\n//F_cm_He_original')
+F_cm_He_original = get_cm_eq_vector(get_force_He_original)
+print_as_vector_re(F_cm_He_original, 'F_cm')
+
+print('\n//F_cm_He_pf')
+F_cm_He_pf = get_cm_eq_vector(get_force_He_pf)
+print_as_vector_re(F_cm_He_pf, 'F_cm')
+
+print('\n//F_cm_Guo_bez_U')
+F_cm_Guo_bez_U = get_cm_eq_vector(get_force_Guo_bez_U)
+print_as_vector_re(F_cm_Guo_bez_U, 'F_cm')
+
+print('\n//F_cm_Guo')
+F_cm_Guo = get_cm_eq_vector(get_force_Guo)
+print_as_vector_re(F_cm_Guo, 'F_cm')
+
+print('\n//F_cm_Guo_extended')
+F_cm_Guo_extended = get_cm_eq_vector(get_force_Guo_extended)
+print_as_vector_re(F_cm_Guo_extended, 'F_cm')
+
+print('\n//population_eq -> cm_eq - by definition: k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_eq_i)')
+pop_eq = get_cm_eq_vector(lambda i: Symbol('m00') * get_gamma(i))
+print_as_vector_re(pop_eq, 'pop_eq')
+
+print('\n//population -> cm - by definition: k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_i)')
+pop_cm = get_cm_eq_vector(lambda i: Symbol('%s[%d]' % ('pop', i)))
+print_as_vector_re(pop_cm, 'pop_cm')
+
+print('\n//phase-field hydrodynamic model: population_eq_pf -> cm_eq_pf - by definition: '
+      '\n//k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_eq_pf_i)')
+cm_eq_pf = get_cm_eq_vector(get_pop_eq_pf)
+print_as_vector_re(cm_eq_pf, 'cm_eq_pf')
+
+print('\n\n Done!')

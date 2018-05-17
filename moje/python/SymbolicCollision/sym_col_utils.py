@@ -12,7 +12,7 @@ from sympy import Symbol
 from sympy.interactive.printing import init_printing
 from sympy.printing import print_ccode
 from sympy.matrices import Matrix, eye, zeros, ones, diag, GramSchmidt
-
+from sympy import latex
 import re
 import numpy as np
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
@@ -28,26 +28,36 @@ sb = Symbol('s_b')  # results in bulk viscosity = 1/6 since : zeta = (1/sb - 0.5
 ex = Matrix([0, 1, 0, -1, 0, 1, -1, -1, 1])
 ey = Matrix([0, 0, 1, 0, -1, 1, 1, -1, -1])
 
+Fx = Symbol('Fhydro.x')
+Fy = Symbol('Fhydro.y')
+
 p_star = Symbol('m00')
+rho = Symbol('rho')
 w = Matrix([4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36])
+
+uxuy = Symbol('uxuy')
+ux2 = Symbol('ux2')
+uy2 = Symbol('uy2')
+
+ux3 = Symbol('ux3')
+uy3 = Symbol('uy3')
+uxuy3 = Symbol('uxuy3')
 
 
 # HELPERS:
-def print_u2():
-    ux2 = "ux2"
-    print("real_t %s = %s*%s;" % (ux2, ux, ux))
-    uy2 = "uy2"
-    print("real_t %s = %s*%s;" % (uy2, uy, uy))
-    uxuy = "uxuy"
+def print_u2_u3():
     print("real_t %s = %s*%s;" % (uxuy, ux, uy))
+    print("real_t %s = %s*%s;" % (ux2, ux, ux))
+    print("real_t %s = %s*%s;" % (uy2, uy, uy))
+
+    print("real_t %s = %s*%s;" % (ux3, ux2, ux))
+    print("real_t %s = %s*%s;" % (uy3, uy2, uy))
+    print("real_t %s = %s*%s*%s;" % (uxuy3, uxuy, uxuy, uxuy))
     print("")
 
 
 def print_as_vector_re(some_matrix, print_symbol='default_symbol1'):
     rows = some_matrix._mat
-    ux2 = "ux2"
-    uy2 = "uy2"
-    uxuy = "uxuy"
 
     for i in range(len(rows)):
         row = str(rows[i])
@@ -55,10 +65,17 @@ def print_as_vector_re(some_matrix, print_symbol='default_symbol1'):
         row = re.sub("%s\*\*2" % uy, '%s' % uy2, row)
         row = re.sub("%s\*%s" % (ux, uy), '%s' % uxuy, row)
 
-        row = re.sub("0.333333333333333", "1./3.", row)
-        row = re.sub("0.111111111111111", "1./9.", row)
+        row = re.sub("%s\*\*3" % ux, '%s' % ux3, row)
+        row = re.sub("%s\*\*3" % uy, '%s' % uy3, row)
+        row = re.sub("%s\*\*3" % uxuy, '%s' % uxuy3, row)
+
+        row = re.sub("0.33333333333333", "1./3.", row)
+        row = re.sub("0.11111111111111", "1./9.", row)
+        row = re.sub("0.166666666666667", "1./6.", row)
+        row = re.sub("0.66666666666667", "2./3.", row)
         row = re.sub("1.0\*", "", row)
         print("%s[%d] = %s;" % (print_symbol, i, row))
+
         # raw
         # print("%s[%d] = %s;" % (print_symbol, i, rows[i]))
 
@@ -139,17 +156,17 @@ S[3, 4] = s_minus
 S[4, 3] = s_minus
 
 
-force_in_cm_space = Matrix([
-            0,
-            Symbol('Fhydro.x'),
-            Symbol('Fhydro.y'),
-            0,
-            0,
-            0,
-            Symbol('Fhydro.y/3.'),
-            Symbol('Fhydro.x/3.'),
-            0,
-            ])
+# force_in_cm_space = Matrix([
+#             0,
+#             Fx,
+#             Fy,
+#             0,
+#             0,
+#             0,
+#             Fy/3.,
+#             Fx/3.,
+#             0,
+#             ])
 
 # cm_eq = Matrix([Symbol('m00'),
 #                 0,
@@ -161,3 +178,127 @@ force_in_cm_space = Matrix([
 #                 0,
 #                 Symbol('m00/9.'),
 #                 ])
+
+from SymbolicCollision.sym_col_utils import *
+from sympy import simplify, Float, preorder_traversal
+
+
+def get_e():
+    symbols_ = [Matrix([ex[i], ey[i]]) for i in range(9)]
+    return Matrix([symbols_])
+
+
+def get_gamma(i):
+    cs2 = 1./3.
+    # cs2 = Symbol('cs2')
+    eu = ex[i] * ux + ey[i] * uy
+    u2 = ux * ux + uy * uy
+    gamma = w[i] * (1 + eu / cs2 + eu * eu / (2 * cs2 * cs2) - u2 / (2 * cs2))
+    return gamma
+
+
+def get_pop_eq_pf(i):
+    gamma = get_gamma(i)
+    g = p_star * w[i] + gamma - w[i]
+    return g
+
+
+def get_force_He_original(i):
+    """
+    'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
+    """
+    cs2 = 1./3.
+    # cs2 = Symbol('cs2')
+    euF = (ex[i] - ux)*Fx + (ey[i] - uy)*Fy
+    pop_eq = p_star*get_gamma(i)
+    R = pop_eq * euF / (rho * cs2)
+    return R
+
+
+def get_force_He_pf(i):
+    """
+    'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
+    version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
+    """
+    cs2 = 1./3.
+    # cs2 = Symbol('cs2')
+    euF = (ex[i] - ux)*Fx + (ey[i] - uy)*Fy
+    pop_eq = get_pop_eq_pf(i)
+    # R = pop_eq*euF/(p_star*cs2)  # TODO: rho instead p_star?
+    R = pop_eq * euF / (rho * cs2)  # TODO: rho instead p_star?
+    return R
+
+
+def get_force_Guo_bez_U(i):
+    """
+    'Discrete lattice effects on the forcing term in the lattice Boltzmann method',  Guo et al., 2001
+    version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
+    """
+    # first order terms only
+    cs2 = 1./3.
+    # # cs2 = Symbol('cs2')
+    # eF = (ex[i] - ux) * Fx + (ey[i] - uy) * Fy  # TODO why (ey[i] - uy)
+    eF = ex[i]*Fx + ey[i]*Fy
+    R = w[i]*eF/(rho*cs2)
+    return R
+
+def get_force_Guo(i):
+    """
+    'Discrete lattice effects on the forcing term in the lattice Boltzmann method',  Guo et al., 2001
+    version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
+    """
+    # first order terms only
+    cs2 = 1./3.
+    # # cs2 = Symbol('cs2')
+    eF = (ex[i] - ux) * Fx + (ey[i] - uy) * Fy  # TODO why (ey[i] - uy)
+    # eF = ex[i]*Fx + ey[i]*Fy
+    R = w[i]*eF/(rho*cs2)
+    return R
+
+
+def get_force_Guo_extended(i):
+    """
+    'Discrete lattice effects on the forcing term in the lattice Boltzmann method',  Guo et al., 2001
+    version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
+    """
+    # extended version with second order terms
+    cs2 = 1. / 3.
+    temp_x = ex[i] - ux + (ex[i]*ux + ey[i]*uy)*ex[i]/cs2
+    temp_y = ey[i] - uy + (ex[i]*ux + ey[i]*uy)*ey[i]/cs2
+    R = w[i]*(temp_x*Fx + temp_y*Fy)/(rho*cs2)
+    return R
+
+
+def get_cm_eq(m, n, fun):
+    k = 0
+    for i in range(9):
+        # pop = get_pop_eq(i)
+        # pop = p_star * get_gamma(i)
+        # pop = Symbol('f[%d]' % i)
+        pop = fun(i)
+        k += pow((ex[i] - ux), m) * pow((ey[i] - uy), n) * pop
+
+    k = simplify(k)
+    k_rounded = k
+
+    for a in preorder_traversal(k):
+        if isinstance(a, Float):
+            k_rounded = k_rounded.subs(a, round(a, 14))
+
+    k_rounded = simplify(k_rounded)
+    return k_rounded
+
+
+def get_cm_eq_vector(fun):
+    cm_eq = [get_cm_eq(0, 0, fun),
+             get_cm_eq(1, 0, fun),
+             get_cm_eq(0, 1, fun),
+             get_cm_eq(2, 0, fun),
+             get_cm_eq(0, 2, fun),
+             get_cm_eq(1, 1, fun),
+             get_cm_eq(2, 1, fun),
+             get_cm_eq(1, 2, fun),
+             get_cm_eq(2, 2, fun)
+             ]
+    return Matrix([cm_eq])
+
