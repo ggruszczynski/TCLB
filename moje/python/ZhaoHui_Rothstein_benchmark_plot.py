@@ -59,11 +59,11 @@ x_pf, u_pf = remove_duplicates_y(x_pf, u_pf)
 # make plot
 plt.rcParams.update({'font.size': 22})
 plt.figure(figsize=(12, 8))
-plt.plot(x_ZhaoHui, u_ZhaoHui, color="red", marker=".", linestyle="", label='Li et al. (2015)')  # [ZhaoHui]
-plt.plot(x_pf, u_pf / max(u_pf), color="blue", marker=".", linestyle="",  label='current model')
-plt.plot(x_Rothstein, u_Rothstein, color="green", marker="x", linestyle="",  label='Ou and Rothstein (2005)')  # [Rothstein]
-plt.xlabel(r'$y/D$')
-plt.ylabel(r'$u/U_{max}$')
+plt.plot(u_ZhaoHui, x_ZhaoHui, color="red", marker=".", linestyle="", label='Li et al. (2015)')  # [ZhaoHui]
+plt.plot(u_pf / max(u_pf), x_pf,  color="blue", marker=".", linestyle="",  label='current model')
+plt.plot(u_Rothstein, x_Rothstein,color="green", marker="x", linestyle="",  label='Ou and Rothstein (2005)')  # [Rothstein]
+plt.ylabel(r'$y/D$')
+plt.xlabel(r'$u/U_{max}$')
 
 # plt.title('Normalized velocity profile \n Channel flow')
 plt.grid(True)

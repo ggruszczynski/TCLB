@@ -367,17 +367,20 @@ CudaDeviceFunction void calcHydroIter() {
 	else{
 		BC_Switcher();
 
-		if (NodeType & NODE_MRT) {
-			  CollisionMRT();
-			// CollisionCM();
-			//  CollisionBGK();
-		} 
-		else if (NodeType & NODE_BGK) {
-			CollisionBGK();
+		switch (NodeType & NODE_COLLISION) {
+			case NODE_MRT:
+				CollisionMRT();
+				break;
+			case NODE_CM:
+				CollisionCM();
+				break;
+			case NODE_BGK:
+				CollisionBGK();
+				break;
 		}
 	}
 
-	log_data_from_special_nodes();
+	//log_data_from_special_nodes();
 }
 
 
@@ -896,7 +899,7 @@ CudaDeviceFunction void CollisionMRT(){
 
 	real_t F_phi[9], heq[9];		// Phase field collision terms
 	real_t F_i[9];					// Momentum distribution forcing term
-	real_t R[9], S[9];				// Populations for MRT relaxation
+	real_t R[9];				// Populations for MRT relaxation
 
 	// Find Macroscopic Details
 	real_t rho = calcRho(myPhaseF);
@@ -962,41 +965,94 @@ CudaDeviceFunction void CollisionMRT(){
 	for (int i=0; i< 9; i++) {
 		g[i] = g[i]-R[i]+F_i[i];
 	}
-// ---------------------- MRT ---------------------------
+	// ---------------------- MRT ---------------------------
 
-	vector_t u;
-	u.x = U;
-	u.y = V;
-	// for (int i=0; i< 9; i++) {
-	// 	R[i] = g[i] - geq[i];
+	// if ((NodeType & NODE_BOUNDARY) == NODE_NVelocity)
+    // {
+
+	// 	real_t dJ = <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> * rho + 0.5*Fhydro.x; // 'outgoing' momentum - after collision
+	// 	AddToNMovingWallForce(dJ);	
+	// 	AddToNMovingWallPower(VelocityX*dJ); // VelocityX of moving wallidl
+
+	// 	// <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>;	--compiles to--> 	-g[7] + g[8];
 	// }
-
-	// relax_CM_neq(R, tau, Fhydro, u) ;
-
-	// for (int i=0; i< 9; i++) {
-	// 	g[i] = g[i]+R[i];
-	// }
-
-	//relax_and_collide_CM(g, tau, Fhydro, u); //ok
-
-	if ((NodeType & NODE_BOUNDARY) == NODE_NVelocity)
-    {
-
-		real_t dJ = <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> * rho + 0.5*Fhydro.x; // 'outgoing' momentum - after collision
-		AddToNMovingWallForce(dJ);	
-		AddToNMovingWallPower(VelocityX*dJ); // VelocityX of moving wallidl
-
-		// <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>;	--compiles to--> 	-g[7] + g[8];
-	}
 
 }
 
 CudaDeviceFunction void CollisionCM(){
+	#ifdef OPTIONS_RT
+		real_t uold = U;
+		real_t vold = V;
+	#endif
+
+	real_t myPhaseF = PhaseF(0,0);
+	real_t F_phi[9], heq[9];		// Phase field collision terms
+
+	// Find Macroscopic Details
+	real_t rho = calcRho(myPhaseF);
+	real_t tau = calcTau(myPhaseF, rho);
+	real_t pfavg = 0.5*(PhaseField_l+PhaseField_h);
+
+	//  Gradients & Normals
+	vector_t gradPhi = calcGradPhi(); // Phase field gradient
+	real_t nx = gradPhi.x/gradPhi.z;  // GradPhi normalized in x, y direction
+	real_t ny = gradPhi.y/gradPhi.z;
+
+	real_t p = getNormalizedPressure(); // normlized pressure
+	vector_t Fhydro = calcTotalHydrodynamicForce(gradPhi, myPhaseF, rho, tau,  calcMu(myPhaseF), p);
+
+	// PHASE FIELD POPULATION UPDATE:
+	#ifdef OPTIONS_RT
+		real_t Req[9];
+	#endif
+
+	real_t Gamma[9], geq[9]; 	// equilibrium
+	real_t mag = U*U + V*V; 	// velocity magnitude
+	for (int i=0; i< 9; i++){
+		Gamma[i] = calcGamma(i, U, V, mag);
+		//geq[i] = wf[i]*p + Gamma[i] - wf[i]; 
+	}
+
+	real_t tmp1 = (1.0 - 4.0*(myPhaseF - pfavg)*(myPhaseF - pfavg))/W;
+	for (int i=0; i< 9; i++){
+		#ifdef OPTIONS_RT
+			Req[i] = 3.0 * wf[i] * (d2q9_ex[i] * (myPhaseF*U - PhaseOld*uold)
+				+ d2q9_ey[i] * (myPhaseF*V - PhaseOld*vold));
+			F_phi[i] = calcF_phi(i, tmp1, nx, ny) + Req[i];
+			heq[i] = myPhaseF * wf[i] * (1 + 3.0 * (d2q9_ex[i]*U + d2q9_ey[i]*V) ) - 0.5*F_phi[i];
+		#else
+			F_phi[i] = calcF_phi(i, tmp1, nx, ny); // Forcing Terms
+			heq[i] = myPhaseF * Gamma[i] - 0.5*F_phi[i];  // heq
+		#endif
+			h[i] = h[i] - omega_phi * (h[i]-heq[i]) + F_phi[i];	// collision
+		}
+
+	//  PRESSURE EVOLUTION UPDATE:
+	// ---------------------- CM ---------------------------
+
+	vector_t u;
+	u.x = U;
+	u.y = V;
+	relax_and_collide_CM(g, tau, Fhydro, u, rho); // OK :)
+
+	// if ((NodeType & NODE_BOUNDARY) == NODE_NVelocity)
+    // {
+
+	// 	real_t dJ = <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?> * rho + 0.5*Fhydro.x; // 'outgoing' momentum - after collision
+	// 	AddToNMovingWallForce(dJ);	
+	// 	AddToNMovingWallPower(VelocityX*dJ); // VelocityX of moving wallidl
+
+	// 	// <?R C(g[7+1]*d2q9[7+1,1] + g[8+1]*d2q9[8+1,1]) ?>;	--compiles to--> 	-g[7] + g[8];
+	// }
+
+}
+
+CudaDeviceFunction void Collision_ForcingSchemes(){
 	real_t myPhaseF = PhaseF(0,0);
 	real_t Gamma[9], geq[9], mag;
 	real_t F_phi[9], heq[9];		// Phase field collision terms
 	real_t F_i[9];					// Momentum distribution forcing term
-	real_t R[9], S[9];				// Populations for MRT relaxation
+	real_t R[9];					// Populations for MRT relaxation
 
 	// Find Macroscopic Details
 	real_t rho = calcRho(myPhaseF);
@@ -1064,14 +1120,14 @@ CudaDeviceFunction void CollisionCM(){
 	// =========== CM - Guo	===========
 
 	// =========== MRT - Guo - OK ==========
-	// for (int i=0; i< 9; i++){
-	// 	F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
-	// 	R[i] = g[i] - (geq[i] - 0.5*F_i[i]);
-	// }
-	// relaxMRT(R, tau);
-	// for (int i=0; i< 9; i++) {
-	// 	g[i] = g[i]-R[i]+F_i[i];
-	// }
+	for (int i=0; i< 9; i++){
+		F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
+		R[i] = g[i] - (geq[i] - 0.5*F_i[i]);
+	}
+	relaxMRT(R, tau);
+	for (int i=0; i< 9; i++) {
+		g[i] = g[i]-R[i]+F_i[i];
+	}
 	// =========== MRT - Guo - OK ==========
 
 	// =========== CM neq collision	- OK ===========
@@ -1125,7 +1181,7 @@ CudaDeviceFunction void CollisionCM(){
 	// }
 	// =========== CM eq collision	===========
 
-	relax_and_collide_CM(g, tau, Fhydro, u, rho); // OK :)
+	//relax_and_collide_CM(g, tau, Fhydro, u, rho); // OK :)
 }
 
 
