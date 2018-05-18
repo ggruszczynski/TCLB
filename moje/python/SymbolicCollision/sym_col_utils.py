@@ -31,6 +31,13 @@ ey = Matrix([0, 0, 1, 0, -1, 1, 1, -1, -1])
 Fx = Symbol('Fhydro.x')
 Fy = Symbol('Fhydro.y')
 
+F_phi_x = Symbol('F_phi.x')
+F_phi_y = Symbol('F_phi.y')
+
+phi_norm_grad_x = Symbol('norm_grad_phi.x')  # normalized gradient of the phase field in the x direction
+phi_norm_grad_y = Symbol('norm_grad_phi.y')  # normalized gradient of the phase field in the y direction
+F_phi_coeff = Symbol('F_phi_coeff')  # F_phi_coeff=(1.0 - 4.0*(myPhaseF - pfavg)*(myPhaseF - pfavg))/inteface_width;
+
 p_star = Symbol('m00')
 rho = Symbol('rho')
 w = Matrix([4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36])
@@ -45,11 +52,14 @@ uxuy3 = Symbol('uxuy3')
 
 
 # HELPERS:
-def print_u2_u3():
+def print_u2():
     print("real_t %s = %s*%s;" % (uxuy, ux, uy))
     print("real_t %s = %s*%s;" % (ux2, ux, ux))
     print("real_t %s = %s*%s;" % (uy2, uy, uy))
+    print("")
 
+
+def print_u3():
     print("real_t %s = %s*%s;" % (ux3, ux2, ux))
     print("real_t %s = %s*%s;" % (uy3, uy2, uy))
     print("real_t %s = %s*%s*%s;" % (uxuy3, uxuy, uxuy, uxuy))
@@ -71,6 +81,7 @@ def print_as_vector_re(some_matrix, print_symbol='default_symbol1'):
 
         row = re.sub("0.33333333333333", "1./3.", row)
         row = re.sub("0.11111111111111", "1./9.", row)
+        row = re.sub("0.22222222222222", "2./9.", row)
         row = re.sub("0.166666666666667", "1./6.", row)
         row = re.sub("0.66666666666667", "2./3.", row)
         row = re.sub("1.0\*", "", row)
@@ -266,6 +277,22 @@ def get_force_Guo_extended(i):
     temp_x = ex[i] - ux + (ex[i]*ux + ey[i]*uy)*ex[i]/cs2
     temp_y = ey[i] - uy + (ex[i]*ux + ey[i]*uy)*ey[i]/cs2
     R = w[i]*(temp_x*Fx + temp_y*Fy)/(rho*cs2)
+    return R
+
+
+def get_force_interface_tracking(i):
+    """
+    'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
+    eq7 in cm
+    """
+    # R = F_phi_coeff * w[i]*(ex[i]*phi_norm_grad_x + ey[i]*phi_norm_grad_y)  #improve results a bit
+
+    # try Guo:
+    # extended version with second order terms
+    cs2 = 1. / 3.
+    temp_x = ex[i] - ux + (ex[i]*ux + ey[i]*uy)*ex[i]/cs2
+    temp_y = ey[i] - uy + (ex[i]*ux + ey[i]*uy)*ey[i]/cs2
+    R = w[i]*(temp_x*F_phi_x + temp_y*F_phi_y)/cs2
     return R
 
 

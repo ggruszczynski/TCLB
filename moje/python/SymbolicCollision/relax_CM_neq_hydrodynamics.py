@@ -2,24 +2,23 @@
 from SymbolicCollision.sym_col_utils import *
 
 
-
-
 # ============ COLLISION separate ================
-print("\n\n=== PRETTY CODE relax eq ===\n\n")
+print("\n\n=== PRETTY CODE relax neq ===\n\n")
 
-pop_in_str = 'f_in'  # symbol defining populations
+
+pop_in_str = 'f_neq'  # symbol defining non_eq populations: f_neq = f - f_eq
 temp_pop_str = 'temp'  # symbol defining populations
 
 
-# eq: -S*(cm - cm_eq) - (eye(9)-S/2.)*force_in_cm_space
-print("CudaDeviceFunction void relax_CM("
+# eq: -S*(cm_non_eq) - (eye(9)-S/2.)*force_in_cm_space
+print("CudaDeviceFunction void relax_CM_neq("
       "real_t %s[9], "
       "real_t tau, "
       "vector_t Fhydro, "
       "vector_t u) \n{"
       % pop_in_str)
 
-print_u2_u3()
+print_u2()
 print("real_t %s = 1./tau;" % sv)
 print("real_t %s = omega_bulk;" % sb)  # s_b = 1./(3*bulk_visc + 0.5)
 print("")
@@ -47,7 +46,7 @@ print_as_vector_re(cm_non_eq, print_symbol=temp_pop_str)
 #     print_ccode(cm[i], assign_to='%s[%s]' % (temp_pop_str, i))
 
 print("\n//collision in central moments space")
-cm_after_collision = -S*(temp_populations - cm_eq) + (eye(9)-S/2)*force_in_cm_space
+cm_after_collision = -S*temp_populations + (eye(9)-S/2)*force_in_cm_space
 print_as_vector_raw(cm_after_collision, print_symbol=pop_in_str)
 print("\n//back to raw moments")
 m = N.inv()*populations
@@ -62,60 +61,3 @@ populations = Mraw.inv()*temp_populations
 print_as_vector_raw(populations, print_symbol=pop_in_str)
 
 print("\n}\n")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # ============ COLLISION all at once ;D ================
-# cm = N * Mraw * f_in
-# # cm_eq = N*Mraw*feq
-# # cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*N*Mraw*body_force  # eq 8
-# cm_after_collision = (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space  # eq 8
-#
-# # back to densities space
-# f_after_collision = Mraw.inv() * N.inv()*cm_after_collision
-#
-# print("\n\n=== PRETTY CODE all at once ;D ===\n\n")
-# print_ccode(get_m00('f_in'), assign_to='real_t m00')
-# print("")
-# print_u2()
-# print_as_vector_re(f_after_collision, "f_out")
-#
-# # print("\n\nby print_ccode \n")
-# # for i in range(len(f_after_collision)):
-# #     print_ccode(f_after_collision[i], assign_to='f_out[%s]' % i)
-
-
-
-
-
-
-# // real_t F_i[9];
-# // for ( int i=0; i < 9; i++){
-# //         // F_i[i] = 3.0*wf[i] * (Fhydro.x*d2q9_ex[i] + Fhydro.y*d2q9_ey[i])/rho;
-# //         F_i[i] = f_eq[i]*3.0*(Fhydro.x*(d2q9_ex[i]-u.x) + Fhydro.y*(d2q9_ey[i]-u.y))/rho;  // eq 11 - He et al. forcing scheme
-# // }

@@ -17,7 +17,7 @@ print("CudaDeviceFunction void relax_and_collide_CM("
       "real_t %s) \n{"
       % (pop_in_str, rho))
 
-print_u2_u3()
+print_u2()
 print("real_t %s = 1./tau;" % sv)
 # print("real_t bulk_visc = 1./6. ;")
 # print("real_t %s = 1./(3*bulk_visc + 0.5);" % sb)  # s_b = 0.5; works good for some reason
