@@ -20,7 +20,7 @@ print('// welcome to cm! \n ')
 # print_as_vector_re(F_cm_Guo, 'F_cm')
 
 print('\n//F_cm_Guo_extended')
-F_cm_Guo_extended = get_cm_eq_vector(get_force_Guo_extended)
+F_cm_Guo_extended = get_cm_eq_vector(get_force_Guo_second_order)
 print_as_vector_re(F_cm_Guo_extended, 'F_cm')
 
 print('\n//F_phi_cm')

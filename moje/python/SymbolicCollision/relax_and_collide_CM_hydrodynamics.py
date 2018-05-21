@@ -1,7 +1,7 @@
 
 from SymbolicCollision.sym_col_utils import *
 
-# ============ COLLISION separate ================
+
 print("\n\n=== PRETTY CODE: relax and collide ===\n\n")
 
 pop_in_str = 'f_in'  # symbol defining populations
@@ -9,7 +9,7 @@ temp_pop_str = 'temp'  # symbol defining populations
 cm_eq_pop_str = 'cm_eq'  # symbol defining populations
 F_cm_str = 'F_cm'
 # eq8 : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
-print("CudaDeviceFunction void relax_and_collide_CM("
+print("CudaDeviceFunction void relax_and_collide_CM_hydro("
       "real_t %s[9], "
       "real_t tau, "
       "vector_t Fhydro, "
@@ -44,15 +44,11 @@ print("\n//central moments from raw moments")
 cm = N * populations
 print_as_vector_re(cm, print_symbol=temp_pop_str)
 
-# print("\n\n//central moments from raw moments - by print_ccode \n")
-# for i in range(len(cm)):
-#     print_ccode(cm[i], assign_to='%s[%s]' % (temp_pop_str, i))
-
 print("\n//collision in central moments space")
 print("//calculate equilibrium distributions in cm space")
 print_as_vector_re(get_cm_eq_vector(get_pop_eq_pf), cm_eq_pop_str)
 print("//calculate forces in cm space")
-print_as_vector_re(get_cm_eq_vector(get_force_Guo), F_cm_str)
+print_as_vector_re(get_cm_eq_vector(get_force_Guo_second_order), F_cm_str)
 print("//collide")
 cm_after_collision = (eye(9)-S) * temp_populations + S * cm_eq + (eye(9)-S/2) * F_cm  # eq 8
 print_as_vector_re(cm_after_collision, print_symbol=pop_in_str)
@@ -60,10 +56,6 @@ print_as_vector_re(cm_after_collision, print_symbol=pop_in_str)
 print("\n//back to raw moments")
 m = N.inv()*populations
 print_as_vector_re(m, print_symbol=temp_pop_str)
-
-# print("\n\n//back to raw moments - by print_ccode \n")
-# for i in range(len(m)):
-#     print_ccode(m[i], assign_to='%s[%s]' % (temp_pop_str, i))
 
 print("\n//back to density-probability functions")
 populations = Mraw.inv()*temp_populations

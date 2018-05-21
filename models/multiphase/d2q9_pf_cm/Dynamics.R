@@ -60,6 +60,7 @@ if (Options$RT) {
     AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$name  %in% c("PhaseF","PhaseOld") , load=DensityAll$group=="h")
   	AddStage("WallIter"  , "calcWallPhaseIter"  , save=Fields$group %in% c("PF")				, load=DensityAll$group=="nw") 
 } else if (Options$Outflow) {
+
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
@@ -68,9 +69,9 @@ if (Options$RT) {
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw","gold","hold"), 
 												  load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold")) 
 	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF"), load=DensityAll$group %in% c("g","h","Vel","nw","gold","hold"))
-	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF"), load=DensityAll$group=="nw")
-	
+	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF"), load=DensityAll$group=="nw")	
 } else {
+	
 	# initialisation
 	AddStage("PhaseInit" , "Init_phase"			, save=Fields$group %in% c("PF"))
 	AddStage("WallInit"  , "Init_wallNorm"		, save=Fields$group %in% c("nw"))
@@ -79,8 +80,7 @@ if (Options$RT) {
 	# iteration
 	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw") , load=DensityAll$group %in% c("g","h","Vel","nw"))  # TODO: is nw needed here?
 	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("g","h","Vel","nw"))
-	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("nw"))
-	
+	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("nw"))	
 }
 
 AddAction("Iteration", c("BaseIter", "PhaseIter","WallIter"))
@@ -89,8 +89,6 @@ AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 # 	Outputs:
 AddQuantity(name="Rho",	  unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
-# AddQuantity(name="PhaseField_from_h_distributions_sum",unit="1") # debugging
-# AddQuantity(name="TotalHydrodynamicForce",	  unit="N",vector=T) # debugging
 AddQuantity(name="U",	  unit="m/s",vector=T)
 AddQuantity(name="NormalizedPressure",	  unit="Pa")
 AddQuantity(name="Pressure",	  unit="Pa")
@@ -132,8 +130,6 @@ AddSetting(name="omega_bulk", comment='inverse of bulk relaxation time')
 AddSetting(name="bulk_visc", omega_bulk='1.0/(3*bulk_visc+0.5)', default=0.16666666, comment='bulk viscosity')
 
 #	Inputs: Flow Properties
-AddSetting(name="pipe_diameter", default=1.0, comment='EXPERIMENTAL: to impose poiseulle velocity inlet BC', zonal=T) #TODO
-
 AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
@@ -159,6 +155,7 @@ AddGlobal("NMovingWallPower")
 AddGlobal("WallForceMeasure")  # experimental
 AddGlobal("CountCells") # experimental
 AddGlobal("TestCounter") # experimental
+
 #	Boundary things
 AddNodeType(name="MovingWall_N", group="BOUNDARY")
 AddNodeType(name="MovingWall_S", group="BOUNDARY")

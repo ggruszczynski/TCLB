@@ -1,7 +1,6 @@
 
 from SymbolicCollision.sym_col_utils import *
 
-# ============ COLLISION separate ================
 print("\n\n=== PRETTY CODE: relax and collide ===\n\n")
 
 pop_in_str = 'f_in'  # symbol defining populations
@@ -10,15 +9,6 @@ cm_eq_pop_str = 'cm_eq'  # symbol defining populations
 F_cm_str = 'F_phi_cm'
 
 # eq8 : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
-# print("CudaDeviceFunction void relax_and_collide_CM_phase_field("
-#       "real_t %s[9], "
-#       "real_t tau, "
-#       "vector_t u, "
-#       "vector_t F_phi, "
-#       "vector_t norm_grad_phi, "
-#       "real_t %s "
-#       ") \n{"
-#       % (pop_in_str, F_phi_coeff))
 
 print("CudaDeviceFunction void relax_and_collide_CM_phase_field("
       "real_t %s[9], "
@@ -61,7 +51,7 @@ print("//calculate equilibrium distributions in cm space")
 print_as_vector_re(get_cm_eq_vector(lambda i: Symbol('m00') * get_gamma(i)), cm_eq_pop_str)
 
 print("//calculate forces in cm space")
-print_as_vector_re(get_cm_eq_vector(get_force_interface_tracking), F_cm_str)
+print_as_vector_re(get_cm_eq_vector(get_force_Guo_second_order), F_cm_str)
 print("//collide")
 cm_after_collision = (eye(9)-S) * temp_populations + S * cm_eq + (eye(9)-S/2) * F_cm  # eq 8
 print_as_vector_re(cm_after_collision, print_symbol=pop_in_str)

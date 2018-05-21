@@ -253,7 +253,7 @@ def get_force_Guo_bez_U(i):
     R = w[i]*eF/(rho*cs2)
     return R
 
-def get_force_Guo(i):
+def get_force_Guo_first_order(i):
     """
     'Discrete lattice effects on the forcing term in the lattice Boltzmann method',  Guo et al., 2001
     version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
@@ -267,7 +267,7 @@ def get_force_Guo(i):
     return R
 
 
-def get_force_Guo_extended(i):
+def get_force_Guo_second_order(i):
     """
     'Discrete lattice effects on the forcing term in the lattice Boltzmann method',  Guo et al., 2001
     version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
