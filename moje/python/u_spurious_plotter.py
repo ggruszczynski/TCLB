@@ -5,7 +5,6 @@ import os
 from utilites import remove_duplicates_y
 
 
-rho_ratio = '100'
 
 def read_data(filename):
     x = np.empty(0)
@@ -23,8 +22,8 @@ def read_data(filename):
     return x, u
 
 
-x23, u_eq23_rho10 = read_data("u_spurious_MRT_eq23_rho%s.csv" % rho_ratio)
-x25, u_eq25_rho10 = read_data("u_spurious_MRT_eq25_rho%s.csv" % rho_ratio)
+x23, u_eq23_rho10 = read_data("mrt_u_spurious_eq_23.csv")
+x25, u_eq25_rho10 = read_data("mrt_u_spurious_eq_25.csv")
 
 
 # make plot
@@ -40,7 +39,9 @@ plt.ylabel(r'$u$')
 plt.title('Spurious currents')
 plt.grid(True)
 plt.legend()
+
+rho_ratio = '100'
 plt.text(0.0, 5E-6, r'$\rho^* = %s$' % rho_ratio)
 fig = plt.gcf()  # get current figure
-fig.savefig('spurious_currents_rho%s.png' % rho_ratio)
+fig.savefig('spurious_currents_MRTrho%s.png' % rho_ratio)
 plt.show()

@@ -3,14 +3,19 @@ from SymbolicCollision.sym_col_utils import *
 
 print('// welcome to cm! \n ')
 
-# print('\n//F_cm_He_original')
-# F_cm_He_original = get_cm_eq_vector(get_force_He_original)
-# print_as_vector_re(F_cm_He_original, 'F_cm')
-#
+print('\n//F_cm_He_original')
+F_cm_He_original = get_cm_vector_from_def(get_force_He_original)
+print_as_vector_re(F_cm_He_original, 'F_cm')
+
+print('\n//N*M*F_He_original ')
+NMF_cm_He_original = get_cm_vector_shift_NM(get_force_He_original)
+print_as_vector_re(NMF_cm_He_original, 'F_cm')
+
 # print('\n//F_cm_He_pf')
 # F_cm_He_pf = get_cm_eq_vector(get_force_He_pf)
 # print_as_vector_re(F_cm_He_pf, 'F_cm')
 #
+
 # print('\n//F_cm_Guo_bez_U')
 # F_cm_Guo_bez_U = get_cm_eq_vector(get_force_Guo_bez_U)
 # print_as_vector_re(F_cm_Guo_bez_U, 'F_cm')
@@ -20,12 +25,12 @@ print('// welcome to cm! \n ')
 # print_as_vector_re(F_cm_Guo, 'F_cm')
 
 print('\n//F_cm_Guo_extended')
-F_cm_Guo_extended = get_cm_eq_vector(get_force_Guo_second_order)
+F_cm_Guo_extended = get_cm_vector_from_def(get_force_Guo_second_order)
 print_as_vector_re(F_cm_Guo_extended, 'F_cm')
 
-print('\n//F_phi_cm')
-F_phi_cm = get_cm_eq_vector(get_force_interface_tracking)
-print_as_vector_re(F_phi_cm, 'F_phi_cm')
+# print('\n//F_phi_cm')
+# F_phi_cm = get_cm_eq_vector(get_force_interface_tracking)
+# print_as_vector_re(F_phi_cm, 'F_phi_cm')
 
 
 # print('\n//population_eq -> cm_eq - by definition: k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_eq_i)')

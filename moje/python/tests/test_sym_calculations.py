@@ -6,14 +6,31 @@ import io
 from contextlib import redirect_stdout
 from sympy import Symbol
 
-from SymbolicCollision.sym_col_utils import get_cm_eq_vector, get_pop_eq_pf, get_force_He_original, get_gamma
+from SymbolicCollision.sym_col_utils import get_cm_vector_from_def, get_cm_vector_shift_NM,\
+    get_pop_eq_pf, get_force_He_original, get_gamma
 from SymbolicCollision.sym_col_utils import print_as_vector_re
 
 
 class TestSymbolicCalc(TestCase):
 
+    def test_shift_vs_def_cm(self):
+        F_in_cm = get_cm_vector_from_def(get_force_He_original)  # calculate from definition of cm
+        NMF_cm_He_original = get_cm_vector_shift_NM(get_force_He_original)  # calculate using shift matrices
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector_re(F_in_cm, 'F_in_cm')
+        out = f.getvalue()
+
+        f2 = io.StringIO()
+        with redirect_stdout(f2):
+            print_as_vector_re(NMF_cm_He_original, 'F_in_cm')
+        out2 = f2.getvalue()
+
+        assert out == out2
+
     def test_get_force_He_original(self):
-        F_in_cm = get_cm_eq_vector(get_force_He_original)
+        F_in_cm = get_cm_vector_from_def(get_force_He_original)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -43,7 +60,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_pop_eq(self):
-        cm_eq = get_cm_eq_vector(get_pop_eq_pf)
+        cm_eq = get_cm_vector_from_def(get_pop_eq_pf)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -80,7 +97,7 @@ class TestSymbolicCalc(TestCase):
         2017
         """
 
-        cm_eq = get_cm_eq_vector(lambda i: Symbol('m00') * get_gamma(i))
+        cm_eq = get_cm_vector_from_def(lambda i: Symbol('m00') * get_gamma(i))
 
         f = io.StringIO()
         with redirect_stdout(f):

@@ -48,10 +48,10 @@ print_as_vector_re(cm, print_symbol=temp_pop_str)
 print("\n//collision in central moments space")
 print("//calculate equilibrium distributions in cm space")
 # print_as_vector_re(get_cm_eq_vector(get_pop_eq_pf), cm_eq_pop_str)
-print_as_vector_re(get_cm_eq_vector(lambda i: Symbol('m00') * get_gamma(i)), cm_eq_pop_str)
+print_as_vector_re(get_cm_vector_from_def(lambda i: Symbol('m00') * get_gamma(i)), cm_eq_pop_str)
 
 print("//calculate forces in cm space")
-print_as_vector_re(get_cm_eq_vector(get_force_Guo_second_order), F_cm_str)
+print_as_vector_re(get_cm_vector_from_def(get_force_Guo_second_order), F_cm_str)
 print("//collide")
 cm_after_collision = (eye(9)-S) * temp_populations + S * cm_eq + (eye(9)-S/2) * F_cm  # eq 8
 print_as_vector_re(cm_after_collision, print_symbol=pop_in_str)

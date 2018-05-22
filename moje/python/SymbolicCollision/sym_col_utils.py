@@ -235,8 +235,8 @@ def get_force_He_pf(i):
     # cs2 = Symbol('cs2')
     euF = (ex[i] - ux)*Fx + (ey[i] - uy)*Fy
     pop_eq = get_pop_eq_pf(i)
-    # R = pop_eq*euF/(p_star*cs2)  # TODO: rho instead p_star?
-    R = pop_eq * euF / (rho * cs2)  # TODO: rho instead p_star?
+    # R = pop_eq*euF/(p_star*cs2)
+    R = pop_eq * euF / (rho * cs2)
     return R
 
 
@@ -296,6 +296,18 @@ def get_force_interface_tracking(i):
     return R
 
 
+def round_and_simplify(stuff):
+    simplified_stuff = simplify(stuff)
+    rounded_stuff = simplified_stuff
+
+    for a in preorder_traversal(simplified_stuff):
+        if isinstance(a, Float):
+            rounded_stuff = rounded_stuff.subs(a, round(a, 14))
+
+    rounded_and_simplified_stuff = simplify(rounded_stuff)
+    return rounded_and_simplified_stuff
+
+
 def get_cm_eq(m, n, fun):
     k = 0
     for i in range(9):
@@ -305,18 +317,10 @@ def get_cm_eq(m, n, fun):
         pop = fun(i)
         k += pow((ex[i] - ux), m) * pow((ey[i] - uy), n) * pop
 
-    k = simplify(k)
-    k_rounded = k
-
-    for a in preorder_traversal(k):
-        if isinstance(a, Float):
-            k_rounded = k_rounded.subs(a, round(a, 14))
-
-    k_rounded = simplify(k_rounded)
-    return k_rounded
+    return round_and_simplify(k)
 
 
-def get_cm_eq_vector(fun):
+def get_cm_vector_from_def(fun):
     cm_eq = [get_cm_eq(0, 0, fun),
              get_cm_eq(1, 0, fun),
              get_cm_eq(0, 1, fun),
@@ -328,4 +332,12 @@ def get_cm_eq_vector(fun):
              get_cm_eq(2, 2, fun)
              ]
     return Matrix([cm_eq])
+
+
+def get_cm_vector_shift_NM(fun):
+    pop = Matrix([fun(i) for i in range(9)])
+    # pop = Matrix(9, 1, lambda i,j: i+j)  # column vect
+    cm_ = N*Mraw*pop
+    cm_ = round_and_simplify(cm_)
+    return Matrix([cm_])
 
