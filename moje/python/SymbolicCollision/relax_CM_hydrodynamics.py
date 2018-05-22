@@ -47,7 +47,7 @@ print_as_vector_re(cm, print_symbol=temp_pop_str)
 
 print("\n//collision in central moments space")
 print("//calculate equilibrium distributions in cm space")
-print_as_vector_re(get_cm_vector_from_def(get_pop_eq_pf), cm_eq_pop_str)
+print_as_vector_re(get_cm_vector_from_discrete_def(get_pop_eq_pf), cm_eq_pop_str)
 # print("//calculate forces in cm space")
 # print_as_vector_re(get_cm_eq_vector(get_force_Guo_second_order), F_cm_str)
 print("//collide")

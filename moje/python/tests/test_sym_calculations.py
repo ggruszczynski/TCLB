@@ -6,15 +6,19 @@ import io
 from contextlib import redirect_stdout
 from sympy import Symbol
 
-from SymbolicCollision.sym_col_utils import get_cm_vector_from_def, get_cm_vector_shift_NM,\
+from SymbolicCollision.sym_col_utils import \
+    get_cm_vector_from_discrete_def, get_cm_vector_shift_NM,\
+    get_cm_vector_from_continous_def, get_continous_Maxwellian_DF,\
+    get_continous_force_He_original,\
     get_pop_eq_pf, get_force_He_original, get_gamma
+
 from SymbolicCollision.sym_col_utils import print_as_vector_re
 
 
 class TestSymbolicCalc(TestCase):
 
     def test_shift_vs_def_cm(self):
-        F_in_cm = get_cm_vector_from_def(get_force_He_original)  # calculate from definition of cm
+        F_in_cm = get_cm_vector_from_discrete_def(get_force_He_original)  # calculate from definition of cm
         NMF_cm_He_original = get_cm_vector_shift_NM(get_force_He_original)  # calculate using shift matrices
 
         f = io.StringIO()
@@ -29,8 +33,48 @@ class TestSymbolicCalc(TestCase):
 
         assert out == out2
 
+    def test_get_cm_eq_from_continous_Maxwellian_DF(self):
+        cm_eq = get_cm_vector_from_continous_def(get_continous_Maxwellian_DF)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector_re(cm_eq, 'cm_eq')
+        out = f.getvalue()
+
+        expected_result = 'cm_eq[0] = m00;\n' \
+                          'cm_eq[1] = 0;\n' \
+                          'cm_eq[2] = 0;\n' \
+                          'cm_eq[3] = 1./3.*m00;\n' \
+                          'cm_eq[4] = 1./3.*m00;\n' \
+                          'cm_eq[5] = 0;\n' \
+                          'cm_eq[6] = 0;\n' \
+                          'cm_eq[7] = 0;\n' \
+                          'cm_eq[8] = 1./9.*m00;\n'
+
+        assert expected_result == out
+
+    def test_get_F_cm_using_He_scheme_and_continous_Maxwellian_DF(self):
+        F_cm = get_cm_vector_from_continous_def(get_continous_force_He_original)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector_re(F_cm, 'F_cm')
+        out = f.getvalue()
+
+        expected_result = 'F_cm[0] = 0;\n' \
+                          'F_cm[1] = Fhydro.x*m00/rho;\n' \
+                          'F_cm[2] = Fhydro.y*m00/rho;\n' \
+                          'F_cm[3] = 0;\n' \
+                          'F_cm[4] = 0;\n' \
+                          'F_cm[5] = 0;\n' \
+                          'F_cm[6] = 1./3.*Fhydro.y*m00/rho;\n' \
+                          'F_cm[7] = 1./3.*Fhydro.x*m00/rho;\n' \
+                          'F_cm[8] = 0;\n'
+
+        assert expected_result == out
+
     def test_get_force_He_original(self):
-        F_in_cm = get_cm_vector_from_def(get_force_He_original)
+        F_in_cm = get_cm_vector_from_discrete_def(get_force_He_original)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -60,7 +104,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_pop_eq(self):
-        cm_eq = get_cm_vector_from_def(get_pop_eq_pf)
+        cm_eq = get_cm_vector_from_discrete_def(get_pop_eq_pf)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -97,7 +141,7 @@ class TestSymbolicCalc(TestCase):
         2017
         """
 
-        cm_eq = get_cm_vector_from_def(lambda i: Symbol('m00') * get_gamma(i))
+        cm_eq = get_cm_vector_from_discrete_def(lambda i: Symbol('m00') * get_gamma(i))
 
         f = io.StringIO()
         with redirect_stdout(f):
