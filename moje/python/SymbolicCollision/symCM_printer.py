@@ -1,19 +1,20 @@
 
-
 from SymbolicCollision.sym_col_utils import *
 import time
 start = time.process_time()
+
 print('// === welcome to cm! === \n ')
 print('// === discrete cm ===\n ')
 
-print('\n//F_cm_He_original')
-F_cm_He_original = get_cm_vector_from_discrete_def(get_force_He_original)
-print_as_vector_re(F_cm_He_original, 'F_cm')
-
+# print('\n//F_cm_He_original')
+# F_cm_He_original = get_cm_vector_from_discrete_def(get_force_He_original)
+# # F_cm_He_original = get_cm_vector_from_discrete_def(get_force_He_second_order)  # produces looong expressions
+# print_as_vector_re(F_cm_He_original, 'F_cm')
+#
 # print('\n//N*M*F_He_original ')
 # NMF_cm_He_original = get_cm_vector_shift_NM(get_force_He_original)
 # print_as_vector_re(NMF_cm_He_original, 'F_cm')
-#
+
 # print('\n//F_cm_He_pf')
 # F_cm_He_pf = get_cm_vector_from_discrete_def(get_force_He_pf)
 # print_as_vector_re(F_cm_He_pf, 'F_cm')
@@ -51,18 +52,22 @@ print_as_vector_re(F_cm_He_original, 'F_cm')
 
 print('\n\n// === continous cm === \n ')
 print('\n//population_eq -> cm_eq - from continous definition: \n'
-      'k_mn = integrate(fun, (dzeta_x, -oo, oo), (dzeta_y, -oo, oo)) \n'
+      'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
-
-cm_eq = get_cm_vector_from_continous_def(get_continous_Maxwellian_DF)
+cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
 print_as_vector_re(cm_eq, 'cm_eq')
+#
+# print('\n//Force -> Force_cm - from continous definition: \n'
+#       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
+#       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
+# F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_original)
+# print_as_vector_re(F_cm, 'F_cm')
 
-print('\n//Force -> Force_cm - from continous definition: \n'
-      'k_mn = integrate(fun, (dzeta_x, -oo, oo), (dzeta_y, -oo, oo)) \n'
-      'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
+# print('\n//N*M*F_He_continous ')
+# NMF_cm_He_original = get_cm_vector_shift_NM(get_continous_force_He_original)
+# print_as_vector_re(NMF_cm_He_original, 'F_cm')  # produces looong expressions
 
-F_cm = get_cm_vector_from_continous_def(get_continous_force_He_original)
-print_as_vector_re(F_cm, 'F_cm')
 
-print('\n\n Done in %s [s]!'
+print('\n\n Done in %s [s].'
       % str(time.process_time() - start))
+
