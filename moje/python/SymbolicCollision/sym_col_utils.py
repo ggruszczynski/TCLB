@@ -206,6 +206,18 @@ def round_and_simplify(stuff):
     return rounded_and_simplified_stuff
 
 
+def get_discrete_m(m, n, fun):
+    k = 0
+    for i in range(9):
+        # pop = get_pop_eq(i)
+        # pop = p_star * get_gamma(i)
+        # pop = Symbol('f[%d]' % i)
+        pop = fun(i)
+        k += pow(ex[i], m) * pow(ey[i], n) * pop
+
+    return round_and_simplify(k)
+
+
 def get_discrete_cm(m, n, fun):
     k = 0
     for i in range(9):
@@ -257,6 +269,29 @@ def get_continuous_Maxwellian_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     DF *= exp(-dzeta_u2 / (2 * cs2))
 
     return DF
+
+def get_continuous_hydro_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
+    """
+    :param dzeta: direction (x,y)
+    :param u: velocity (x,y)
+    :param rho: density
+    :return: continous, local Maxwell-Boltzmann distribution
+    """
+    cs2 = 1. / 3.
+    # cs2 = Symbol('cs2')
+    dzeta_2 = dzeta_x_*dzeta_x_ + dzeta_y_*dzeta_y_
+    dzeta_u2 = (dzeta_x_ - ux) * (dzeta_x_ - ux) + (dzeta_y_ - uy) * (dzeta_y_ - uy)
+
+    # DF_p = 0
+    DF_p = (m00-1) / (2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
+
+    # DF_p = (m00) / (2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
+    # DF_p = -1/(2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
+
+    # DF_gamma = 0
+    DF_gamma = 1 / (2 * pi * cs2)*exp(-dzeta_u2 / (2 * cs2))
+
+    return DF_p + DF_gamma
 
 
 def get_continuous_force_He_original(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x, DF=get_continuous_Maxwellian_DF):

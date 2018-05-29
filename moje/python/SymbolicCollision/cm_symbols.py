@@ -181,6 +181,9 @@ S_relax = diag(1, 1, 1, s_plus, s_plus, sv, 1, 1, 1)
 S_relax[3, 4] = s_minus
 S_relax[4, 3] = s_minus
 
+S_relax_MRT_GS = diag(1, 1, 1, 1, 1, 1, 1, sv, sv)   #
+# S_relax_MRT_GS = diag(0, 0, 0, 0, 0, 0, 0, sv, sv)   #
+
 # save time and hardcode F_cm
 hardcoded_F_cm_hydro_LB_density_based = Matrix([
     0,
@@ -218,14 +221,27 @@ hardcoded_F_cm_pf = Matrix([
     0,
 ])
 
-# save time and hardcode cm_eq
-hardcoded_cm_eq = Matrix([Symbol('m00'),
-                          0,
-                          0,
-                          m00 / 3.,
-                          m00 / 3.,
-                          0,
-                          0,
-                          0,
-                          m00 / 9.,
-                          ])
+# save time and hardcode cm_eq_pf - eq10
+hardcoded_cm_pf_eq = Matrix([m00,
+                             0,
+                             0,
+                             m00 / 3.,
+                             m00 / 3.,
+                             0,
+                             0,
+                             0,
+                             m00 / 9.,
+                             ])
+
+# save time and hardcode cm_eq_pf - eq16
+hardcoded_cm_hydro_eq = Matrix([
+    m00,
+    ux * (-m00 + 1),
+    uy * (-m00 + 1),
+    m00 * ux2 + 1. / 3. * m00 - ux2,
+    m00 * uy2 + 1. / 3. * m00 - uy2,
+    uxuy * (m00 - 1),
+    uy * (-m00 * ux2 - 1. / 3. * m00 + ux2 + 1. / 3.),
+    ux * (-m00 * uy2 - 1. / 3. * m00 + uy2 + 1. / 3.),
+    m00 * ux2 * uy2 + 1. / 3. * m00 * ux2 + 1. / 3. * m00 * uy2 + 1. / 9. * m00 - ux2 * uy2 - 1. / 3. * ux2 - 1. / 3. * uy2,
+    ])

@@ -8,9 +8,9 @@ from sympy import Symbol
 
 from SymbolicCollision.sym_col_utils import \
     get_cm_vector_from_discrete_def, get_cm_vector_shift_NM,\
-    get_cm_vector_from_continous_def, get_continous_Maxwellian_DF,\
-    get_continous_force_He_original,\
-    get_pop_eq_pf, get_force_He_original, get_gamma
+    get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF,\
+    get_continuous_force_He_original,\
+    get_pop_eq_hydro, get_force_He_original, get_gamma
 
 from SymbolicCollision.sym_col_utils import print_as_vector_re
 
@@ -34,7 +34,7 @@ class TestSymbolicCalc(TestCase):
         assert out == out2
 
     def test_get_cm_eq_from_continous_Maxwellian_DF(self):
-        cm_eq = get_cm_vector_from_continous_def(get_continous_Maxwellian_DF)
+        cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -54,7 +54,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_F_cm_using_He_scheme_and_continous_Maxwellian_DF(self):
-        F_cm = get_cm_vector_from_continous_def(get_continous_force_He_original)
+        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_original)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -104,7 +104,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_pop_eq(self):
-        cm_eq = get_cm_vector_from_discrete_def(get_pop_eq_pf)
+        cm_eq = get_cm_vector_from_discrete_def(get_pop_eq_hydro)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -122,7 +122,7 @@ class TestSymbolicCalc(TestCase):
                           'cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 + 2.0*ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;\n'  # noqa
 
         assert 'cm_eq[0] = m00;' in out
-        assert 'cm_eq[2] = u.y*(-m00 + 1)' in out
+        assert 'cm_eq[1] = u.x*(-m00 + 1)' in out
         assert 'cm_eq[2] = u.y*(-m00 + 1);' in out
         assert 'cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;\n' in out
         assert 'cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;\n' in out

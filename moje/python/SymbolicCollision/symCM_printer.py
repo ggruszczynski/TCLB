@@ -45,18 +45,19 @@ print('// === discrete cm ===\n ')
 # pop_cm = get_cm_vector_from_discrete_def(lambda i: Symbol('%s[%d]' % ('pop', i)))
 # print_as_vector_re(pop_cm, 'pop_cm')
 #
-# print('\n//phase-field hydrodynamic model: population_eq_pf -> cm_eq_pf - by definition: '
-#       '\n//k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_eq_pf_i)')
-# cm_eq_pf = get_cm_vector_from_discrete_def(get_pop_eq_pf)
-# print_as_vector_re(cm_eq_pf, 'cm_eq_pf')
+print('\n//phase-field hydrodynamic model: population_eq_pf -> cm_eq_pf - by definition: '
+      '\n//k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_eq_pf_i)')
+cm_eq_pf = get_cm_vector_from_discrete_def(get_pop_eq_hydro)
+print_as_vector_re(cm_eq_pf, 'cm_eq_pf')
 
 print('\n\n// === continous cm === \n ')
 print('\n//population_eq -> cm_eq - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
-cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
+# cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
+cm_eq = get_cm_vector_from_continuous_def(get_continuous_hydro_DF)
 print_as_vector_re(cm_eq, 'cm_eq')
-#
+
 # print('\n//Force -> Force_cm - from continous definition: \n'
 #       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
 #       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')

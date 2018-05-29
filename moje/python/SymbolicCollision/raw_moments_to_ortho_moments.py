@@ -1,31 +1,61 @@
 
 from SymbolicCollision.sym_col_utils import *
 from SymbolicCollision.cm_symbols import *
-from sympy.matrices import Matrix, diag
+
 from sympy import Symbol, pretty_print
 
-DF = get_populations('g')
-pretty_print(M_ortho_GS*DF)
-
-
-print("\n\n=== is orthogonal and orhonormal? ===\n")
-pretty_print(M_ortho_GS*M_ortho_GS.transpose())
-# pretty_print(K_ortho_Geier.transpose()*K_ortho_Geier)
-
-
-
 print("\n\n=== from raw moments to ortho moments ===\n")
-T = M_ortho_GS*Mraw.inv()
-pretty_print(T)
+T_raw_to_ortho = M_ortho_GS * Mraw.inv()
+# pretty_print(T_raw_to_ortho)
 
-print("\n\n=== relax raw moments in ortho space and go back to raw moments ===\n")
-S_relax_ortho = T.inv()*S_relax*T
-pretty_print(S_relax_ortho)
+print("\n\n=== relax raw moments in ortho space ===\n")
+S_relax2 = T_raw_to_ortho.inv() * S_relax_MRT_GS*T_raw_to_ortho
+pretty_print(S_relax2)
+
+print("\n\n to już było! \n")
+pretty_print(S_relax)
 
 
-# print("\n\n=== normalize matrix  ===\n")
-# from sklearn.preprocessing import normalize
-# Column_Normalized = normalize(M_ortho_GS)#, norm='l1', axis=0)
-# """axis = 0 indicates, normalize by column and if you are
-# interested in row normalization just give axis = 1"""
-# pretty_print(Column_Normalized*Column_Normalized.transpose())
+
+
+
+
+
+
+
+
+
+print("\n\n=== PRETTY CODE: relax relax_MRT_relax_raw_mom_into_ortho ===\n\n")
+
+DF_in_str = 'f_in'  # symbol defining DF
+mom_DF_str = 'm'
+mom_relaxed_DF_str = 'm_relaxed'
+
+print("CudaDeviceFunction void relax_MRT_relax_raw_mom_into_ortho("
+      "real_t %s[9], "
+      "real_t tau, "
+      "\n{"
+      % DF_in_str)
+
+
+print("\nreal_t %s = 1./tau;" % sv)
+print("\nreal_t %s[9]; real_t %s[9]; \n" % (mom_DF_str, mom_relaxed_DF_str))
+
+populations = get_populations(DF_in_str)
+m_DF = get_populations(mom_DF_str)
+m_relaxed_DF = get_populations(mom_relaxed_DF_str)
+m = Mraw * populations
+
+print("\n//raw moments from density-probability functions")
+print("//[m00, m10, m01, m20, m02, m11, m21, m12, m22]")
+print_as_vector_raw(m, print_symbol=mom_DF_str)
+
+
+print("\n//collision in orthogonal moments space")
+print_as_vector_raw(S_relax2 * m_DF, print_symbol=mom_relaxed_DF_str)
+
+print("\n//back to density-probability functions")
+populations = Mraw.inv() * m_relaxed_DF
+print_as_vector_raw(populations, print_symbol=DF_in_str)
+
+print("\n}\n")
