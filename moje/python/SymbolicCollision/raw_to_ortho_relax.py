@@ -1,8 +1,5 @@
-
-from SymbolicCollision.sym_col_utils import *
-from SymbolicCollision.cm_symbols import *
-from sympy.matrices import Matrix, diag
-from sympy import Symbol, pretty_print
+from SymbolicCollision.utils.cm_symbols import *
+from sympy import pretty_print
 
 
 print("\n\n=== is orthogonal and orthonormal? ===\n")

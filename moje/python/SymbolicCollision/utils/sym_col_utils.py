@@ -8,66 +8,14 @@ Linlin Fei, Kai Hong Luo, Chuandong Lin, Qing Li
 2017
 """
 
-from SymbolicCollision.cm_symbols import *
+from SymbolicCollision.utils.cm_symbols import *
 from sympy import simplify, Float, preorder_traversal
-import re
 
 
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
 
-
-# HELPERS:
-def print_u2():
-    print("real_t %s = %s*%s;" % (uxuy, ux, uy))
-    print("real_t %s = %s*%s;" % (ux2, ux, ux))
-    print("real_t %s = %s*%s;" % (uy2, uy, uy))
-    print("")
-
-
-def print_u3():
-    print("real_t %s = %s*%s;" % (ux3, ux2, ux))
-    print("real_t %s = %s*%s;" % (uy3, uy2, uy))
-    print("real_t %s = %s*%s*%s;" % (uxuy3, uxuy, uxuy, uxuy))
-    print("")
-
-
-def print_as_vector_re(some_matrix, print_symbol='default_symbol1'):
-    rows = some_matrix._mat
-
-    for i in range(len(rows)):
-        row = str(rows[i])
-        row = re.sub("%s\*\*2" % ux, '%s' % ux2, row)
-        row = re.sub("%s\*\*2" % uy, '%s' % uy2, row)
-        row = re.sub("%s\*%s" % (ux, uy), '%s' % uxuy, row)
-
-        row = re.sub("%s\*\*3" % ux, '%s' % ux3, row)
-        row = re.sub("%s\*\*3" % uy, '%s' % uy3, row)
-        row = re.sub("%s\*\*3" % uxuy, '%s' % uxuy3, row)
-
-        row = re.sub("0.333333333333333", "1./3.", row)
-        row = re.sub("0.33333333333333", "1./3.", row)
-        row = re.sub("0.111111111111111", "1./9.", row)
-        row = re.sub("0.11111111111111", "1./9.", row)
-        row = re.sub("0.22222222222222", "2./9.", row)
-        row = re.sub("0.166666666666667", "1./6.", row)
-        row = re.sub("0.66666666666667", "2./3.", row)
-        row = re.sub("1.0\*", "", row)
-        print("%s[%d] = %s;" % (print_symbol, i, row))
-
-        # raw
-        # print("%s[%d] = %s;" % (print_symbol, i, rows[i]))
-
-
-def print_as_vector_raw(some_matrix, print_symbol='default_symbol1'):
-    rows = some_matrix._mat
-
-    for i in range(len(rows)):
-        row = str(rows[i])
-        print("%s[%d] = %s;" % (print_symbol, i, row))
-
-
-def get_populations(print_symbol='default_symbol2'):
-    symbols_ = [Symbol("%s[%d]" % (print_symbol, i)) for i in range(9)]
+def get_populations(print_symbol='default_symbol2', start=0, end=9):
+    symbols_ = [Symbol("%s[%d]" % (print_symbol, i)) for i in range(start, end)]
 
     return Matrix(symbols_)
 
@@ -263,7 +211,6 @@ def get_continuous_Maxwellian_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     eq 22
     """
     cs2 = 1. / 3.
-    # cs2 = Symbol('cs2')
     dzeta_u2 = (dzeta_x_ - ux) * (dzeta_x_ - ux) + (dzeta_y_ - uy) * (dzeta_y_ - uy)
     DF = m00 / (2 * pi * cs2)
     DF *= exp(-dzeta_u2 / (2 * cs2))
@@ -278,30 +225,35 @@ def get_continuous_hydro_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     :return: continous, local Maxwell-Boltzmann distribution
     """
     cs2 = 1. / 3.
-    # cs2 = Symbol('cs2')
     dzeta_2 = dzeta_x_*dzeta_x_ + dzeta_y_*dzeta_y_
-    dzeta_u2 = (dzeta_x_ - ux) * (dzeta_x_ - ux) + (dzeta_y_ - uy) * (dzeta_y_ - uy)
-
-    # DF_p = 0
     DF_p = (m00-1) / (2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
 
-    # DF_p = (m00) / (2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
-    # DF_p = -1/(2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
-
-    # DF_gamma = 0
+    dzeta_u2 = (dzeta_x_ - ux) * (dzeta_x_ - ux) + (dzeta_y_ - uy) * (dzeta_y_ - uy)
     DF_gamma = 1 / (2 * pi * cs2)*exp(-dzeta_u2 / (2 * cs2))
 
     return DF_p + DF_gamma
 
 
-def get_continuous_force_He_original(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x, DF=get_continuous_Maxwellian_DF):
+def get_continuous_force_He_hydro_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     """
     'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
     """
     cs2 = 1. / 3.
+    euF = (dzeta_x_ - ux) * Fx + (dzeta_y_ - uy) * Fy
+    R = get_continuous_hydro_DF(dzeta_x_, dzeta_y_) * euF / (rho * cs2)
+    return R
+
+
+
+def get_continuous_force_He_MB(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
+    """
+    'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
+    Use Maxwellian to calculate equilibria
+    """
+    cs2 = 1. / 3.
     # cs2 = Symbol('cs2')
     euF = (dzeta_x_ - ux) * Fx + (dzeta_y_ - uy) * Fy
-    R = DF(dzeta_x_, dzeta_y_) * euF / (rho * cs2)
+    R = get_continuous_Maxwellian_DF(dzeta_x_, dzeta_y_) * euF / (rho * cs2)
     return R
 
 

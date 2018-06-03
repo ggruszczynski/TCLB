@@ -1,21 +1,55 @@
-import numpy as np
-from numpy.testing import assert_almost_equal
 from unittest import TestCase
 
 import io
 from contextlib import redirect_stdout
 from sympy import Symbol
 
-from SymbolicCollision.sym_col_utils import \
+from SymbolicCollision.utils.sym_col_utils import \
     get_cm_vector_from_discrete_def, get_cm_vector_shift_NM,\
     get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF,\
-    get_continuous_force_He_original,\
+    get_continuous_force_He_MB,\
     get_pop_eq_hydro, get_force_He_original, get_gamma
 
-from SymbolicCollision.sym_col_utils import print_as_vector_re
+from SymbolicCollision.utils.printers import print_as_vector_re
 
 
 class TestSymbolicCalc(TestCase):
+
+    def test_Shift_ortho_Straka_d2q9(self):
+        from SymbolicCollision.shift_matrix import get_shift_matrix
+        from SymbolicCollision.utils.cm_symbols import Shift_ortho_Straka_d2q5, K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5
+
+        Smat = get_shift_matrix(K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5 )
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector_re(Shift_ortho_Straka_d2q5, 's')
+        out = f.getvalue()
+
+        f2 = io.StringIO()
+        with redirect_stdout(f2):
+            print_as_vector_re(Smat[1:, 1:], 's')
+        out2 = f2.getvalue()
+
+        assert out == out2
+
+    def test_Shift_ortho_Geier_d2q9(self):
+        from SymbolicCollision.shift_matrix import get_shift_matrix
+        from SymbolicCollision.utils.cm_symbols import Shift_ortho_Geier, K_ortho_Geier, ex_Geier, ey_Geier
+
+        Smat = get_shift_matrix(K_ortho_Geier, ex_Geier, ey_Geier )
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector_re(Shift_ortho_Geier, 's')
+        out = f.getvalue()
+
+        f2 = io.StringIO()
+        with redirect_stdout(f2):
+            print_as_vector_re(Smat[3:, 3:], 's')
+        out2 = f2.getvalue()
+
+        assert out == out2
 
     def test_shift_vs_def_cm(self):
         F_in_cm = get_cm_vector_from_discrete_def(get_force_He_original)  # calculate from definition of cm
@@ -54,7 +88,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_F_cm_using_He_scheme_and_continous_Maxwellian_DF(self):
-        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_original)
+        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_MB)
 
         f = io.StringIO()
         with redirect_stdout(f):

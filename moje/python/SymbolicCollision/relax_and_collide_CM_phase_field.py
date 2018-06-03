@@ -1,5 +1,6 @@
 
-from SymbolicCollision.sym_col_utils import *
+from SymbolicCollision.utils.sym_col_utils import *
+from SymbolicCollision.utils.printers import print_u2, print_as_vector_raw, print_as_vector_re, print_ccode
 
 print("\n\n=== PRETTY CODE: relax and collide ===\n\n")
 

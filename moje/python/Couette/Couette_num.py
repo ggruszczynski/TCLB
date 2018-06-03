@@ -3,8 +3,8 @@ import numpy as np
 
 u_lid = 0.0001
 
-H = 98
-h = 46
+H = 100
+h = 50
 
 
 def u_bottom(y, mi_h, mi_l):

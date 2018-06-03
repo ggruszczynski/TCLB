@@ -1,53 +1,51 @@
-
-from SymbolicCollision.cm_symbols import *
-from SymbolicCollision.sym_col_utils import print_as_vector_raw, print_as_vector_re, get_populations, get_discrete_cm, get_gamma
-from sympy import pretty_print
-
-ex_Geier = Matrix([0, -1, -1, -1, 0, 1, 1, 1, 0])
-ey_Geier = Matrix([0, 1, 0, -1, -1, -1, 0, 1, 1])
+from SymbolicCollision.utils.cm_symbols import ux, uy
+from SymbolicCollision.utils.sym_col_utils import round_and_simplify
+from sympy.matrices import Matrix, diag
 
 
-
-def get_cm_coeff_diag_matrix(m, n):
-
-    def get_coeff(i, m, n):
-        # coeff = pow((ex[i] - ux), m) * pow((ey[i] - uy), n)
-        coeff = pow((ex_Geier[i] - ux), m) * pow((ey_Geier[i] - uy), n)
-        return coeff
-
-    diagonala = [get_coeff(i, m, n) for i in range(0, 9)]
+def get_cm_coeff_diag_matrix(m, n, ex_, ey_):
+    N = len(ex_)
+    diagonala = [pow((ex_[i] - ux), m) * pow((ey_[i] - uy), n) for i in range(0, N)]
     return diag(*diagonala)
 
 
-# m = get_cm_coeff_diag_matrix(1, 0)
-# DF = get_populations('f')
-# pretty_print(m)
-# pretty_print(m*DF)
+def get_shift_matrix(K, ex_, ey_):
+    """
+    See 'Generalized local equilibrium in the cascaded lattice Boltzmann method' by P. Asinari, 2008
+    or Incorporating forcing terms in cascaded lattice Boltzmann approach by method of central moments' by Kannan N. Premnath, Sanjoy Banerjee†, 2009
+    :param K: transformation matrix, from orthogonal moments to physical DF
+    :param ex_: lattice vector
+    :param ey_:
+    :return: the shift matrix for passing from the frame at rest to the moving frame
+    """
 
+    N = len(ex_)
 
-def get_sum_of_cm_coeff_diag_matrix():
-    cm_ = get_cm_coeff_diag_matrix(0, 0)
-    cm_ += get_cm_coeff_diag_matrix(1, 0)  # x
-    cm_ += get_cm_coeff_diag_matrix(0, 1)  # y
-    cm_ += get_cm_coeff_diag_matrix(2, 0)  # xx
-    cm_ += get_cm_coeff_diag_matrix(0, 2)  # yy
-    cm_ += get_cm_coeff_diag_matrix(1, 1)  # xy
-    cm_ += get_cm_coeff_diag_matrix(2, 1)  # xxy
-    cm_ += get_cm_coeff_diag_matrix(1, 2)  # xyy
-    cm_ += get_cm_coeff_diag_matrix(2, 2)  # xxyy
+    def get_row(m, n):
+        def get_entry(m, n, column):
+            coeff = lambda i, m_, n_: pow((ex_[i] - ux), m_) * pow((ey_[i] - uy), n_)
+            entry = sum([K[i, column] * coeff(i, m, n) for i in range(0, N)])
+            return round_and_simplify(entry)
 
-    return cm_
+        row = [get_entry(m, n, i) for i in range(0, N)]
+        return row
 
+    matrix_dict = {'d2q5': [get_row(0, 0),
+                            get_row(1, 0),
+                            get_row(0, 1),
+                            get_row(2, 0),
+                            get_row(0, 2)],
 
-# psi = get_sum_of_cm_coeff_diag_matrix()
-# print("\n === psi === \n")
-# pretty_print(psi*K_ortho_Geier)
-# print_as_vector_re(psi*K_ortho_Geier)
-# # xsum = sum(x)
+                   'd2q9': [get_row(0, 0),
+                            get_row(1, 0),
+                            get_row(0, 1),
+                            get_row(2, 0),
+                            get_row(0, 2),
+                            get_row(1, 1),
+                            get_row(2, 1),
+                            get_row(1, 2),
+                            get_row(2, 2)]
+                   }
 
-print("\n === tests ===  \n")
-
-
-pretty_print(get_cm_coeff_diag_matrix(2, 0) * K_ortho_Geier * Matrix([0, 0, 0, 1, 0, 0, 0, 0, 0]))
-pretty_print(get_sum_of_cm_coeff_diag_matrix() * K_ortho_Geier * Matrix([0, 0, 0, 1, 0, 0, 0, 0, 0]))
-print_as_vector_re(get_sum_of_cm_coeff_diag_matrix() * K_ortho_Geier * Matrix([0, 0, 0, Symbol('f'), 0, 0, 0, 0, 0]))
+    cm_ = matrix_dict['d2q%d' % N]
+    return Matrix(cm_)

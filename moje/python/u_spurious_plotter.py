@@ -10,7 +10,7 @@ def read_data(filename):
     x = np.empty(0)
     u = np.empty(0)
 
-    with open(os.path.join("data_for_plots", "relaxation_interpolation", filename), 'r') as csvfile:
+    with open(os.path.join("data_for_plots", "relaxation_interpolation", "old_mrt", filename), 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter='\t')
         headers = next(reader, None)  # returns the headers or `None` if the input is empty
 
@@ -30,15 +30,15 @@ x25, u_eq25_rho10 = read_data("mrt_u_spurious_eq_25.csv")
 plt.rcParams.update({'font.size': 24})
 plt.figure(figsize=(12, 8))
 # plt.plot(rho_ratio, u_MRT_Guo, color="red", marker=".", linestyle="", label='u MRT linear relaxation')
-plt.semilogy(x23 / x23.max(), u_eq23_rho10.flatten(), color="green", label=r'$ eq23$')
-plt.semilogy(x25 / x25.max(), u_eq25_rho10.flatten(), color="red", label=r'$ eq25$')
+plt.semilogy(x23 / x23.max(), u_eq23_rho10.flatten(), color="green")#, label=r'$ eq23$')
+plt.semilogy(x25 / x25.max(), u_eq25_rho10.flatten(), color="red")#, label=r'$ eq25$')
 
 plt.xlabel(r'$x$')
 plt.ylabel(r'$u$')
 
 plt.title('Spurious currents')
 plt.grid(True)
-plt.legend()
+#plt.legend()
 
 rho_ratio = '100'
 plt.text(0.0, 5E-6, r'$\rho^* = %s$' % rho_ratio)

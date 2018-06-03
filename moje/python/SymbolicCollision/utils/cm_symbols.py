@@ -1,13 +1,9 @@
 from sympy import Symbol
 from sympy.interactive.printing import init_printing
-from sympy.printing import print_ccode
 from sympy.matrices import Matrix, eye, zeros, ones, diag, GramSchmidt
 from sympy import exp, pi, integrate, oo
 from sympy import simplify, Float, preorder_traversal
 
-from sympy import latex
-import re
-import numpy as np
 
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
 
@@ -78,42 +74,27 @@ M_ortho_GS = Matrix([
     [ 0,  0,  0,  0,  0, 1, -1,  1, -1]
 ])
 
-# K_ortho_Geier.transpose()
-# [1   1   1   1   1   1   1   1   1 ]  # 0
-# [0   -1  -1  -1  0   1   1   1   0 ]  # 1
-# [0   1   0   -1  -1  -1  0   1   1 ]  # 2
-# [-4  2   -1  2   -1  2   -1  2   -1]  # 3
-# [0   0   1   0   -1  0   1   0   -1]  # 4
-# [0   1   0   -1  0   1   0   -1  0 ]  # 5
-# [0   -1  0   1   -2  1   0   -1  2 ]  # 6
-# [0   1   -2  1   0   -1  2   -1  0 ]  # 7
-# [4   1   -2  1   -2  1   -2  1   -2]  # 8
 
-K_ortho_TCLB2 = Matrix([  # in TCLB CSYS... hopefully
-    [1,  1,  1,  1,  1,  1,  1,  1,  1],  # 0
-    [0, -1,  0,  1, -2,  1,  0, -1,  2],  # 6
-    [4,  1, -2,  1, -2,  1, -2,  1, -2],  # 8
-    [0,  1,  0, -1, -1, -1,  0,  1,  1],  # 2
-    [0,  0,  1,  0, -1,  0,  1,  0, -1],  # 4
-    [0,  1, -2,  1,  0, -1,  2, -1,  0],  # 7
-    [0, -1, -1, -1,  0,  1,  1,  1,  0],  # 1
-    [-4, 2, -1,  2, -1,  2, -1,  2, -1],  # 3
-    [0,  1,  0, -1,  0,  1,  0, -1,  0]   # 5
+ex_Straka_d2_q5 = Matrix([0, -1, 0, 1, 0])
+ey_Straka_d2_q5 = Matrix([0, 0, -1, 0, 1])
+
+K_ortho_Straka_d2q5 = Matrix([  # in Geier's lattice numbering CSYS
+    [1,  0,  0,  4,  0],  # 0
+    [1, -1,  0, -1, -1],  # 1
+    [1,  0, -1, -1,  1],  # 2
+    [1,  1,  0, -1, -1],  # 3
+    [1,  0,  1, -1,  1],  # 4
 ])
 
-## K_ortho_TCLB is orthogonal
-K_ortho_TCLB = Matrix([  # in TCLB CSYS... hopefully
-    [1,  0,  0, -4,  0,  0,  0,  0,  4],  # 0
-    [1,  1,  0, -1,  1,  0,  0,  2, -2],  # 6
-    [1,  0,  1, -1, -1,  0,  2,  0, -2],  # 8
-    [1, -1,  0, -1,  1,  0,  0, -2, -2],  # 2
-    [1,  0, -1, -1, -1,  0, -2,  0, -2],  # 4
-    [1,  1,  1,  2,  0, -1, -1, -1,  1],  # 7
-    [1, -1,  1,  2,  0,  1, -1,  1,  1],  # 1
-    [1, -1, -1,  2,  0, -1,  1,  1,  1],  # 3
-    [1,  1, -1,  2,  0,  1,  1, -1,  1],  # 5
+Shift_ortho_Straka_d2q5 = Matrix([  # in Geier's lattice numbering CSYS
+    [2,  0, 0, 0],  # 1
+    [0,  2, 0, 0],  # 2
+    [-4 * ux,  0,  -2, -2],  # 3
+    [0,  -4 * uy,  -2,  2],  # 4
 ])
 
+ex_Geier = Matrix([0, -1, -1, -1, 0, 1, 1, 1, 0])
+ey_Geier = Matrix([0, 1, 0, -1, -1, -1, 0, 1, 1])
 
 K_ortho_Geier = Matrix([  # in Geier's lattice numbering CSYS
     [1,  0,  0, -4,  0,  0,  0,  0,  4],  # 0
@@ -127,25 +108,13 @@ K_ortho_Geier = Matrix([  # in Geier's lattice numbering CSYS
     [1,  0,  1, -1, -1,  0,  2,  0, -2],  # 8
 ])
 
-K_ortho_Geier38 = Matrix([  # in Geier's lattice numbering CSYS
-    [ 2,  0, -1,  1,  1,  1],  # 3
-    [-1, -1,  0, -2,  0, -2],  # 4
-    [ 2,  0,  1,  1, -1,  1],  # 5
-    [-1,  1,  0,  0,  2, -2],  # 6
-    [ 2,  0, -1, -1, -1,  1],  # 7
-    [-1, -1,  0,  2,  0, -2],  # 8
-])
-
 Shift_ortho_Geier = Matrix([
-    # [1,   0, 0,             0, 0, 0, 0, 0, 0],
-    # [-ux, 1, 0,             0, 0, 0, 0, 0, 0],
-    # [-uy, 0, 1,             0, 0, 0, 0, 0, 0],
-    [0,   0, 0,             6,             2,         0,    0,    0, 0],
-    [0,   0, 0,             6,            -2,         0,    0,    0, 0],
-    [0,   0, 0,             0,             0,        -4,    0,    0, 0],
-    [0,   0, 0,         -6*uy,         -2*uy,      8*ux,   -4,    0, 0],
-    [0,   0, 0,         -6*ux,          2*ux,      8*uy,    0,   -4, 0],
-    [0,   0, 0, 8+6*(ux2+uy2), 2*(uy2 - ux2), -16*ux*uy, 8*uy, 8*ux, 4],
+    [6, 2, 0, 0, 0, 0],   # noqa
+    [6, -2, 0, 0, 0, 0],   # noqa
+    [0, 0, -4, 0, 0, 0],   # noqa
+    [            -6 * uy,         -2 * uy,        8 * ux,     -4,      0, 0],  # noqa
+    [            -6 * ux,          2 * ux,        8 * uy,      0,     -4, 0],  # noqa
+    [8 + 6 * (ux2 + uy2), 2 * (uy2 - ux2), -16 * ux * uy, 8 * uy, 8 * ux, 4],
 ])
 
 # raw moments - interpretation

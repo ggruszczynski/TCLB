@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-time = [3570/4302, 4093/4302, 4302/4302]
+time = [3570/4302, 4093/4154, 4154/4154]
 x = np.arange(len(time))
 
 # def millions(x, pos):

@@ -1,8 +1,9 @@
 
-from SymbolicCollision.sym_col_utils import *
-from SymbolicCollision.cm_symbols import *
+from SymbolicCollision.utils.sym_col_utils import *
+from SymbolicCollision.utils.cm_symbols import *
+from SymbolicCollision.utils.printers import print_as_vector_re, print_as_vector_raw
 
-from sympy import Symbol, pretty_print
+from sympy import pretty_print
 
 print("\n\n=== from raw moments to ortho moments ===\n")
 T_raw_to_ortho = M_ortho_GS * Mraw.inv()
