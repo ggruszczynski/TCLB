@@ -21,7 +21,7 @@ print("CudaDeviceFunction void relax_and_collide_CM_hydro("
 print_u2()
 print("real_t %s = 1./tau;" % sv)
 # print("real_t bulk_visc = 1./6. ;")
-# print("real_t %s = 1./(3*bulk_visc + 0.5);" % sb)  # s_b = 0.5; works good for some reason
+# print("real_t %s = 1./(3*bulk_visc + 0.5);" % sb) 
 print("real_t %s = omega_bulk;" % sb)  # s_b = 1./(3*bulk_visc + 0.5)
 print("")
 

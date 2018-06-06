@@ -4,7 +4,10 @@ from SymbolicCollision.utils.cm_symbols import *
 from sympy.matrices import Matrix
 from sympy import pretty_print, exp
 from SymbolicCollision.utils.cm_symbols import ex, ey
+from SymbolicCollision.utils.printers import print_as_vector_raw, print_as_vector_re
+import numpy as np
 from sympy.utilities.iterables import flatten
+
 
 DF = get_populations('g')
 # pretty_print(M_ortho_GS*DF)
