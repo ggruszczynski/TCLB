@@ -8,11 +8,18 @@ Linlin Fei, Kai Hong Luo, Chuandong Lin, Qing Li
 2017
 """
 
-from SymbolicCollision.utils.cm_symbols import *
+from sympy import exp, pi, integrate, oo
+from sympy import Symbol
+from sympy.matrices import Matrix
+from sympy.interactive.printing import init_printing
+from SymbolicCollisions.core.cm_symbols import ex, ey, ux, uy, ux, w, m00, \
+    Fx, Fy, F_phi_x, F_phi_y, rho, dzeta_x, dzeta_y, \
+    N, Mraw
 from sympy import simplify, Float, preorder_traversal
 
 
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
+
 
 def get_populations(print_symbol='default_symbol2', start=0, end=9):
     symbols_ = [Symbol("%s[%d]" % (print_symbol, i)) for i in range(start, end)]
@@ -49,7 +56,7 @@ def get_pop_eq_hydro(i):
     return g
 
 
-def get_force_He_original(i):
+def get_force_He_first_order(i):
     """
     'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
     """
@@ -71,7 +78,7 @@ def get_force_He_second_order(i):
     return R
 
 
-def get_force_He_pf(i):
+def get_force_He_hydro_eq_experimental(i):
     """
     'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
     version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
@@ -85,7 +92,7 @@ def get_force_He_pf(i):
     return R
 
 
-def get_force_Guo_bez_U(i):
+def get_force_Guo_without_U_experimental(i):
     """
     'Discrete lattice effects on the forcing term in the lattice Boltzmann method',  Guo et al., 2001
     version for 'Improved locality of the phase-field lattice-Boltzmann model for immiscible fluids at high density ratios' A. Fakhari et. al., 2017
@@ -244,8 +251,20 @@ def get_continuous_force_He_hydro_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     return R
 
 
+def get_continuous_force_He_second_order_MB(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
+    cs2 = 1. / 3.
+    # cs2 = Symbol('cs2')
 
-def get_continuous_force_He_MB(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
+    cs2 = 1. / 3.
+    temp_x = dzeta_x_ - ux + (dzeta_x_ * ux + dzeta_y_ * uy) * dzeta_x_ / cs2
+    temp_y = dzeta_y_ - uy + (dzeta_x_ * ux + dzeta_y_ * uy) * dzeta_y_ / cs2
+
+    euF2 = (temp_x * Fx + temp_y * Fy)/cs2  # second order
+    R = get_continuous_Maxwellian_DF(dzeta_x_, dzeta_y_) * euF2 / (rho * cs2)
+    return R
+
+
+def get_continuous_force_He_first_order_MB(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     """
     'Discrete Boltzmann equation model for the incompressible Navier-Stokes equation', He et al., 1998
     Use Maxwellian to calculate equilibria

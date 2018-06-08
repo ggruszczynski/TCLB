@@ -16,11 +16,11 @@ def factorial(n):
 
 
 # Taylor approximation at x0 of the function 'function'
-def taylor(function, x0, n, x=sy.Symbol('x')):
+def taylor(my_function, x0, n, x=sy.Symbol('x')):
     i = 0
     p = 0
     while i <= n:
-        p = p + (function.diff(x, i).subs(x, x0)) / (factorial(i)) * (x - x0) ** i
+        p = p + (my_function.diff(x, i).subs(x, x0)) / (factorial(i)) * (x - x0) ** i
         i += 1
     return p
 
@@ -65,10 +65,10 @@ plot(f)
 # Taylor expansion at n=9 x**9/9 - x**8/8 + x**7/7 - x**6/6 + x**5/5 - x**4/4 + x**3/3 - x**2/2 + x
 
 
-def print_taylor(f, x0=0, n=5, by=1, what_to_diff=sy.Symbol('x')):
+def print_taylor(my_function, x0=0, n=5, by=1, what_to_diff=sy.Symbol('x')):
     # Approximate up until n starting from 1 and using steps of by
     for j in range(1, n + 1, by):
-        func = taylor(f, x0, j, what_to_diff)
+        func = taylor(my_function, x0, j, what_to_diff)
         print('\n\nTaylor expansion at n=%s' % str(j))
         pretty_print(func)
 

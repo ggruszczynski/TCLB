@@ -1,10 +1,10 @@
 
-from SymbolicCollision.utils.sym_col_utils import *
-from SymbolicCollision.utils.cm_symbols import *
+from SymbolicCollisions.core.sym_col_fun import *
+from SymbolicCollisions.core.cm_symbols import *
 from sympy.matrices import Matrix
 from sympy import pretty_print, exp
-from SymbolicCollision.utils.cm_symbols import ex, ey
-from SymbolicCollision.utils.printers import print_as_vector_raw, print_as_vector_re
+from SymbolicCollisions.core.cm_symbols import ex, ey
+from SymbolicCollisions.core.printers import print_as_vector_raw, print_as_vector_re
 import numpy as np
 from sympy.utilities.iterables import flatten
 

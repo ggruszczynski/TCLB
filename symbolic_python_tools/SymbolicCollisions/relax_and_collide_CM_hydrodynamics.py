@@ -1,7 +1,12 @@
 
-from SymbolicCollision.utils.sym_col_utils import *
-from SymbolicCollision.utils.cm_symbols import *
-from SymbolicCollision.utils.printers import print_u2, print_as_vector_raw, print_as_vector_re, print_ccode
+from sympy.matrices import eye
+from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, N, S_relax, rho
+from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
+from SymbolicCollisions.core.sym_col_fun import get_cm_vector_from_discrete_def, get_force_Guo_second_order, \
+      get_cm_vector_from_continuous_def, get_continuous_force_He_first_order_MB, get_pop_eq_hydro
+from SymbolicCollisions.core.printers import print_u2, print_ccode, print_as_vector
+from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_hydro_eq, hardcoded_F_cm_hydro_LB_velocity_based
+
 
 print("\n\n=== PRETTY CODE: relax and collide ===\n\n")
 
@@ -9,7 +14,8 @@ pop_in_str = 'f_in'  # symbol defining populations
 temp_pop_str = 'temp'  # symbol defining populations
 cm_eq_pop_str = 'cm_eq'  # symbol defining populations
 F_cm_str = 'F_cm'
-# eq8 : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
+
+# eq : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
 print("CudaDeviceFunction void relax_and_collide_CM_hydro("
       "real_t %s[9], "
       "real_t tau, "
@@ -39,31 +45,31 @@ m = Mraw * temp_populations
 
 print("\n//raw moments from density-probability functions")
 print("//[m00, m10, m01, m20, m02, m11, m21, m12, m22]")
-print_as_vector_raw(m, print_symbol=pop_in_str)
+print_as_vector(m, print_symbol=pop_in_str)
 
 print("\n//central moments from raw moments")
 cm = N * populations
-print_as_vector_re(cm, print_symbol=temp_pop_str)
+print_as_vector(cm, print_symbol=temp_pop_str, regex=True)
 
 print("\n//collision in central moments space")
 print("//calculate equilibrium distributions in cm space")
 # print_as_vector_re(get_cm_vector_from_discrete_def(get_pop_eq_hydro), cm_eq_pop_str)
-print_as_vector_re(hardcoded_cm_hydro_eq, cm_eq_pop_str)  # save time
+print_as_vector(hardcoded_cm_hydro_eq, cm_eq_pop_str, regex=True)  # save time
 print("//calculate forces in cm space")
-# print_as_vector_re(get_cm_vector_from_discrete_def(get_force_Guo_second_order), F_cm_str)
-# print_as_vector_re(get_cm_vector_from_continuous_def(get_continuous_force_He_original), F_cm_str)
-print_as_vector_re(hardcoded_F_cm_hydro_LB_velocity_based, F_cm_str)  # save time
+# print_as_vector(get_cm_vector_from_discrete_def(get_force_Guo_second_order), F_cm_str, regex=True)
+# print_as_vector(get_cm_vector_from_continuous_def(get_continuous_force_He_MB), F_cm_str, regex=True)
+print_as_vector(hardcoded_F_cm_hydro_LB_velocity_based, F_cm_str, regex=True)  # save time
 
 print("//collide eq: (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space")
 cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * cm_eq + (eye(9) - S_relax / 2) * F_cm
-print_as_vector_re(cm_after_collision, print_symbol=pop_in_str)
+print_as_vector(cm_after_collision, print_symbol=pop_in_str, regex=True)
 
 print("\n//back to raw moments")
 m = N.inv()*populations
-print_as_vector_re(m, print_symbol=temp_pop_str)
+print_as_vector(m, print_symbol=temp_pop_str, regex=True)
 
 print("\n//back to density-probability functions")
 populations = Mraw.inv()*temp_populations
-print_as_vector_raw(populations, print_symbol=pop_in_str)
+print_as_vector(populations, print_symbol=pop_in_str)
 
 print("\n}\n")

@@ -1,7 +1,7 @@
 from sympy import Symbol
 from sympy.interactive.printing import init_printing
 from sympy.matrices import Matrix, eye, zeros, ones, diag, GramSchmidt
-from sympy import exp, pi, integrate, oo
+
 from sympy import simplify, Float, preorder_traversal
 
 
@@ -46,7 +46,7 @@ dzeta_y = Symbol('dzeta_y')
 
 # this matrix will produce raw moments (m=M*f) in the following order:
 # [m00, m10, m01, m20, m02, m11, m21, m12, m22]
-# "Modelling incompresiible thermal flows using a central-moments-based lattice Boltzmann method" L. Fei et al. 2017
+# "Modelling incompressible thermal flows using a central-moments-based lattice Boltzmann method" L. Fei et al. 2017
 Mraw = Matrix([
     [1, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 1, 0, -1, 0, 1, -1, -1, 1],
@@ -109,9 +109,9 @@ K_ortho_Geier = Matrix([  # in Geier's lattice numbering CSYS
 ])
 
 Shift_ortho_Geier = Matrix([
-    [6, 2, 0, 0, 0, 0],   # noqa
-    [6, -2, 0, 0, 0, 0],   # noqa
-    [0, 0, -4, 0, 0, 0],   # noqa
+    [                  6,               2,             0,      0,      0, 0],  # noqa
+    [                  6,              -2,             0,      0,      0, 0],  # noqa
+    [                  0,               0,            -4,      0,      0, 0],  # noqa
     [            -6 * uy,         -2 * uy,        8 * ux,     -4,      0, 0],  # noqa
     [            -6 * ux,          2 * ux,        8 * uy,      0,     -4, 0],  # noqa
     [8 + 6 * (ux2 + uy2), 2 * (uy2 - ux2), -16 * ux * uy, 8 * uy, 8 * ux, 4],
@@ -153,64 +153,3 @@ S_relax[4, 3] = s_minus
 S_relax_MRT_GS = diag(1, 1, 1, 1, 1, 1, 1, sv, sv)   #
 # S_relax_MRT_GS = diag(0, 0, 0, 0, 0, 0, 0, sv, sv)   #
 
-# save time and hardcode F_cm
-hardcoded_F_cm_hydro_LB_density_based = Matrix([
-    0,
-    Fx * m00 / rho,
-    Fy * m00 / rho,
-    0,
-    0,
-    0,
-    Fy * m00 / (rho * 3.),
-    Fx * m00 / (rho * 3.),
-    0,
-])
-
-hardcoded_F_cm_hydro_LB_velocity_based = Matrix([
-    0,
-    Fx / rho,
-    Fy / rho,
-    0,
-    0,
-    0,
-    Fy / (rho * 3.),
-    Fx / (rho * 3.),
-    0,
-])
-
-hardcoded_F_cm_pf = Matrix([
-    0,
-    F_phi_x,
-    F_phi_y,
-    0,
-    0,
-    0,
-    F_phi_y / 3.,
-    F_phi_x / 3.,
-    0,
-])
-
-# save time and hardcode cm_eq_pf - eq10
-hardcoded_cm_pf_eq = Matrix([m00,
-                             0,
-                             0,
-                             m00 / 3.,
-                             m00 / 3.,
-                             0,
-                             0,
-                             0,
-                             m00 / 9.,
-                             ])
-
-# save time and hardcode cm_eq_pf - eq16
-hardcoded_cm_hydro_eq = Matrix([
-    m00,
-    ux * (-m00 + 1),
-    uy * (-m00 + 1),
-    m00 * ux2 + 1. / 3. * m00 - ux2,
-    m00 * uy2 + 1. / 3. * m00 - uy2,
-    uxuy * (m00 - 1),
-    uy * (-m00 * ux2 - 1. / 3. * m00 + ux2 + 1. / 3.),
-    ux * (-m00 * uy2 - 1. / 3. * m00 + uy2 + 1. / 3.),
-    m00 * ux2 * uy2 + 1. / 3. * m00 * ux2 + 1. / 3. * m00 * uy2 + 1. / 9. * m00 - ux2 * uy2 - 1. / 3. * ux2 - 1. / 3. * uy2,
-    ])

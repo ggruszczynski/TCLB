@@ -1,4 +1,4 @@
-from SymbolicCollision.utils.cm_symbols import *
+from SymbolicCollisions.core.cm_symbols import M_ortho_GS, Mraw, S_relax_MRT_GS
 from sympy import pretty_print
 
 

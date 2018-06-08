@@ -1,15 +1,11 @@
 
-from SymbolicCollision.utils.sym_col_utils import *
-from SymbolicCollision.utils.cm_symbols import *
-from sympy.matrices import Matrix
-from sympy import pretty_print, exp
-from SymbolicCollision.utils.cm_symbols import ex, ey
-from SymbolicCollision.utils.printers import print_as_vector_raw, print_as_vector_re
-import numpy as np
-from sympy.utilities.iterables import flatten
+from SymbolicCollisions.core.sym_col_fun import *
+from SymbolicCollisions.core.cm_symbols import *
+from SymbolicCollisions.core.cm_symbols import ex, ey
+from SymbolicCollisions.core.printers import print_as_vector_re
 
-from SymbolicCollision.shift_matrix import get_shift_matrix
-from SymbolicCollision.utils.cm_symbols import Shift_ortho_Geier, K_ortho_Geier, ex_Geier, ey_Geier, M_ortho_GS
+from SymbolicCollisions.core.shift_matrix_d2q9 import get_shift_matrix
+from SymbolicCollisions.core.cm_symbols import M_ortho_GS
 
 
 

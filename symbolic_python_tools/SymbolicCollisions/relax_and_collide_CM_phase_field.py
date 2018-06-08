@@ -1,6 +1,9 @@
+from sympy.matrices import eye
 
-from SymbolicCollision.utils.sym_col_utils import *
-from SymbolicCollision.utils.printers import print_u2, print_as_vector_raw, print_as_vector_re, print_ccode
+from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, N, S_relax
+from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
+from SymbolicCollisions.core.printers import print_u2, print_as_vector, print_ccode
+from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_pf_eq, hardcoded_F_cm_pf
 
 print("\n\n=== PRETTY CODE: relax and collide ===\n\n")
 
@@ -9,6 +12,7 @@ temp_pop_str = 'temp'  # symbol defining populations
 cm_eq_pop_str = 'cm_eq'  # symbol defining populations
 F_cm_str = 'F_phi_cm'
 
+# "Modelling incompressible thermal flows using a central-moments-based lattice Boltzmann method" L. Fei et al. 2017
 # eq8 : (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
 
 print("CudaDeviceFunction void relax_and_collide_CM_phase_field("
@@ -22,7 +26,7 @@ print("CudaDeviceFunction void relax_and_collide_CM_phase_field("
 print_u2()
 print("real_t %s = 1./tau;" % sv)
 # print("real_t bulk_visc = 1./6. ;")
-# print("real_t %s = 1./(3*bulk_visc + 0.5);" % sb)  # s_b = 0.5; works good for some reason
+# print("real_t %s = 1./(3*bulk_visc + 0.5);" % sb)
 print("real_t %s = omega_bulk;" % sb)  # s_b = 1./(3*bulk_visc + 0.5)
 print("")
 
@@ -40,31 +44,31 @@ m = Mraw * temp_populations
 
 print("\n//raw moments from density-probability functions")
 print("//[m00, m10, m01, m20, m02, m11, m21, m12, m22]")
-print_as_vector_raw(m, print_symbol=pop_in_str)
+print_as_vector(m, print_symbol=pop_in_str)
 
 print("\n//central moments from raw moments")
 cm = N * populations
-print_as_vector_re(cm, print_symbol=temp_pop_str)
+print_as_vector(cm, print_symbol=temp_pop_str, regex=True)
 
 print("\n//collision in central moments space")
 print("//calculate equilibrium distributions in cm space")
 # print_as_vector_re(get_cm_vector_from_discrete_def(lambda i: m00 * get_gamma(i)), cm_eq_pop_str)
-print_as_vector_re(hardcoded_cm_pf_eq, cm_eq_pop_str)  # save time
+print_as_vector(hardcoded_cm_pf_eq, cm_eq_pop_str, regex=True)  # save time
 
 print("//calculate forces in cm space")
 # print_as_vector_re(get_cm_vector_from_discrete_def(get_force_Guo_second_order), F_cm_str)
 # print_as_vector_re(get_cm_vector_from_continuous_def(get_continuous_force_He_original), F_cm_str)
-print_as_vector_re(hardcoded_F_cm_pf, F_cm_str)  # save time
+print_as_vector(hardcoded_F_cm_pf, F_cm_str, regex=True)  # save time
 print("//collide")
 cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * cm_eq + (eye(9) - S_relax / 2) * F_cm  # eq 8
-print_as_vector_re(cm_after_collision, print_symbol=pop_in_str)
+print_as_vector(cm_after_collision, print_symbol=pop_in_str, regex=True)
 
 print("\n//back to raw moments")
 m = N.inv()*populations
-print_as_vector_re(m, print_symbol=temp_pop_str)
+print_as_vector(m, print_symbol=temp_pop_str, regex=True)
 
 print("\n//back to density-probability functions")
 populations = Mraw.inv()*temp_populations
-print_as_vector_raw(populations, print_symbol=pop_in_str)
+print_as_vector(populations, print_symbol=pop_in_str, regex=True)
 
 print("\n}\n")

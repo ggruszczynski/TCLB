@@ -1,5 +1,6 @@
-from SymbolicCollision.utils.cm_symbols import ux, uy
-from SymbolicCollision.utils.sym_col_utils import round_and_simplify
+
+from SymbolicCollisions.core.cm_symbols import ux, uy
+from SymbolicCollisions.core.sym_col_fun import round_and_simplify
 from sympy.matrices import Matrix, diag
 
 

@@ -1,13 +1,16 @@
 
-from SymbolicCollision.utils.sym_col_utils import *
-from SymbolicCollision.utils.cm_symbols import *
-from SymbolicCollision.utils.printers import print_u2, print_as_vector_raw, print_as_vector_re, print_ccode
+from sympy.matrices import eye
+from SymbolicCollisions.core.cm_symbols import sv, S_relax_MRT_GS, M_ortho_GS
+from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
+from SymbolicCollisions.core.printers import print_u2, print_as_vector
 
 print("\n\n=== PRETTY CODE: relax relax_MRT_orthoGS ===\n\n")
 
 DF_in_str = 'f_in'  # symbol defining DF
 mom_DF_str = 'm'
 
+# eq 10.30 from The Lattice Boltzmann Method: Principles and Practice
+# T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
 print("CudaDeviceFunction void relax_MRT_orthoGS("
       "real_t %s[9], "
       "real_t tau, "
@@ -27,13 +30,13 @@ print("//[m00, energy, energy^2, "
       "x momentum flux, x energy flux, "
       "y momentum flux, y energy flux, "
       "stress tensor (diagonal), stress tensor (off-diagonal)]")
-print_as_vector_raw(m, print_symbol=mom_DF_str)
+print_as_vector(m, print_symbol=mom_DF_str)
 
 print("\n//collision in orthogonal moments space")
-print_as_vector_raw(S_relax_MRT_GS * m_DF, print_symbol=mom_DF_str)
+print_as_vector(S_relax_MRT_GS * m_DF, print_symbol=mom_DF_str)
 
 print("\n//back to density-probability functions")
 DF = M_ortho_GS.inv() * m_DF
-print_as_vector_raw(DF, print_symbol=DF_in_str)
+print_as_vector(DF, print_symbol=DF_in_str)
 
 print("\n}\n")
