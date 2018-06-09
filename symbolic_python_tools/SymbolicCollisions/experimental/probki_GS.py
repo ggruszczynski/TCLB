@@ -4,7 +4,7 @@ from SymbolicCollisions.core.cm_symbols import *
 from sympy.matrices import Matrix
 from sympy import pretty_print, exp
 from SymbolicCollisions.core.cm_symbols import ex, ey
-from SymbolicCollisions.core.printers import print_as_vector_raw, print_as_vector_re
+from SymbolicCollisions.core.printers import print_as_vector
 import numpy as np
 from sympy.utilities.iterables import flatten
 
@@ -41,7 +41,7 @@ print("\n\n=== CM ===\n")
 # pretty_print(N_ortho)
 XXX_ortho = T_raw_to_ortho * Mraw
 pretty_print(XXX_ortho * XXX_ortho.transpose())
-print_as_vector_re(XXX_ortho * XXX_ortho.transpose(), print_symbol='xxx')
+print_as_vector(XXX_ortho * XXX_ortho.transpose(), print_symbol='xxx', regex=True)
 
 
 
@@ -52,26 +52,7 @@ print_as_vector_re(XXX_ortho * XXX_ortho.transpose(), print_symbol='xxx')
 # momencik = get_discrete_m(2, 0, lambda i: Symbol('f[%d]' % i))
 # print_as_vector_raw(Matrix([momencik]), print_symbol='momencik')
 
-print("\n\n=== weights ===\n")
 
-
-def get_w_i(i):
-    """
-    :param i: i-th lattice direction
-    :return: returns weight in i-th lattice direction
-    """
-    e2 = ex[i]*ex[i] + ey[i]*ey[i]
-    cs2 = 1./3.
-
-    w_ = 1./pow((2*np.pi*cs2), 1.0)
-    w_ *= exp(-e2/(2*cs2))
-
-    return w_
-
-
-weights = [get_w_i(i) for i in range(9)]
-print(weights)
-print(sum(weights))
 
 
 L = [Matrix([2,3,5]), Matrix([3,6,2]), Matrix([8,3,2])]

@@ -8,15 +8,17 @@ Linlin Fei, Kai Hong Luo, Chuandong Lin, Qing Li
 2017
 """
 
+
 from sympy import exp, pi, integrate, oo
 from sympy import Symbol
 from sympy.matrices import Matrix
 from sympy.interactive.printing import init_printing
 from SymbolicCollisions.core.cm_symbols import ex, ey, ux, uy, ux, w, m00, \
     Fx, Fy, F_phi_x, F_phi_y, rho, dzeta_x, dzeta_y, \
-    N, Mraw
-from sympy import simplify, Float, preorder_traversal
+    Nraw, Mraw
 
+
+from SymbolicCollisions.core.printers import round_and_simplify
 
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
 
@@ -149,18 +151,6 @@ def get_force_interface_tracking(i):
     return R
 
 
-def round_and_simplify(stuff):
-    simplified_stuff = simplify(stuff)
-    rounded_stuff = simplified_stuff
-
-    for a in preorder_traversal(simplified_stuff):
-        if isinstance(a, Float):
-            rounded_stuff = rounded_stuff.subs(a, round(a, 14))
-
-    rounded_and_simplified_stuff = simplify(rounded_stuff)
-    return rounded_and_simplified_stuff
-
-
 def get_discrete_m(m, n, fun):
     k = 0
     for i in range(9):
@@ -202,9 +192,36 @@ def get_cm_vector_from_discrete_def(fun):
 def get_cm_vector_shift_NM(fun):
     pop = Matrix([fun(i) for i in range(9)])
     # pop = Matrix(9, 1, lambda i,j: i+j)  # column vect
-    cm_ = N * Mraw * pop
+    cm_ = Nraw * Mraw * pop
     cm_ = round_and_simplify(cm_)
     return Matrix([cm_])
+
+
+def get_continuous_weight(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
+    """
+    PhD Thesis: `The lattice Boltzmann method: Fundamentals and acoustics`
+    by Erlend Magnus Viggen
+    4.1  The discrete-velocity Boltzmann equation, pp75
+    :param i: i-th lattice direction
+    :return: returns weight in i-th lattice direction
+    """
+    e2 = dzeta_x_ * dzeta_x_ + dzeta_y_ * dzeta_y_
+    cs2 = 1. / 3.
+    dim = 2  # dimension of the space
+    w_ = 1. / pow((2 * pi * cs2), dim / 2.)
+    w_ *= exp(-e2 / (2 * cs2))
+    return w_
+
+
+def get_continuous_force_Guo_second_order(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
+    cs2 = 1. / 3.
+    # cs2 = Symbol('cs2')
+    # extended version with second order terms
+    temp_x = dzeta_x_ - ux + (dzeta_x_ * ux + dzeta_y_ * uy) * dzeta_x_ / cs2
+    temp_y = dzeta_y_ - uy + (dzeta_x_ * ux + dzeta_y_ * uy) * dzeta_y_ / cs2
+
+    result = get_continuous_weight(dzeta_x_, dzeta_y_) * (temp_x * Fx + temp_y * Fy) / (rho * cs2)
+    return result
 
 
 def get_continuous_Maxwellian_DF(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
@@ -262,6 +279,7 @@ def get_continuous_force_He_second_order_MB(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):
     euF2 = (temp_x * Fx + temp_y * Fy)/cs2  # second order
     R = get_continuous_Maxwellian_DF(dzeta_x_, dzeta_y_) * euF2 / (rho * cs2)
     return R
+
 
 
 def get_continuous_force_He_first_order_MB(dzeta_x_=dzeta_x, dzeta_y_=dzeta_x):

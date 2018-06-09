@@ -130,7 +130,7 @@ Shift_ortho_Geier = Matrix([
 
 # SHIFT MATRIX
 # "Modelling incompresiible thermal flows using a central-moments-based lattice Boltzmann method" L. Fei et al. 2017
-N = Matrix([
+Nraw = Matrix([
     [1, 0, 0, 0, 0, 0, 0, 0, 0],
     [-ux, 1, 0, 0, 0, 0, 0, 0, 0],
     [-uy, 0, 1, 0, 0, 0, 0, 0, 0],

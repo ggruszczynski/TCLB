@@ -156,6 +156,8 @@ AddGlobal("WallForceMeasure")  # experimental
 AddGlobal("CountCells") # experimental
 AddGlobal("TestCounter") # experimental
 
+AddNodeType("CM","COLLISION")  # Central Moments collision
+
 #	Boundary things
 AddNodeType(name="MovingWall_N", group="BOUNDARY")
 AddNodeType(name="MovingWall_S", group="BOUNDARY")

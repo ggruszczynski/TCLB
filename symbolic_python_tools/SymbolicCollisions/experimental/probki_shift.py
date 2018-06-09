@@ -1,36 +1,39 @@
 
+from sympy import Symbol
+from sympy.matrices import Matrix, eye, zeros, ones, diag
+from sympy import pretty_print
 from SymbolicCollisions.core.sym_col_fun import *
 from SymbolicCollisions.core.cm_symbols import *
-from SymbolicCollisions.core.cm_symbols import ex, ey
-from SymbolicCollisions.core.printers import print_as_vector_re
-
-from SymbolicCollisions.core.shift_matrix_d2q9 import get_shift_matrix
-from SymbolicCollisions.core.cm_symbols import M_ortho_GS
+from SymbolicCollisions.core.shift_matrix_d2q9 import *
+from SymbolicCollisions.core.printers import *
 
 
-
-cm = get_populations('cm_neq')
-
-mraw = N.inv() * cm
-g1 = Mraw.inv() * get_populations('mraw')
-print_as_vector_re(mraw, print_symbol='mraw')
-print_as_vector_re(g1, print_symbol='g1')
-print_as_vector_re(N.inv() * Mraw.inv() * cm, print_symbol='g1_in_one_step')
+# cm = get_populations('cm')
+cm = Matrix([0.123, 0.234, 0.345, 0.456, 0.567, 0.678, 0.789, 0.890, 0.901])
 
 
-print("=== another approach ===")
-Smat = get_shift_matrix(M_ortho_GS.transpose(), ex, ey)
-m_ortho = Smat * cm
-g2 = M_ortho_GS.transpose()*get_populations('m_ortho')
+ShiftMat = get_shift_matrix(M_ortho_GS, ex, ey)
+ShiftMat = ShiftMat.subs({
+            'u.x': 0.0123,
+            'u.y': 0.0234
+            })
 
-print_as_vector_re(Smat * cm, print_symbol='m_ortho')
-print_as_vector_re(g2, print_symbol='g2')
-print_as_vector_re(M_ortho_GS.transpose() * Smat * cm, print_symbol='g2_in_one_step')
+# pretty_print(ShiftMat)
+f1 = M_ortho_GS*ShiftMat.inv()*cm
+print_as_vector(f1, 'f1')
 
-# print("=== compare ===")
-# for r1, r2 in zip(g1, g2):
-#     print_as_vector_re(Matrix([r1]), print_symbol='g1')
-#     print_as_vector_re(Matrix([r2]), print_symbol='g2')
-#     print()
-#
+
+print('another approach')
+Nraw = Nraw.subs({
+            'u.x': 0.0123,
+            'u.y': 0.0234
+            })
+
+f2 = Mraw.inv()*Nraw.inv()*cm
+print_as_vector(f2, 'f2')
+
+
+from numpy.testing import assert_almost_equal
+for i in range(0):
+    assert_almost_equal(f1[i], f2[i])
 

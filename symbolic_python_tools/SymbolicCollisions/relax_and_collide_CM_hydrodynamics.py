@@ -1,11 +1,12 @@
 
 from sympy.matrices import eye
-from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, N, S_relax, rho
+from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, Nraw, S_relax, rho
 from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
 from SymbolicCollisions.core.sym_col_fun import get_cm_vector_from_discrete_def, get_force_Guo_second_order, \
       get_cm_vector_from_continuous_def, get_continuous_force_He_first_order_MB, get_pop_eq_hydro
 from SymbolicCollisions.core.printers import print_u2, print_ccode, print_as_vector
-from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_hydro_eq, hardcoded_F_cm_hydro_LB_velocity_based
+from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_hydro_eq, \
+      hardcoded_F_cm_He_hydro_LB_velocity_based, hardcoded_F_cm_Guo_hydro_LB_velocity_based
 
 
 print("\n\n=== PRETTY CODE: relax and collide ===\n\n")
@@ -48,7 +49,7 @@ print("//[m00, m10, m01, m20, m02, m11, m21, m12, m22]")
 print_as_vector(m, print_symbol=pop_in_str)
 
 print("\n//central moments from raw moments")
-cm = N * populations
+cm = Nraw * populations
 print_as_vector(cm, print_symbol=temp_pop_str, regex=True)
 
 print("\n//collision in central moments space")
@@ -58,14 +59,14 @@ print_as_vector(hardcoded_cm_hydro_eq, cm_eq_pop_str, regex=True)  # save time
 print("//calculate forces in cm space")
 # print_as_vector(get_cm_vector_from_discrete_def(get_force_Guo_second_order), F_cm_str, regex=True)
 # print_as_vector(get_cm_vector_from_continuous_def(get_continuous_force_He_MB), F_cm_str, regex=True)
-print_as_vector(hardcoded_F_cm_hydro_LB_velocity_based, F_cm_str, regex=True)  # save time
+print_as_vector(hardcoded_F_cm_Guo_hydro_LB_velocity_based, F_cm_str, regex=True)  # save time
 
 print("//collide eq: (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space")
 cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * cm_eq + (eye(9) - S_relax / 2) * F_cm
 print_as_vector(cm_after_collision, print_symbol=pop_in_str, regex=True)
 
 print("\n//back to raw moments")
-m = N.inv()*populations
+m = Nraw.inv() * populations
 print_as_vector(m, print_symbol=temp_pop_str, regex=True)
 
 print("\n//back to density-probability functions")

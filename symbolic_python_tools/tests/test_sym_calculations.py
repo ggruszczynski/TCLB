@@ -11,11 +11,14 @@ from SymbolicCollisions.core.sym_col_fun import \
     get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF,\
     get_continuous_force_He_first_order_MB,\
     get_pop_eq_hydro, \
-    get_force_He_first_order, get_force_Guo_second_order, \
-    get_gamma
+    get_force_He_first_order, \
+    get_force_Guo_second_order, get_continuous_force_Guo_second_order, \
+    get_gamma, get_continuous_hydro_DF
 
 from SymbolicCollisions.core.printers import print_as_vector
 
+from SymbolicCollisions.core.hardcoded_results import \
+    hardcoded_F_cm_Guo_hydro_LB_velocity_based, hardcoded_cm_pf_eq, hardcoded_cm_hydro_eq
 
 class TestSymbolicCalc(TestCase):
 
@@ -74,7 +77,7 @@ class TestSymbolicCalc(TestCase):
 
             assert out == out2
 
-    def test_get_cm_eq_from_continous_Maxwellian_DF(self):
+    def test_get_cm_eq_from_continuous_Maxwellian_DF(self):
         cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
 
         f = io.StringIO()
@@ -82,19 +85,33 @@ class TestSymbolicCalc(TestCase):
             print_as_vector(cm_eq, 'cm_eq', regex=True)
         out = f.getvalue()
 
-        expected_result = 'cm_eq[0] = m00;\n' \
-                          'cm_eq[1] = 0;\n' \
-                          'cm_eq[2] = 0;\n' \
-                          'cm_eq[3] = 1./3.*m00;\n' \
-                          'cm_eq[4] = 1./3.*m00;\n' \
-                          'cm_eq[5] = 0;\n' \
-                          'cm_eq[6] = 0;\n' \
-                          'cm_eq[7] = 0;\n' \
-                          'cm_eq[8] = 1./9.*m00;\n'
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector(hardcoded_cm_pf_eq, 'cm_eq', regex=True)
+        expected_result = f.getvalue()
 
         assert expected_result == out
 
-    def test_get_F_cm_using_He_scheme_and_continous_Maxwellian_DF(self):
+    def test_get_F_cm_Guo_continuous_and_discrete(self):
+        F_cm_Guo_disc = get_cm_vector_from_discrete_def(get_force_Guo_second_order)
+        F_cm_Guo_cont = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
+
+        results = [F_cm_Guo_disc, F_cm_Guo_cont]
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector(hardcoded_F_cm_Guo_hydro_LB_velocity_based, 'F_cm', regex=True)
+        expected_result = f.getvalue()
+
+        for result in results:
+            f = io.StringIO()
+            with redirect_stdout(f):
+                print_as_vector(result, 'F_cm', regex=True)
+            out = f.getvalue()
+
+            assert out == expected_result
+
+    def test_get_F_cm_using_He_scheme_and_continuous_Maxwellian_DF(self):
         F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_first_order_MB)
 
         f = io.StringIO()
@@ -144,7 +161,7 @@ class TestSymbolicCalc(TestCase):
 
         assert expected_result == out
 
-    def test_get_pop_eq(self):
+    def test_get_cm_eq_hydro_discrete(self):
         cm_eq = get_cm_vector_from_discrete_def(get_pop_eq_hydro)
 
         f = io.StringIO()
@@ -157,7 +174,7 @@ class TestSymbolicCalc(TestCase):
                           'cm_eq[2] = u.y*(-m00 + 1);\n' \
                           'cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;\n' \
                           'cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;\n' \
-                          'cm_eq[5] = uxuy*(m00 - 1);\n' \
+                          'cm_eq[5] = uxuy*(m00 - 1.0);\n' \
                           'cm_eq[6] = u.y*(-m00*ux2 - 1./3.*m00 + 1./3.);\n' \
                           'cm_eq[7] = u.x*(-m00*uy2 - 1./3.*m00 + 1./3.);\n' \
                           'cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 + 2.0*ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;\n'  # noqa
@@ -167,12 +184,53 @@ class TestSymbolicCalc(TestCase):
         assert 'cm_eq[2] = u.y*(-m00 + 1);' in out
         assert 'cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;\n' in out
         assert 'cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;\n' in out
-        assert 'cm_eq[5] = uxuy*(m00 - 1);\n' in out
+        assert 'cm_eq[5] = uxuy*(m00 - 1.0);\n' in out
         assert 'cm_eq[6] = u.y*(-m00*ux2 - 1./3.*m00 + 1./3.);\n' in out
         assert 'cm_eq[7] = u.x*(-m00*uy2 - 1./3.*m00 + 1./3.);\n' in out
         assert 'cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 + 2.0*ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;\n' in out  # noqa
 
         assert expected_result == out
+
+    def test_get_cm_eq_hydro_cont(self):
+        # population_eq -> cm_eq - from continous definition: '
+        # k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) '
+        # where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
+
+        cm_eq = get_cm_vector_from_continuous_def(get_continuous_hydro_DF)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector(cm_eq, 'cm_eq', regex=True)
+        out = f.getvalue()
+
+        # f = io.StringIO()
+        # with redirect_stdout(f):
+        #     print_as_vector(hardcoded_cm_hydro_eq, 'cm_eq', regex=False)
+        # expected_result = f.getvalue()
+
+        expected_result = 'cm_eq[0] = m00;\n' \
+                          'cm_eq[1] = u.x*(-m00 + 1);\n' \
+                          'cm_eq[2] = u.y*(-m00 + 1);\n' \
+                          'cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;\n' \
+                          'cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;\n' \
+                          'cm_eq[5] = uxuy*(m00 - 1.0);\n' \
+                          'cm_eq[6] = u.y*(-m00*ux2 - 1./3.*m00 + ux2 + 1./3.);\n' \
+                          'cm_eq[7] = u.x*(-m00*uy2 - 1./3.*m00 + uy2 + 1./3.);\n' \
+                          'cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;\n'  # noqa
+
+        assert 'cm_eq[0] = m00;' in out
+        assert 'cm_eq[1] = u.x*(-m00 + 1)' in out
+        assert 'cm_eq[2] = u.y*(-m00 + 1);' in out
+        assert 'cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;\n' in out
+        assert 'cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;\n' in out
+        assert 'cm_eq[5] = uxuy*(m00 - 1.0);\n' in out
+        assert 'cm_eq[6] = u.y*(-m00*ux2 - 1./3.*m00 + ux2 + 1./3.);\n' in out
+        assert 'cm_eq[7] = u.x*(-m00*uy2 - 1./3.*m00 + uy2 + 1./3.);\n' in out
+        assert 'cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;\n' in out  # noqa
+
+        assert expected_result == out
+
+
 
     def test_cm_eq(self):
         """

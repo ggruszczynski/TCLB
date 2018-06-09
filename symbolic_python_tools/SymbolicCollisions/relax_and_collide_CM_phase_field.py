@@ -1,6 +1,6 @@
 from sympy.matrices import eye
 
-from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, N, S_relax
+from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, Nraw, S_relax
 from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
 from SymbolicCollisions.core.printers import print_u2, print_as_vector, print_ccode
 from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_pf_eq, hardcoded_F_cm_pf
@@ -47,7 +47,7 @@ print("//[m00, m10, m01, m20, m02, m11, m21, m12, m22]")
 print_as_vector(m, print_symbol=pop_in_str)
 
 print("\n//central moments from raw moments")
-cm = N * populations
+cm = Nraw * populations
 print_as_vector(cm, print_symbol=temp_pop_str, regex=True)
 
 print("\n//collision in central moments space")
@@ -64,7 +64,7 @@ cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * cm_eq + (
 print_as_vector(cm_after_collision, print_symbol=pop_in_str, regex=True)
 
 print("\n//back to raw moments")
-m = N.inv()*populations
+m = Nraw.inv() * populations
 print_as_vector(m, print_symbol=temp_pop_str, regex=True)
 
 print("\n//back to density-probability functions")
