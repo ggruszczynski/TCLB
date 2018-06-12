@@ -48,15 +48,15 @@ dzeta_y = Symbol('dzeta_y')
 # [m00, m10, m01, m20, m02, m11, m21, m12, m22]
 # "Modelling incompressible thermal flows using a central-moments-based lattice Boltzmann method" L. Fei et al. 2017
 Mraw = Matrix([
-    [1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 0, -1, 0, 1, -1, -1, 1],
-    [0, 0, 1, 0, -1, 1, 1, -1, -1],
-    [0, 1, 0, 1, 0, 1, 1, 1, 1],
-    [0, 0, 1, 0, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 1, -1, 1, -1],
-    [0, 0, 0, 0, 0, 1, 1, -1, -1],
-    [0, 0, 0, 0, 0, 1, -1, -1, 1],
-    [0, 0, 0, 0, 0, 1, 1, 1, 1]
+    [1, 1, 1,  1,  1, 1,  1,  1,  1],
+    [0, 1, 0, -1,  0, 1, -1, -1,  1],
+    [0, 0, 1,  0, -1, 1,  1, -1, -1],
+    [0, 1, 0,  1,  0, 1,  1,  1,  1],
+    [0, 0, 1,  0,  1, 1,  1,  1,  1],
+    [0, 0, 0,  0,  0, 1, -1,  1, -1],
+    [0, 0, 0,  0,  0, 1,  1, -1, -1],
+    [0, 0, 0,  0,  0, 1, -1, -1,  1],
+    [0, 0, 0,  0,  0, 1,  1,  1,  1]
 ])
 
 
@@ -131,15 +131,15 @@ Shift_ortho_Geier = Matrix([
 # SHIFT MATRIX
 # "Modelling incompresiible thermal flows using a central-moments-based lattice Boltzmann method" L. Fei et al. 2017
 Nraw = Matrix([
-    [1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [-ux, 1, 0, 0, 0, 0, 0, 0, 0],
-    [-uy, 0, 1, 0, 0, 0, 0, 0, 0],
-    [ux * ux, -2 * ux, 0, 1, 0, 0, 0, 0, 0],
-    [uy * uy, 0, -2 * uy, 0, 1, 0, 0, 0, 0],
-    [ux * uy, -uy, -ux, 0, 0, 1, 0, 0, 0],
-    [-ux * ux * uy, 2 * ux * uy, ux * ux, -uy, 0, -2 * ux, 1, 0, 0],
-    [-uy * uy * ux, uy * uy, 2 * ux * uy, 0, -ux, -2 * uy, 0, 1, 0],
-    [ux * ux * uy * uy, -2 * ux * uy * uy, -2 * uy * ux * ux, uy * uy, ux * ux, 4 * ux * uy, -2 * uy, -2 * ux, 1],
+    [                1,                 0,                 0,       0,       0,            0,       0,       0, 0],
+    [              -ux,                 1,                 0,       0,       0,            0,       0,       0, 0],
+    [              -uy,                 0,                 1,       0,       0,            0,       0,       0, 0],
+    [          ux * ux,           -2 * ux,                 0,       1,       0,            0,       0,       0, 0],
+    [          uy * uy,                 0,           -2 * uy,       0,       1,            0,       0,       0, 0],
+    [          ux * uy,               -uy,               -ux,       0,       0,            1,       0,       0, 0],
+    [    -ux * ux * uy,       2 * ux * uy,           ux * ux,     -uy,       0,      -2 * ux,       1,       0, 0],
+    [    -uy * uy * ux,           uy * uy,       2 * ux * uy,       0,     -ux,      -2 * uy,       0,       1, 0],
+    [ux * ux * uy * uy, -2 * ux * uy * uy, -2 * uy * ux * ux, uy * uy, ux * ux,  4 * ux * uy, -2 * uy, -2 * ux, 1],
 ])
 
 # RELAXATION MATRIX

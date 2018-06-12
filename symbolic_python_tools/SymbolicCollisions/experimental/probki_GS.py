@@ -9,7 +9,7 @@ import numpy as np
 from sympy.utilities.iterables import flatten
 
 
-DF = get_populations('g')
+DF = get_DF('g')
 # pretty_print(M_ortho_GS*DF)
 
 

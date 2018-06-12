@@ -29,14 +29,19 @@ print('\n\n// === continous cm === \n ')
 # F_cm = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
 # print_as_vector(F_cm, 'F_cm', regex=True)
 
-print('\n//population_eq -> cm_eq - from continous definition: \n'
+# print('\n//population_eq -> cm_eq - from continous definition: \n'
+#       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
+#       'where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
+# # cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
+# cm_eq = get_cm_vector_from_continuous_def(get_continuous_hydro_DF)
+# print_as_vector(cm_eq, 'cm_eq', regex=True)
+
+print('\n//Force -> Force_cm - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
-      'where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
-# cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
-cm_eq = get_cm_vector_from_continuous_def(get_continuous_hydro_DF)
-print_as_vector(cm_eq, 'cm_eq', regex=True)
-
-
+      'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
+# F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_first_order_MB)
+F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_hydro_DF)
+print_as_vector(F_cm, 'F_cm', regex=True)
 
 
 print('\n\n Done in %s [s].'

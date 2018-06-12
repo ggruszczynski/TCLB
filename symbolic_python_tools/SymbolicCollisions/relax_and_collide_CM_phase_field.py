@@ -1,7 +1,7 @@
 from sympy.matrices import eye
 
 from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, Nraw, S_relax
-from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
+from SymbolicCollisions.core.sym_col_fun import get_DF, get_m00
 from SymbolicCollisions.core.printers import print_u2, print_as_vector, print_ccode
 from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_pf_eq, hardcoded_F_cm_pf
 
@@ -36,10 +36,10 @@ print("\nreal_t %s[9]; real_t %s[9]; real_t %s[9];\n" % (temp_pop_str, cm_eq_pop
 print("for (int i = 0; i < 9; i++) {\n\t"
       "%s[i] = %s[i];}" % (temp_pop_str, pop_in_str))
 
-populations = get_populations(pop_in_str)
-temp_populations = get_populations(temp_pop_str)
-cm_eq = get_populations(cm_eq_pop_str)
-F_cm = get_populations(F_cm_str)
+populations = get_DF(pop_in_str)
+temp_populations = get_DF(temp_pop_str)
+cm_eq = get_DF(cm_eq_pop_str)
+F_cm = get_DF(F_cm_str)
 m = Mraw * temp_populations
 
 print("\n//raw moments from density-probability functions")

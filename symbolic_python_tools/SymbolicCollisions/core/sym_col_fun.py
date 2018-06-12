@@ -23,7 +23,7 @@ from SymbolicCollisions.core.printers import round_and_simplify
 init_printing(use_unicode=False, wrap_line=False, no_global=True)
 
 
-def get_populations(print_symbol='default_symbol2', start=0, end=9):
+def get_DF(print_symbol='default_symbol2', start=0, end=9):
     symbols_ = [Symbol("%s[%d]" % (print_symbol, i)) for i in range(start, end)]
 
     return Matrix(symbols_)
@@ -52,7 +52,7 @@ def get_gamma(i):
     return gamma
 
 
-def get_pop_eq_hydro(i):
+def get_discrete_EDF_hydro(i):
     gamma = get_gamma(i)
     g = m00 * w[i] + gamma - w[i]
     return g
@@ -70,7 +70,7 @@ def get_force_He_first_order(i):
     return R
 
 
-def get_force_He_second_order(i):
+def get_force_He_second_order_experimental(i):
     # extended version with second order terms
     cs2 = 1. / 3.
     temp_x = ex[i] - ux + (ex[i] * ux + ey[i] * uy) * ex[i] / cs2
@@ -88,7 +88,7 @@ def get_force_He_hydro_eq_experimental(i):
     cs2 = 1. / 3.
     # cs2 = Symbol('cs2')
     euF = (ex[i] - ux) * Fx + (ey[i] - uy) * Fy
-    pop_eq = get_pop_eq_hydro(i)
+    pop_eq = get_discrete_EDF_hydro(i)
     # R = pop_eq*euF/(p_star*cs2)
     R = pop_eq * euF / (rho * cs2)
     return R

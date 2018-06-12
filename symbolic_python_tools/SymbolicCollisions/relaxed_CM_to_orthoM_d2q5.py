@@ -2,7 +2,7 @@
 from sympy import Symbol
 from sympy.matrices import Matrix, eye, zeros, ones, diag
 from sympy import pretty_print
-from SymbolicCollisions.core.sym_col_fun import get_populations
+from SymbolicCollisions.core.sym_col_fun import get_DF
 from SymbolicCollisions.core.cm_symbols import Shift_ortho_Straka_d2q5
 
 """
@@ -15,9 +15,9 @@ from SymbolicCollisions.core.cm_symbols import Shift_ortho_Straka_d2q5
 # pretty_print(Smat)
 
 Smat = Shift_ortho_Straka_d2q5
-k = get_populations('k', start=1, end=5)
+k = get_DF('k', start=1, end=5)
 Relax = diag(Symbol('w2'), Symbol('w3'), Symbol('w4'), Symbol('w5'))   #
-cm_neq = get_populations('cm_neq', start=1, end=5)
+cm_neq = get_DF('cm_neq', start=1, end=5)
 
 k = Smat.inv()*Relax*cm_neq
 

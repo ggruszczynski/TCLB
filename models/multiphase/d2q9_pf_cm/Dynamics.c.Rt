@@ -437,6 +437,8 @@ CudaDeviceFunction void calcPhaseFIter(){
 	#ifdef OPTIONS_RT
 		PhaseOld = PhaseF(0,0);
 	#endif
+	
+	// TODO: BC_Switcher(); here?
 
 	// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
 	//	model for immiscible fluids at high density ratios"	
@@ -530,7 +532,7 @@ CudaDeviceFunction void relax_CM_hydro(real_t f_in[9], real_t tau, vector_t u)
 	
 	real_t m00 = f_in[0] + f_in[1] + f_in[2] + f_in[3] + f_in[4] + f_in[5] + f_in[6] + f_in[7] + f_in[8];
 	
-	real_t temp[9];
+	real_t temp[9]; real_t cm_eq[9];
 	for (int i = 0; i < 9; i++) {
 		temp[i] = f_in[i];}
 	
@@ -557,26 +559,27 @@ CudaDeviceFunction void relax_CM_hydro(real_t f_in[9], real_t tau, vector_t u)
 	temp[7] = -f_in[0]*u.x*uy2 + f_in[1]*uy2 + 2*f_in[2]*uxuy - f_in[4]*u.x - 2*f_in[5]*u.y + f_in[7];
 	temp[8] = f_in[0]*ux2*uy2 - 2*f_in[1]*u.x*uy2 - 2*f_in[2]*ux2*u.y + f_in[3]*uy2 + f_in[4]*ux2 + 4*f_in[5]*uxuy - 2*f_in[6]*u.y - 2*f_in[7]*u.x + f_in[8];
 	
-	// cm_eq[0] = m00;
-	// cm_eq[1] = -u.x*(m00 - 1.0);
-	// cm_eq[2] = -u.y*(m00 - 1.0);
-	// cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;
-	// cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;
-	// cm_eq[5] = uxuy*(m00 - 1.0);
-	// cm_eq[6] = -u.y*(m00*ux2 + 1./3.*m00 - ux2 - 1./3.);
-	// cm_eq[7] = -u.x*(m00*uy2 + 1./3.*m00 - uy2 - 1./3.);
-	// cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;
 	//collision in central moments space
+	//calculate equilibrium distributions in cm space
+	cm_eq[0] = m00;
+	cm_eq[1] = -u.x*(m00 - 1.0);
+	cm_eq[2] = -u.y*(m00 - 1.0);
+	cm_eq[3] = m00*ux2 + 1./3.*m00 - ux2;
+	cm_eq[4] = m00*uy2 + 1./3.*m00 - uy2;
+	cm_eq[5] = uxuy*(m00 - 1.0);
+	cm_eq[6] = -u.y*(m00*ux2 + 1./3.*m00 - ux2 - 1./3.);
+	cm_eq[7] = -u.x*(m00*uy2 + 1./3.*m00 - uy2 - 1./3.);
+	cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;
 	//collide eq: -S*(cm - cm_eq)
-	f_in[0] = m00 - temp[0];
-	f_in[1] = -temp[1] + u.x*(-m00 + 1);
-	f_in[2] = -temp[2] + u.y*(-m00 + 1);
-	f_in[3] = (-s_b/2 - s_v/2)*(-m00*ux2 - 1./3.*m00 + temp[3] + ux2) + (-s_b/2 + s_v/2)*(-m00*uy2 - 1./3.*m00 + temp[4] + uy2);
-	f_in[4] = (-s_b/2 - s_v/2)*(-m00*uy2 - 1./3.*m00 + temp[4] + uy2) + (-s_b/2 + s_v/2)*(-m00*ux2 - 1./3.*m00 + temp[3] + ux2);
-	f_in[5] = -s_v*(temp[5] - uxuy*(m00 - 1));
-	f_in[6] = -temp[6] + u.y*(-m00*ux2 - 1./3.*m00 + ux2 + 1./3.);
-	f_in[7] = -temp[7] + u.x*(-m00*uy2 - 1./3.*m00 + uy2 + 1./3.);
-	f_in[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - temp[8] - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;
+	f_in[0] = cm_eq[0] - temp[0];
+	f_in[1] = cm_eq[1] - temp[1];
+	f_in[2] = cm_eq[2] - temp[2];
+	f_in[3] = 0.5*(cm_eq[3] - temp[3])*(s_b + s_v) + 0.5*(cm_eq[4] - temp[4])*(s_b - s_v);
+	f_in[4] = 0.5*(cm_eq[3] - temp[3])*(s_b - s_v) + 0.5*(cm_eq[4] - temp[4])*(s_b + s_v);
+	f_in[5] = s_v*(cm_eq[5] - temp[5]);
+	f_in[6] = cm_eq[6] - temp[6];
+	f_in[7] = cm_eq[7] - temp[7];
+	f_in[8] = cm_eq[8] - temp[8];
 	
 	//back to raw moments
 	temp[0] = f_in[0];
@@ -652,9 +655,30 @@ CudaDeviceFunction void relax_and_collide_CM_hydro(real_t f_in[9], real_t tau, v
 	F_cm[3] = 0;
 	F_cm[4] = 0;
 	F_cm[5] = 0;
+	// Guo:
 	F_cm[6] = (-2.0*Fhydro.x*uxuy - Fhydro.y*ux2 + 1./3.*Fhydro.y)/rho;
 	F_cm[7] = (-Fhydro.x*uy2 + 1./3.*Fhydro.x - 2.0*Fhydro.y*uxuy)/rho;
 	F_cm[8] = 4.0*uxuy*(Fhydro.x*u.y + Fhydro.y*u.x)/rho;
+	// He:
+	// F_cm[6] = 1./3.*Fhydro.y;
+	// F_cm[7] = 1./3.*Fhydro.x;
+	// F_cm[8] = 0;
+
+	// He - use EDF for incompressible LBM/NS:
+	// real_t ux3 = ux2*u.x;
+	// real_t uy3 = uy2*u.y;
+	// real_t uxuy3 = uxuy*uxuy*uxuy;
+
+	// F_cm[0] = 3.0*(-Fhydro.x*m00*u.x + Fhydro.x*u.x - Fhydro.y*m00*u.y + Fhydro.y*u.y)/rho;
+	// F_cm[1] = (3.0*Fhydro.x*m00*ux2 + Fhydro.x*m00 - 3.0*Fhydro.x*ux2 + 3.0*Fhydro.y*m00*uxuy - 3.0*Fhydro.y*uxuy)/rho;
+	// F_cm[2] = (3.0*Fhydro.x*m00*uxuy - 3.0*Fhydro.x*uxuy + 3.0*Fhydro.y*m00*uy2 + Fhydro.y*m00 - 3.0*Fhydro.y*uy2)/rho;
+	// F_cm[3] = (-3.0*Fhydro.x*m00*ux3 - 3.0*Fhydro.x*m00*u.x + 3.0*Fhydro.x*ux3 + 3.0*Fhydro.x*u.x - 3.0*Fhydro.y*m00*ux2*u.y - Fhydro.y*m00*u.y + 3.0*Fhydro.y*ux2*u.y + Fhydro.y*u.y)/rho;
+	// F_cm[4] = (-3.0*Fhydro.x*m00*u.x*uy2 - Fhydro.x*m00*u.x + 3.0*Fhydro.x*u.x*uy2 + Fhydro.x*u.x - 3.0*Fhydro.y*m00*uy3 - 3.0*Fhydro.y*m00*u.y + 3.0*Fhydro.y*uy3 + 3.0*Fhydro.y*u.y)/rho;
+	// F_cm[5] = (-3.0*Fhydro.x*m00*ux2*u.y - Fhydro.x*m00*u.y + 3.0*Fhydro.x*ux2*u.y + Fhydro.x*u.y - 3.0*Fhydro.y*m00*u.x*uy2 - Fhydro.y*m00*u.x + 3.0*Fhydro.y*u.x*uy2 + Fhydro.y*u.x)/rho;
+	// F_cm[6] = (3.0*Fhydro.x*m00*ux3*u.y + 3.0*Fhydro.x*m00*uxuy - 3.0*Fhydro.x*ux3*u.y - 3.0*Fhydro.x*uxuy + 3.0*Fhydro.y*m00*ux2*uy2 + Fhydro.y*m00*ux2 + Fhydro.y*m00*uy2 + 1./3.*Fhydro.y*m00 - 3.0*Fhydro.y*ux2*uy2 - Fhydro.y*ux2 - Fhydro.y*uy2)/rho;
+	// F_cm[7] = (3.0*Fhydro.x*m00*ux2*uy2 + Fhydro.x*m00*ux2 + Fhydro.x*m00*uy2 + 1./3.*Fhydro.x*m00 - 3.0*Fhydro.x*ux2*uy2 - Fhydro.x*ux2 - Fhydro.x*uy2 + 3.0*Fhydro.y*m00*uxuy3 + 3.0*Fhydro.y*m00*uxuy - 3.0*Fhydro.y*uxuy3 - 3.0*Fhydro.y*uxuy)/rho;
+	// F_cm[8] = (-3.0*Fhydro.x*m00*ux3*uy2 - Fhydro.x*m00*ux3 - 3.0*Fhydro.x*m00*u.x*uy2 - Fhydro.x*m00*u.x + 3.0*Fhydro.x*ux3*uy2 + Fhydro.x*ux3 + 3.0*Fhydro.x*u.x*uy2 + Fhydro.x*u.x - 3.0*Fhydro.y*m00*ux2*uy3 - 3.0*Fhydro.y*m00*ux2*u.y - Fhydro.y*m00*uy3 - Fhydro.y*m00*u.y + 3.0*Fhydro.y*ux2*uy3 + 3.0*Fhydro.y*ux2*u.y + Fhydro.y*uy3 + Fhydro.y*u.y)/rho;
+
 	//collide eq: (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
 	f_in[0] = 0.5*F_cm[0] + cm_eq[0];
 	f_in[1] = 0.5*F_cm[1] + cm_eq[1];
@@ -1166,8 +1190,9 @@ CudaDeviceFunction void CollisionBGK(){
 	ny = gradPhi.y/gradPhi.z;
 
 	// CALCULATE FORCES:
-	F_pressure[0] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.x;
-	F_pressure[1] = (-1.0/3.0) * p * (Density_h-Density_l) * gradPhi.y;
+	real_t density_coeff = (Density_h-Density_l)/(PhaseField_h-PhaseField_l);
+	F_pressure[0] = (-1.0/3.0) * p * density_coeff * gradPhi.x;
+	F_pressure[1] = (-1.0/3.0) * p * density_coeff * gradPhi.y;
 	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
 	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
 
@@ -1188,8 +1213,8 @@ CudaDeviceFunction void CollisionBGK(){
 			stress[1] += tmp1*d2q9_ex[i]*d2q9_ey[i];
 			stress[2] += tmp1*d2q9_ey[i]*d2q9_ey[i];    }
 
-		F_mu[0] = (0.5-tau)/tau * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * (Density_h-Density_l);
-		F_mu[1] = (0.5-tau)/tau * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * (Density_h-Density_l);
+		F_mu[0] = (0.5-tau)/tau * (stress[0]*gradPhi.x + stress[1]*gradPhi.y) * density_coeff;
+		F_mu[1] = (0.5-tau)/tau * (stress[1]*gradPhi.x + stress[2]*gradPhi.y) * density_coeff;
 		F_total[0] = mu*gradPhi.x + F_pressure[0] + F_body[0] + F_mu[0];
 		F_total[1] = mu*gradPhi.y + F_pressure[1] + F_body[1] + F_mu[1];
 		U = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*F_total[0]/rho;

@@ -42,9 +42,9 @@ print("CudaDeviceFunction void relax_MRT_relax_raw_mom_into_ortho("
 print("\nreal_t %s = 1./tau;" % sv)
 print("\nreal_t %s[9]; real_t %s[9]; \n" % (mom_DF_str, mom_relaxed_DF_str))
 
-populations = get_populations(DF_in_str)
-m_DF = get_populations(mom_DF_str)
-m_relaxed_DF = get_populations(mom_relaxed_DF_str)
+populations = get_DF(DF_in_str)
+m_DF = get_DF(mom_DF_str)
+m_relaxed_DF = get_DF(mom_relaxed_DF_str)
 m = Mraw * populations
 
 print("\n//raw moments from density-probability functions")

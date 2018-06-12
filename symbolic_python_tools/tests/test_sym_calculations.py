@@ -10,7 +10,7 @@ from SymbolicCollisions.core.sym_col_fun import \
     get_cm_vector_from_discrete_def, get_cm_vector_shift_NM,\
     get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF,\
     get_continuous_force_He_first_order_MB,\
-    get_pop_eq_hydro, \
+    get_discrete_EDF_hydro, \
     get_force_He_first_order, \
     get_force_Guo_second_order, get_continuous_force_Guo_second_order, \
     get_gamma, get_continuous_hydro_DF
@@ -162,7 +162,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_cm_eq_hydro_discrete(self):
-        cm_eq = get_cm_vector_from_discrete_def(get_pop_eq_hydro)
+        cm_eq = get_cm_vector_from_discrete_def(get_discrete_EDF_hydro)
 
         f = io.StringIO()
         with redirect_stdout(f):

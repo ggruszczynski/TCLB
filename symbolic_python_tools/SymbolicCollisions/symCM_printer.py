@@ -50,7 +50,7 @@ print_as_vector(pop_cm, 'pop_cm', regex=True)
 
 print('\n//phase-field hydrodynamic model: population_eq_pf -> cm_eq_pf - by definition: '
       '\n//k_mn = sum( (e_ix-ux)^m (e_iy-uy)^n * population_eq_pf_i)')
-cm_eq_pf = get_cm_vector_from_discrete_def(get_pop_eq_hydro)
+cm_eq_pf = get_cm_vector_from_discrete_def(get_discrete_EDF_hydro)
 print_as_vector(cm_eq_pf, 'cm_eq_pf', regex=True)
 
 

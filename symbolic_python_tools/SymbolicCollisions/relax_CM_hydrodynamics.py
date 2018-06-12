@@ -1,9 +1,9 @@
 
 from sympy.matrices import eye
 from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, Nraw, S_relax, rho
-from SymbolicCollisions.core.sym_col_fun import get_populations, get_m00
+from SymbolicCollisions.core.sym_col_fun import get_DF, get_m00
 from SymbolicCollisions.core.sym_col_fun import get_cm_vector_from_discrete_def, get_force_Guo_second_order, \
-      get_cm_vector_from_continuous_def, get_continuous_force_He_first_order_MB, get_pop_eq_hydro
+      get_cm_vector_from_continuous_def, get_continuous_force_He_first_order_MB, get_discrete_EDF_hydro
 from SymbolicCollisions.core.printers import print_u2, print_as_vector, print_ccode
 from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_hydro_eq, hardcoded_F_cm_He_hydro_LB_velocity_based
 
@@ -38,9 +38,9 @@ print("\nreal_t %s[9];" % temp_pop_str)
 print("for (int i = 0; i < 9; i++) {\n\t"
       "%s[i] = %s[i];}" % (temp_pop_str, pop_in_str))
 
-populations = get_populations(pop_in_str)
-temp_populations = get_populations(temp_pop_str)
-cm_eq = get_populations(cm_eq_pop_str)
+populations = get_DF(pop_in_str)
+temp_populations = get_DF(temp_pop_str)
+cm_eq = get_DF(cm_eq_pop_str)
 m = Mraw * temp_populations
 
 print("\n//raw moments from density-probability functions")
@@ -52,13 +52,13 @@ cm = Nraw * populations
 print_as_vector(cm, print_symbol=temp_pop_str, regex=True)
 
 print("\n//collision in central moments space")
-# print("//calculate equilibrium distributions in cm space")
-# print_as_vector_re(get_cm_vector_from_discrete_def(get_pop_eq_hydro), cm_eq_pop_str)
-# print_as_vector_re(hardcoded_cm_hydro_eq, cm_eq_pop_str)  # save time
+print("//calculate equilibrium distributions in cm space")
+# print_as_vector(get_cm_vector_from_discrete_def(get_pop_eq_hydro), cm_eq_pop_str, regex=True)
+print_as_vector(hardcoded_cm_hydro_eq, cm_eq_pop_str, regex=True)  # save time
 
 print("//collide eq: -S*(cm - cm_eq)")
-# cm_after_collision = -S_relax * (temp_populations - cm_eq)
-cm_after_collision = -S_relax * (temp_populations - hardcoded_cm_hydro_eq)
+cm_after_collision = -S_relax * (temp_populations - cm_eq)
+# cm_after_collision = -S_relax * (temp_populations - hardcoded_cm_hydro_eq)
 print_as_vector(cm_after_collision, print_symbol=pop_in_str, regex=True)
 
 print("\n//back to raw moments")
