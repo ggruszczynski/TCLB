@@ -1,5 +1,5 @@
 import numpy as np
-
+import csv
 
 def remove_duplicates(values):
     output = []
@@ -67,3 +67,21 @@ def remove_duplicates_y(x, y):
     x = np.delete(x, indices)
     y = np.delete(y, indices)
     return x, y
+
+
+# read experimental data
+def read_data(filepath):
+    x = np.empty(0)
+    u = np.empty(0)
+
+    with open(filepath, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter='\t')
+        headers = next(reader, None)  # returns the headers or `None` if the input is empty
+
+        for row in reader:
+            x = np.append(x, float(row[0]))
+            u = np.append(u, float(row[1]))
+
+    x, u = remove_duplicates_y(x, u)
+    return x, u
+

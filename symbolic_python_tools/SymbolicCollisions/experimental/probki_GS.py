@@ -122,5 +122,5 @@ pretty_print(hmm.transpose()*hmm)
 
 #
 # pretty_print(mmm.transpose())
-# print("\n===")
-
+print("\n=========================================")
+pretty_print(Nraw.transpose()*Nraw)

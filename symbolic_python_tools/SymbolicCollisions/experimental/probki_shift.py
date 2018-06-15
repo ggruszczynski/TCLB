@@ -37,3 +37,26 @@ from numpy.testing import assert_almost_equal
 for i in range(0):
     assert_almost_equal(f1[i], f2[i])
 
+
+
+
+print("\n\n=== from raw moments to ortho moments ===\n")
+T_raw_to_ortho = M_ortho_GS * Mraw.inv()
+
+S_relax = S_relax_MRT_GS.subs({
+            's_v': 0.0321,
+            })
+
+X1 = Nraw*T_raw_to_ortho*Mraw
+X2 = T_raw_to_ortho*Nraw*Mraw
+
+pretty_print(X1*cm)
+pretty_print(X2*cm)
+
+XX1 = Mraw.inv()*T_raw_to_ortho.inv()*Nraw.inv()*S_relax*Nraw*T_raw_to_ortho*Mraw
+XX2 = Mraw.inv()*Nraw.inv()*T_raw_to_ortho.inv()*S_relax*T_raw_to_ortho*Nraw*Mraw
+
+
+a1 = Nraw*Mraw*cm
+a2 = ShiftMat*M_ortho_GS.inv()*cm
+
