@@ -13,8 +13,8 @@
   </Geometry>
     <Model>
     <Params
-        Density_h="1.0" Density_l="1.0" 
-        Viscosity_h="100.0" Viscosity_l="1.0"
+        Density_h="1.0" Density_l="0.01" 
+        Viscosity_h="1.0" Viscosity_l="1.0"
         PhaseField_h="1.0" PhaseField_l="0.0"    
         ContactAngle="135" 
       
