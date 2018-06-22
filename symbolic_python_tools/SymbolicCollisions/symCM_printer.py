@@ -9,34 +9,37 @@ start = time.process_time()
 print('// === welcome to cm! === \n ')
 print('// === discrete cm ===\n ')
 
-print('\n//F_cm_He_first_order')
-F_cm_He_original = get_cm_vector_from_discrete_def(get_force_He_first_order)
-# F_cm_He_original = get_cm_vector_from_discrete_def(get_force_He_second_order)  # produces looong expressions
+print('\n//F_cm_He_discrete')
+F_cm_He_original = get_cm_vector_from_discrete_def(get_discrete_force_He)
 print_as_vector(F_cm_He_original, 'F_cm', regex=True)
 
-print('\n//N*M*F_He_first_order')
-NMF_cm_He_original = get_cm_vector_shift_NM(get_force_He_first_order)
+print('\n//N*M*F_He')
+NMF_cm_He_original = get_cm_vector_shift_NM(get_discrete_force_He)
 print_as_vector(NMF_cm_He_original, 'F_cm', regex=True)
 
 print('\n//F_cm_He_hydro_eq_experimental')
-F_cm_He_pf = get_cm_vector_from_discrete_def(get_force_He_hydro_eq_experimental)
+F_cm_He_pf = get_cm_vector_from_discrete_def(get_discrete_force_He_hydro_eq_experimental)
 print_as_vector(F_cm_He_pf, 'F_cm', regex=True)
 
 
 print('\n//F_cm_Guo_without_U')
-F_cm_Guo_bez_U = get_cm_vector_from_discrete_def(get_force_Guo_without_U_experimental)
+F_cm_Guo_bez_U = get_cm_vector_from_discrete_def(get_discrete_force_Guo_without_U_experimental)
 print_as_vector(F_cm_Guo_bez_U, 'F_cm', regex=True)
 
-print('\n//F_cm_Guo')
-F_cm_Guo = get_cm_vector_from_discrete_def(get_force_Guo_first_order)
+print('\n//F_cm_Guo_first_order')
+F_cm_Guo = get_cm_vector_from_discrete_def(get_discrete_force_Guo_first_order)
 print_as_vector(F_cm_Guo, 'F_cm', regex=True)
 
-print('\n//F_cm_Guo_extended')
-F_cm_Guo_extended = get_cm_vector_from_discrete_def(get_force_Guo_second_order)
+print('\n//F_cm_Guo_second_order')
+F_cm_Guo_extended = get_cm_vector_from_discrete_def(get_discrete_force_Guo_second_order)
 print_as_vector(F_cm_Guo_extended, 'F_cm', regex=True)
 
+print('\n//N*M*F_cm_Guo_second_order ')
+NMF_cm_Guo_second_order = get_cm_vector_shift_NM(get_discrete_force_Guo_second_order)
+print_as_vector(NMF_cm_Guo_second_order, 'F_cm', regex=True)
+
 print('\n//F_phi_cm')
-F_phi_cm = get_cm_vector_from_discrete_def(get_force_interface_tracking)
+F_phi_cm = get_cm_vector_from_discrete_def(get_discrete_force_interface_tracking)
 print_as_vector(F_phi_cm, 'F_phi_cm', regex=True)
 
 
@@ -66,8 +69,7 @@ print_as_vector(cm_eq, 'cm_eq', regex=True)
 print('\n//Force -> Force_cm - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
-F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_first_order_MB)
-# F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_hydro_DF)
+F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_MB)
 print_as_vector(F_cm, 'F_cm', regex=True)
 
 print('\n//Force -> Force_cm - from continous definition: \n'
@@ -77,10 +79,15 @@ F_cm = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
 print_as_vector(F_cm, 'F_cm', regex=True)
 
 print('\n//N*M*F_He_continous ')
-NMF_cm_He_original = get_cm_vector_shift_NM(get_continuous_force_He_first_order_MB)
+NMF_cm_He_original = get_cm_vector_shift_NM(get_continuous_force_He_MB)
 print_as_vector(NMF_cm_He_original, 'F_cm', regex=True)  # produces looong expressions
 
 
+print('\n//Force -> Force_cm - from continous definition: \n'
+      'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
+      'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
+F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_hydro_DF)
+print_as_vector(F_cm, 'F_cm', regex=True)
+
 print('\n\n Done in %s [s].'
       % str(time.process_time() - start))
-

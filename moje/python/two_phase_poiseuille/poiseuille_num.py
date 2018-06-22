@@ -10,10 +10,8 @@ from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal
 
 
 
-h = 50
-# uc = 1E-4
-
-uc = 0.0076  # --> max(u) = 0.1
+h = 49
+uc = 1E-4
 
 rho_l = 1
 rho_g = 1
@@ -24,8 +22,8 @@ dyn_visc_l = rho_l * kin_visc_l
 dyn_visc_g = rho_g * kin_visc_g
 mu_ratio = dyn_visc_l / dyn_visc_g
 
-y_ = np.linspace(-h, h, 1000)
-pa = TwoPhasePoiseuilleAnal(u_c=uc, mu_l=dyn_visc_l, mu_g=dyn_visc_g, h=h)
+y_ = np.linspace(-h, h, 101)
+pa = TwoPhasePoiseuilleAnal(u_c=uc, mu_l=dyn_visc_l, mu_g=dyn_visc_g, rho_g=rho_g, rho_l=rho_l, h=h)
 print("Body force Gx = %10.2e" % pa.gx)
 
 u = np.array([pa.get_u_profile(y_[i]) for i in range(len(y_))])
