@@ -28,7 +28,7 @@ print('\n\n// === continous cm === \n ')
 #       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
 # F_cm = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
 # print_as_vector(F_cm, 'F_cm', regex=True)
-
+#
 # print('\n//population_eq -> cm_eq - from continous definition: \n'
 #       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
 #       'where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')

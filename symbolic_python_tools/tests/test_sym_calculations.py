@@ -7,26 +7,28 @@ from sympy import Symbol
 from SymbolicCollisions.core.cm_symbols import w
 
 from SymbolicCollisions.core.sym_col_fun import \
-    get_cm_vector_from_discrete_def, get_cm_vector_shift_NM,\
-    get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF,\
-    get_continuous_force_He_first_order_MB,\
+    get_cm_vector_from_discrete_def, get_cm_vector_shift_NM, \
+    get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF, \
+    get_continuous_force_He_MB, \
     get_discrete_EDF_hydro, \
-    get_force_He_first_order, \
-    get_force_Guo_second_order, get_continuous_force_Guo_second_order, \
-    get_gamma, get_continuous_hydro_DF
+    get_discrete_force_He, \
+    get_discrete_force_Guo_second_order, get_continuous_force_Guo_second_order, \
+    get_gamma, get_continuous_hydro_DF, get_continuous_force_He_hydro_DF
 
 from SymbolicCollisions.core.printers import print_as_vector
 
 from SymbolicCollisions.core.hardcoded_results import \
     hardcoded_F_cm_Guo_hydro_LB_velocity_based, hardcoded_cm_pf_eq, hardcoded_cm_hydro_eq
 
+
 class TestSymbolicCalc(TestCase):
 
     def test_Shift_ortho_Straka_d2q5(self):
         from SymbolicCollisions.core.shift_matrix_d2q9 import get_shift_matrix
-        from SymbolicCollisions.core.cm_symbols import Shift_ortho_Straka_d2q5, K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5
+        from SymbolicCollisions.core.cm_symbols import Shift_ortho_Straka_d2q5, K_ortho_Straka_d2q5, ex_Straka_d2_q5, \
+            ey_Straka_d2_q5
 
-        Smat = get_shift_matrix(K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5 )
+        Smat = get_shift_matrix(K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -44,7 +46,7 @@ class TestSymbolicCalc(TestCase):
         from SymbolicCollisions.core.shift_matrix_d2q9 import get_shift_matrix
         from SymbolicCollisions.core.cm_symbols import Shift_ortho_Geier, K_ortho_Geier, ex_Geier, ey_Geier
 
-        Smat = get_shift_matrix(K_ortho_Geier, ex_Geier, ey_Geier )
+        Smat = get_shift_matrix(K_ortho_Geier, ex_Geier, ey_Geier)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -59,11 +61,11 @@ class TestSymbolicCalc(TestCase):
         assert out == out2
 
     def test_shift_vs_def_cm(self):
-        functions = [lambda i: w[i], get_force_He_first_order, get_force_Guo_second_order]
+        functions = [lambda i: w[i], get_discrete_force_He, get_discrete_force_Guo_second_order]
 
         for fun in functions:
             F_in_cm = get_cm_vector_from_discrete_def(fun)  # calculate from definition of cm
-            NMF_cm= get_cm_vector_shift_NM(fun)  # calculate using shift matrices
+            NMF_cm = get_cm_vector_shift_NM(fun)  # calculate using shift matrices
 
             f = io.StringIO()
             with redirect_stdout(f):
@@ -93,7 +95,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_F_cm_Guo_continuous_and_discrete(self):
-        F_cm_Guo_disc = get_cm_vector_from_discrete_def(get_force_Guo_second_order)
+        F_cm_Guo_disc = get_cm_vector_from_discrete_def(get_discrete_force_Guo_second_order)
         F_cm_Guo_cont = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
 
         results = [F_cm_Guo_disc, F_cm_Guo_cont]
@@ -112,7 +114,7 @@ class TestSymbolicCalc(TestCase):
             assert out == expected_result
 
     def test_get_F_cm_using_He_scheme_and_continuous_Maxwellian_DF(self):
-        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_first_order_MB)
+        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_MB)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -131,8 +133,28 @@ class TestSymbolicCalc(TestCase):
 
         assert expected_result == out
 
+    def test_get_F_cm_using_He_scheme_and_continuous_Maxwellian_DF(self):
+        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_hydro_DF)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector(F_cm, 'F_cm', regex=True)
+        out = f.getvalue()
+
+        expected_result = 'F_cm[0] = 0;\n' \
+                          'F_cm[1] = Fhydro.x*m00/rho;\n' \
+                          'F_cm[2] = Fhydro.y*m00/rho;\n' \
+                          'F_cm[3] = -2.0*Fhydro.x*u.x*(m00 - 1.0)/rho;\n' \
+                          'F_cm[4] = -2.0*Fhydro.y*u.y*(m00 - 1.0)/rho;\n' \
+                          'F_cm[5] = (-Fhydro.x*m00*u.y + Fhydro.x*u.y - Fhydro.y*m00*u.x + Fhydro.y*u.x)/rho;\n' \
+                          'F_cm[6] = (2.0*Fhydro.x*m00*uxuy - 2.0*Fhydro.x*uxuy + Fhydro.y*m00*ux2 + 1./3.*Fhydro.y*m00 - Fhydro.y*ux2)/rho;\n' \
+                          'F_cm[7] = (Fhydro.x*m00*uy2 + 1./3.*Fhydro.x*m00 - Fhydro.x*uy2 + 2.0*Fhydro.y*m00*uxuy - 2.0*Fhydro.y*uxuy)/rho;\n' \
+                          'F_cm[8] = (-2.0*Fhydro.x*m00*u.x*uy2 - 2./3.*Fhydro.x*m00*u.x + 2.0*Fhydro.x*u.x*uy2 + 2./3.*Fhydro.x*u.x - 2.0*Fhydro.y*m00*ux2*u.y - 2./3.*Fhydro.y*m00*u.y + 2.0*Fhydro.y*ux2*u.y + 2./3.*Fhydro.y*u.y)/rho;\n'
+
+        assert expected_result == out
+
     def test_get_force_He_original(self):
-        F_in_cm = get_cm_vector_from_discrete_def(get_force_He_first_order)
+        F_in_cm = get_cm_vector_from_discrete_def(get_discrete_force_He)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -229,8 +251,6 @@ class TestSymbolicCalc(TestCase):
         assert 'cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;\n' in out  # noqa
 
         assert expected_result == out
-
-
 
     def test_cm_eq(self):
         """

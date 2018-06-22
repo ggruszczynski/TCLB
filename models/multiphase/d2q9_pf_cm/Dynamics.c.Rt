@@ -657,36 +657,51 @@ CudaDeviceFunction void relax_and_collide_CM_hydro(real_t f_in[9], real_t tau, v
 	cm_eq[7] = -u.x*(m00*uy2 + 1./3.*m00 - uy2 - 1./3.);
 	cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;
 	//calculate forces in cm space
+	// Guo:
 	F_cm[0] = 0;
 	F_cm[1] = Fhydro.x/rho;
 	F_cm[2] = Fhydro.y/rho;
 	F_cm[3] = 0;
 	F_cm[4] = 0;
 	F_cm[5] = 0;
-	// Guo:
-	// F_cm[6] = (-2.0*Fhydro.x*uxuy - Fhydro.y*ux2 + 1./3.*Fhydro.y)/rho;
-	// F_cm[7] = (-Fhydro.x*uy2 + 1./3.*Fhydro.x - 2.0*Fhydro.y*uxuy)/rho;
-	// F_cm[8] = 4.0*uxuy*(Fhydro.x*u.y + Fhydro.y*u.x)/rho;
-	// He:
-	F_cm[6] = 1./3.*Fhydro.y;
-	F_cm[7] = 1./3.*Fhydro.x;
-	F_cm[8] = 0;
+	F_cm[6] = (-2.0*Fhydro.x*uxuy - Fhydro.y*ux2 + 1./3.*Fhydro.y)/rho;
+	F_cm[7] = (-Fhydro.x*uy2 + 1./3.*Fhydro.x - 2.0*Fhydro.y*uxuy)/rho;
+	F_cm[8] = 4.0*uxuy*(Fhydro.x*u.y + Fhydro.y*u.x)/rho;
 
-	// He - use EDF for incompressible LBM/NS:
-	// real_t ux3 = ux2*u.x;
-	// real_t uy3 = uy2*u.y;
-	// real_t uxuy3 = uxuy*uxuy*uxuy;
 
-	// F_cm[0] = 3.0*(-Fhydro.x*m00*u.x + Fhydro.x*u.x - Fhydro.y*m00*u.y + Fhydro.y*u.y)/rho;
-	// F_cm[1] = (3.0*Fhydro.x*m00*ux2 + Fhydro.x*m00 - 3.0*Fhydro.x*ux2 + 3.0*Fhydro.y*m00*uxuy - 3.0*Fhydro.y*uxuy)/rho;
-	// F_cm[2] = (3.0*Fhydro.x*m00*uxuy - 3.0*Fhydro.x*uxuy + 3.0*Fhydro.y*m00*uy2 + Fhydro.y*m00 - 3.0*Fhydro.y*uy2)/rho;
-	// F_cm[3] = (-3.0*Fhydro.x*m00*ux3 - 3.0*Fhydro.x*m00*u.x + 3.0*Fhydro.x*ux3 + 3.0*Fhydro.x*u.x - 3.0*Fhydro.y*m00*ux2*u.y - Fhydro.y*m00*u.y + 3.0*Fhydro.y*ux2*u.y + Fhydro.y*u.y)/rho;
-	// F_cm[4] = (-3.0*Fhydro.x*m00*u.x*uy2 - Fhydro.x*m00*u.x + 3.0*Fhydro.x*u.x*uy2 + Fhydro.x*u.x - 3.0*Fhydro.y*m00*uy3 - 3.0*Fhydro.y*m00*u.y + 3.0*Fhydro.y*uy3 + 3.0*Fhydro.y*u.y)/rho;
-	// F_cm[5] = (-3.0*Fhydro.x*m00*ux2*u.y - Fhydro.x*m00*u.y + 3.0*Fhydro.x*ux2*u.y + Fhydro.x*u.y - 3.0*Fhydro.y*m00*u.x*uy2 - Fhydro.y*m00*u.x + 3.0*Fhydro.y*u.x*uy2 + Fhydro.y*u.x)/rho;
-	// F_cm[6] = (3.0*Fhydro.x*m00*ux3*u.y + 3.0*Fhydro.x*m00*uxuy - 3.0*Fhydro.x*ux3*u.y - 3.0*Fhydro.x*uxuy + 3.0*Fhydro.y*m00*ux2*uy2 + Fhydro.y*m00*ux2 + Fhydro.y*m00*uy2 + 1./3.*Fhydro.y*m00 - 3.0*Fhydro.y*ux2*uy2 - Fhydro.y*ux2 - Fhydro.y*uy2)/rho;
-	// F_cm[7] = (3.0*Fhydro.x*m00*ux2*uy2 + Fhydro.x*m00*ux2 + Fhydro.x*m00*uy2 + 1./3.*Fhydro.x*m00 - 3.0*Fhydro.x*ux2*uy2 - Fhydro.x*ux2 - Fhydro.x*uy2 + 3.0*Fhydro.y*m00*uxuy3 + 3.0*Fhydro.y*m00*uxuy - 3.0*Fhydro.y*uxuy3 - 3.0*Fhydro.y*uxuy)/rho;
-	// F_cm[8] = (-3.0*Fhydro.x*m00*ux3*uy2 - Fhydro.x*m00*ux3 - 3.0*Fhydro.x*m00*u.x*uy2 - Fhydro.x*m00*u.x + 3.0*Fhydro.x*ux3*uy2 + Fhydro.x*ux3 + 3.0*Fhydro.x*u.x*uy2 + Fhydro.x*u.x - 3.0*Fhydro.y*m00*ux2*uy3 - 3.0*Fhydro.y*m00*ux2*u.y - Fhydro.y*m00*uy3 - Fhydro.y*m00*u.y + 3.0*Fhydro.y*ux2*uy3 + 3.0*Fhydro.y*ux2*u.y + Fhydro.y*uy3 + Fhydro.y*u.y)/rho;
+	// // He:  - get_continuous_Maxwellian_DF(dzeta=dzeta, psi=(m00-1), u=(0, 0)) - (m00-1) deviation term
+	// F_cm[0] = 0;
+	// F_cm[1] = Fhydro.x*(m00 - 1.0)/rho;
+	// F_cm[2] = Fhydro.y*(m00 - 1.0)/rho;
+	// F_cm[3] = -2.0*Fhydro.x*u.x*(m00 - 1.0)/rho;
+	// F_cm[4] = -2.0*Fhydro.y*u.y*(m00 - 1.0)/rho;
+	// F_cm[5] = (-Fhydro.x*m00*u.y + Fhydro.x*u.y - Fhydro.y*m00*u.x + Fhydro.y*u.x)/rho;
+	// F_cm[6] = (2.0*Fhydro.x*m00*uxuy - 2.0*Fhydro.x*uxuy + Fhydro.y*m00*ux2 + 1./3.*Fhydro.y*m00 - Fhydro.y*ux2 - 1./3.*Fhydro.y)/rho;
+	// F_cm[7] = (Fhydro.x*m00*uy2 + 1./3.*Fhydro.x*m00 - Fhydro.x*uy2 - 1./3.*Fhydro.x + 2.0*Fhydro.y*m00*uxuy - 2.0*Fhydro.y*uxuy)/rho;
+	// F_cm[8] = (-2.0*Fhydro.x*m00*u.x*uy2 - 2./3.*Fhydro.x*m00*u.x + 2.0*Fhydro.x*u.x*uy2 + 2./3.*Fhydro.x*u.x - 2.0*Fhydro.y*m00*ux2*u.y - 2./3.*Fhydro.y*m00*u.y + 2.0*Fhydro.y*ux2*u.y + 2./3.*Fhydro.y*u.y)/rho;
+	
+	// // He:  - get_continuous_Maxwellian_DF(dzeta=dzeta, psi=1, u=(ux, uy)) - velocity term
+	// F_cm[0] = 0;
+	// F_cm[1] = Fhydro.x/rho;
+	// F_cm[2] = Fhydro.y/rho;
+	// F_cm[3] = 0;
+	// F_cm[4] = 0;
+	// F_cm[5] = 0;
+	// F_cm[6] = 1./3.*Fhydro.y/rho;
+	// F_cm[7] = 1./3.*Fhydro.x/rho;
+	// F_cm[8] = 0;
 
+	// // He - use EDF for incompressible LBM/NS: get_continuous_Maxwellian_DF(dzeta=dzeta, psi=(m00-1), u=(0, 0)) + get_continuous_Maxwellian_DF(dzeta=dzeta, psi=1, u=(ux, uy)) - both terms
+	// F_cm[0] = 0;
+	// F_cm[1] = Fhydro.x*m00/rho;
+	// F_cm[2] = Fhydro.y*m00/rho;
+	// F_cm[3] = -2.0*Fhydro.x*u.x*(m00 - 1.0)/rho;
+	// F_cm[4] = -2.0*Fhydro.y*u.y*(m00 - 1.0)/rho;
+	// F_cm[5] = (-Fhydro.x*m00*u.y + Fhydro.x*u.y - Fhydro.y*m00*u.x + Fhydro.y*u.x)/rho;
+	// F_cm[6] = (2.0*Fhydro.x*m00*uxuy - 2.0*Fhydro.x*uxuy + Fhydro.y*m00*ux2 + 1./3.*Fhydro.y*m00 - Fhydro.y*ux2)/rho;
+	// F_cm[7] = (Fhydro.x*m00*uy2 + 1./3.*Fhydro.x*m00 - Fhydro.x*uy2 + 2.0*Fhydro.y*m00*uxuy - 2.0*Fhydro.y*uxuy)/rho;
+	// F_cm[8] = (-2.0*Fhydro.x*m00*u.x*uy2 - 2./3.*Fhydro.x*m00*u.x + 2.0*Fhydro.x*u.x*uy2 + 2./3.*Fhydro.x*u.x - 2.0*Fhydro.y*m00*ux2*u.y - 2./3.*Fhydro.y*m00*u.y + 2.0*Fhydro.y*ux2*u.y + 2./3.*Fhydro.y*u.y)/rho;
+	
 	//collide eq: (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
 	f_in[0] = 0.5*F_cm[0] + cm_eq[0];
 	f_in[1] = 0.5*F_cm[1] + cm_eq[1];
@@ -1128,11 +1143,11 @@ CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 		//tau = 1.0/tau + 0.5;
 
 		// Linear update: eq23
-		//tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
+		tau = 0.5 + tau_l + normPhaseF*(tau_h - tau_l);
 
 		// Sharp update:		
-		real_t pf_avg = (PhaseField_h + PhaseField_l)/2.;
-		tau =  (myPhaseF >= pf_avg) ? 0.5 + tau_h : 0.5 + tau_l;
+		// real_t pf_avg = (PhaseField_h + PhaseField_l)/2.;
+		// tau =  (myPhaseF >= pf_avg) ? 0.5 + tau_h : 0.5 + tau_l;
 
 		// Viscosity update: eq24 & 25
 		// real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
