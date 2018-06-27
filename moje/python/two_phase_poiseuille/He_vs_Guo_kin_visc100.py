@@ -1,53 +1,32 @@
 import matplotlib.pyplot as plt
-# import matplotlib
-# matplotlib.use('TkAgg')
-import csv
 import numpy as np
 import os
-from utilites import remove_duplicates_y, read_data
+from utilites import  read_data
 from numpy.linalg import norm
 
-from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal
-
-rho_l = 1
-rho_g = 1
-kin_visc_l = 100
-kin_visc_g = 1
-
-dyn_visc_l = rho_l * kin_visc_l
-dyn_visc_g = rho_g * kin_visc_g
-mu_ratio = dyn_visc_l / dyn_visc_g
-
-#
-# x_exp_cm, u_exp_cm = read_data(os.path.join("../data_for_plots", "Poiseuille", "diff_Guo_vs_He_Mach0433", "U_Ma0433_Guo.csv"))
-# x_exp_mrt, u_exp_mrt = read_data(os.path.join("../data_for_plots", "Poiseuille", "diff_Guo_vs_He_Mach0433", "U_Ma0433_He.csv"))
-
+from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal, calc_gx
 
 x_exp_cm_Guo, u_exp_cm_Guo = read_data(os.path.join("../data_for_plots", "Poiseuille", "sharp_Guo_vs_He_vs_MRT_Mach01", "U_sharp_cm_Guo.csv"))
 x_exp_cm_He, u_exp_cm_He = read_data(os.path.join("../data_for_plots", "Poiseuille", "sharp_Guo_vs_He_vs_MRT_Mach01", "U_sharp_cm_He.csv"))
 x_exp_mrt, u_exp_mrt = read_data(os.path.join("../data_for_plots", "Poiseuille", "sharp_Guo_vs_He_vs_MRT_Mach01", "U_sharp_mrt.csv"))
-#
 
-
-
-
-# h = 49 # powinno byc 49?
-# uc = 0.023772277227722776  # --> max(u_anal) = 0.31
 
 h = 49
 uc = 0.007299 # --> max(u) = 0.0958 ~ Ma=016597 < Ma=0.3
 
 rho_l = 1
-rho_g = 1
+rho_h = 1
 kin_visc_l = 100
 kin_visc_g = 1
 
-dyn_visc_l = rho_l * kin_visc_l
-dyn_visc_g = rho_g * kin_visc_g
-mu_ratio = dyn_visc_l / dyn_visc_g
+mu_l = rho_l * kin_visc_l
+mu_h = rho_h * kin_visc_g
+mu_ratio = mu_l / mu_h
 
 y_ = np.linspace(-h, h, 101)
-pa = TwoPhasePoiseuilleAnal(u_c=uc, mu_l=dyn_visc_l, mu_g=dyn_visc_g, rho_g=rho_g, rho_l=rho_l, h=h)
+
+gx = calc_gx(uc, mu_l, mu_h, rho_l, rho_h, h)
+pa = TwoPhasePoiseuilleAnal(gx=gx, mu_l=mu_l, mu_h=mu_h, rho_h=rho_h, rho_l=rho_l, h=h)
 print("Body force Gx = %10.2e" % pa.gx)
 
 u = np.array([pa.get_u_profile(y_[i]) for i in range(len(y_))])

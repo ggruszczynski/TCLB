@@ -1,13 +1,9 @@
 import matplotlib.pyplot as plt
-# import matplotlib
-# matplotlib.use('TkAgg')
-import csv
 import numpy as np
 import os
-from utilites import remove_duplicates_y, read_data
+from utilites import read_data
 
 from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal
-
 
 
 h = 49
@@ -23,7 +19,7 @@ dyn_visc_g = rho_g * kin_visc_g
 mu_ratio = dyn_visc_l / dyn_visc_g
 
 y_ = np.linspace(-h, h, 101)
-pa = TwoPhasePoiseuilleAnal(u_c=uc, mu_l=dyn_visc_l, mu_g=dyn_visc_g, rho_g=rho_g, rho_l=rho_l, h=h)
+pa = TwoPhasePoiseuilleAnal(u_c=uc, mu_l=dyn_visc_l, mu_h=dyn_visc_g, rho_h=rho_g, rho_l=rho_l, h=h)
 print("Body force Gx = %10.2e" % pa.gx)
 
 u = np.array([pa.get_u_profile(y_[i]) for i in range(len(y_))])
