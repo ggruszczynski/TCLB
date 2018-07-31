@@ -1,0 +1,118 @@
+###### Nodes:          #######
+trentino14.local
+trentino14.local
+trentino14.local
+trentino14.local
+trentino14.local
+trentino14.local
+trentino14.local
+trentino14.local
+###### Loading modules #######
+module purge... OK
+module load R rocks-openmpi... OK
+###### --------------- #######
+
+[  ]    #### : -------------------------------------------------------------------------
+[  ]    #### : -  CLB version:   v6.0-beta-1006-g5854488                               -
+[  ]    #### : -        Model:                d2q9_pf_cm                               -
+[  ]    #### : -------------------------------------------------------------------------
+[  ]    #### : Setting output path to: test
+[ 3] warning ! No "Units" element in config file
+[ 4] warning ! No "Units" element in config file
+[ 5] warning ! No "Units" element in config file
+[ 6] warning ! No "Units" element in config file
+[ 7] warning ! No "Units" element in config file
+[ 0] warning ! No "Units" element in config file
+[  ]    ==== : Mesh size in config file: 128x128x1
+[  ]    ---- : Global lattice size: 128x128x1
+[  ]    ==== : Max region size: 2048. Mesh size 16384. Overhead:  0%
+[  ]    ---- : Local lattice size: 128x16x1
+[  ]    #### : [0] Cumulative allocation of 786176 b (786.2 kB)
+[ 1] warning ! No "Units" element in config file
+[ 2] warning ! No "Units" element in config file
+[  ]    ---- : Creating geom size:2048
+[  ]    #### : Setting output path to: test
+[  ]    #### : Setting output path to: output/test
+[ 3] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[  ]    ---- : loading geometry ...
+[  ]    ---- : Setting number of zones to 3
+[  ]    ---- : Setting Density_h to 10.0 (10.000000)
+[  ]    ---- : [0] Settings [High density fluid] to 10.000000
+[  ]    ---- : Setting Density_l to 1.0 (1.000000)
+[  ]    ---- : [0] Settings [Low  density fluid] to 1.000000
+[  ]    ---- : Setting Viscosity_h to 0.1666666 (0.166667)
+[  ]    ---- : [0] Settings [kinematic viscosity] to 0.166667
+[  ]    ---- : [0] Settings [relaxation time (high density fluid)] to 0.500000
+[  ]    ---- : Setting Viscosity_l to 0.1666666 (0.166667)
+[  ]    ---- : [0] Settings [kinematic viscosity] to 0.166667
+[  ]    ---- : [0] Settings [relaxation time (low density fluid)] to 0.500000
+[  ]    ---- : Setting PhaseField_h to 1.0 (1.000000)
+[  ]    ---- : [0] Settings [PhaseField in high density fluid] to 1.000000
+[  ]    ---- : Setting PhaseField_l to 0.0 (0.000000)
+[  ]    ---- : [0] Settings [PhaseField in low density fluid] to 0.000000
+[  ]    ---- : Setting ContactAngle to 135 (135.000000)
+[  ]    ---- : [0] Settings [Contact angle in degrees - in reference to the high density fluid] to 135.000000
+[  ]    ---- : [0] Settings [Conversion to rads for calcs] to 2.356194
+[  ]    ---- : Setting PhaseField_init in zone  (-1) to 1.0 (1.000000)
+[ 5] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[ 1] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[  ]    ---- : Setting PhaseField_init in zone air (1) to 0.0 (0.000000)
+[ 0] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[  ]    ---- : Setting W to 5 (5.000000)
+[  ]    ---- : [0] Settings [Anti-diffusivity coeff (phase interfacial thickness) ] to 5.000000
+[  ]    ---- : Setting M to 0.1 (0.100000)
+[  ]    ---- : [0] Settings [Mobility] to 0.100000
+[  ]    ---- : [0] Settings [one over relaxation time (phase field)] to 1.250000
+[  ]    ---- : Setting sigma to 1e-5 (0.000010)
+[  ]    ---- : [0] Settings [surface tension] to 0.000010
+[  ]    ---- : Setting omega_bulk to 1.0 (1.000000)
+[  ]    ---- : [0] Settings [inverse of bulk relaxation time] to 1.000000
+[  ]    ---- : Setting GravitationX to 1e-5 (0.000010)
+[  ]    ---- : [0] Settings [applied (rho)*GravitationX] to 0.000010
+[  ]    ---- : Initializing Lattice ...
+[ 7] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[ 2] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[ 4] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[ 6] WARNING ! Unknown zone wall (found while setting parameter PhaseField_init)
+[  ]      0.5 MLBUps      0.19 GB/s [====================]  0s[  ]    ---- : Setting action Solve at 25.000000 iterations
+[  ]    #### : Setting output path to: output/test
+[  ]    ---- : Setting callback VTK at 5.000000 iterations
+[  ]    ---- : Adding VTK to the solver hands
+[  ]    ---- :      8.2 MLBUps      2.90 GB/s [====================]
+[  ]    ---- :        5 it writing vtk
+[  ]    ---- :      8.2 MLBUps      2.90 GB/s [====================]
+[  ]    ---- :       10 it writing vtk
+[  ]    ---- :      0.6 MLBUps      0.21 GB/s [====================]
+[  ]    ---- :       15 it writing vtk
+[  ]    ---- :      4.1 MLBUps      1.45 GB/s [====================]
+[  ]    ---- :       20 it writing vtk
+[  ]    ---- :      8.2 MLBUps      2.90 GB/s [====================]
+[  ]    ---- :       25 it writing vtk
+[  ]    ---- : loading geometry ...
+[  ]    ---- : Setting callback Failcheck at 2000.000000 iterations
+[  ]    ---- : Adding Failcheck to the solver hands
+[  ]    ---- : Setting action Solve at 10000.000000 iterations
+[  ]    #### : Setting output path to: output/test
+[  ]    ---- : Setting callback VTK at 1000.000000 iterations
+[  ]    ---- : Adding VTK to the solver hands
+[  ]      5.6 MLBUps      2.00 GB/s [==========          ]  1s[  ]      5.8 MLBUps      2.04 GB/s [================    ]  2s[  ]    ---- :      5.7 MLBUps      2.01 GB/s [====================]
+[  ]    ---- :     1025 it writing vtk
+[  ]      5.7 MLBUps      2.02 GB/s [======              ]  1s[  ]      5.8 MLBUps      2.04 GB/s [=============       ]  1s[  ]    ---- :      5.7 MLBUps      2.03 GB/s [====================]
+[  ]    ---- :     2025 it writing vtk
+[  ]      5.7 MLBUps      2.03 GB/s [=======             ]  1s[  ]      5.7 MLBUps      2.03 GB/s [==============      ]  2s[  ]    ---- :      5.7 MLBUps      2.02 GB/s [====================]
+[  ]    ---- :     3025 it writing vtk
+[  ]      5.7 MLBUps      2.01 GB/s [=======             ]  1s[  ]      5.8 MLBUps      2.05 GB/s [=============       ]  1s[  ]    ---- :      5.7 MLBUps      2.03 GB/s [====================]
+[  ]    ---- :     4025 it writing vtk
+[  ]      5.7 MLBUps      2.01 GB/s [=======             ]  1s[  ]      5.8 MLBUps      2.05 GB/s [=============       ]  1s[  ]    ---- :      5.7 MLBUps      2.03 GB/s [====================]
+[  ]    ---- :     5025 it writing vtk
+[  ]      5.7 MLBUps      2.03 GB/s [=======             ]  1s[  ]      5.7 MLBUps      2.03 GB/s [==============      ]  2s[  ]    ---- :      5.7 MLBUps      2.02 GB/s [====================]
+[  ]    ---- :     6025 it writing vtk
+[  ]      5.7 MLBUps      2.03 GB/s [=======             ]  1s[  ]      5.7 MLBUps      2.01 GB/s [==============      ]  2s[  ]    ---- :      5.8 MLBUps      2.05 GB/s [====================]
+[  ]    ---- :     7025 it writing vtk
+[  ]      5.7 MLBUps      2.01 GB/s [=======             ]  1s[  ]      5.8 MLBUps      2.05 GB/s [=============       ]  1s[  ]    ---- :      5.7 MLBUps      2.03 GB/s [====================]
+[  ]    ---- :     8025 it writing vtk
+[  ]      5.7 MLBUps      2.01 GB/s [=======             ]  1s[  ]      5.7 MLBUps      2.03 GB/s [=============       ]  2s[  ]    ---- :      5.7 MLBUps      2.03 GB/s [====================]
+[  ]    ---- :     9025 it writing vtk
+[  ]      5.8 MLBUps      2.04 GB/s [======              ]  0s[  ]      5.7 MLBUps      2.02 GB/s [==============      ]  2s[  ]    ---- :      5.7 MLBUps      2.02 GB/s [====================]
+[  ]    ---- :    10025 it writing vtk
+[  ]    ---- : Total duration: 28.830000 s = 0.480500 min = 0.008008 h

@@ -658,15 +658,15 @@ CudaDeviceFunction void relax_and_collide_CM_hydro(real_t f_in[9], real_t tau, v
 	cm_eq[8] = m00*ux2*uy2 + 1./3.*m00*ux2 + 1./3.*m00*uy2 + 1./9.*m00 - ux2*uy2 - 1./3.*ux2 - 1./3.*uy2;
 	//calculate forces in cm space
 	// Guo:
-	F_cm[0] = 0;
-	F_cm[1] = Fhydro.x/rho;
-	F_cm[2] = Fhydro.y/rho;
-	F_cm[3] = 0;
-	F_cm[4] = 0;
-	F_cm[5] = 0;
-	F_cm[6] = (-2.0*Fhydro.x*uxuy - Fhydro.y*ux2 + 1./3.*Fhydro.y)/rho;
-	F_cm[7] = (-Fhydro.x*uy2 + 1./3.*Fhydro.x - 2.0*Fhydro.y*uxuy)/rho;
-	F_cm[8] = 4.0*uxuy*(Fhydro.x*u.y + Fhydro.y*u.x)/rho;
+	// F_cm[0] = 0;
+	// F_cm[1] = Fhydro.x/rho;
+	// F_cm[2] = Fhydro.y/rho;
+	// F_cm[3] = 0;
+	// F_cm[4] = 0;
+	// F_cm[5] = 0;
+	// F_cm[6] = (-2.0*Fhydro.x*uxuy - Fhydro.y*ux2 + 1./3.*Fhydro.y)/rho;
+	// F_cm[7] = (-Fhydro.x*uy2 + 1./3.*Fhydro.x - 2.0*Fhydro.y*uxuy)/rho;
+	// F_cm[8] = 4.0*uxuy*(Fhydro.x*u.y + Fhydro.y*u.x)/rho;
 
 
 	// // He:  - get_continuous_Maxwellian_DF(dzeta=dzeta, psi=(m00-1), u=(0, 0)) - (m00-1) deviation term
@@ -681,15 +681,15 @@ CudaDeviceFunction void relax_and_collide_CM_hydro(real_t f_in[9], real_t tau, v
 	// F_cm[8] = (-2.0*Fhydro.x*m00*u.x*uy2 - 2./3.*Fhydro.x*m00*u.x + 2.0*Fhydro.x*u.x*uy2 + 2./3.*Fhydro.x*u.x - 2.0*Fhydro.y*m00*ux2*u.y - 2./3.*Fhydro.y*m00*u.y + 2.0*Fhydro.y*ux2*u.y + 2./3.*Fhydro.y*u.y)/rho;
 	
 	// // He:  - get_continuous_Maxwellian_DF(dzeta=dzeta, psi=1, u=(ux, uy)) - velocity term
-	// F_cm[0] = 0;
-	// F_cm[1] = Fhydro.x/rho;
-	// F_cm[2] = Fhydro.y/rho;
-	// F_cm[3] = 0;
-	// F_cm[4] = 0;
-	// F_cm[5] = 0;
-	// F_cm[6] = 1./3.*Fhydro.y/rho;
-	// F_cm[7] = 1./3.*Fhydro.x/rho;
-	// F_cm[8] = 0;
+	F_cm[0] = 0;
+	F_cm[1] = Fhydro.x/rho;
+	F_cm[2] = Fhydro.y/rho;
+	F_cm[3] = 0;
+	F_cm[4] = 0;
+	F_cm[5] = 0;
+	F_cm[6] = 1./3.*Fhydro.y/rho;
+	F_cm[7] = 1./3.*Fhydro.x/rho;
+	F_cm[8] = 0;
 
 	// // He - use EDF for incompressible LBM/NS: 
 	// // get_continuous_Maxwellian_DF(dzeta=dzeta, psi=(m00-1), u=(0, 0)) + get_continuous_Maxwellian_DF(dzeta=dzeta, psi=1, u=(ux, uy)) 
@@ -704,6 +704,18 @@ CudaDeviceFunction void relax_and_collide_CM_hydro(real_t f_in[9], real_t tau, v
 	// F_cm[7] = (Fhydro.x*m00*uy2 + 1./3.*Fhydro.x*m00 - Fhydro.x*uy2 + 2.0*Fhydro.y*m00*uxuy - 2.0*Fhydro.y*uxuy)/rho;
 	// F_cm[8] = (-2.0*Fhydro.x*m00*u.x*uy2 - 2./3.*Fhydro.x*m00*u.x + 2.0*Fhydro.x*u.x*uy2 + 2./3.*Fhydro.x*u.x - 2.0*Fhydro.y*m00*ux2*u.y - 2./3.*Fhydro.y*m00*u.y + 2.0*Fhydro.y*ux2*u.y + 2./3.*Fhydro.y*u.y)/rho;
 	
+	// divide by m00 manually
+	// F_cm[0] = 0;
+	// F_cm[1] = Fhydro.x/rho;
+	// F_cm[2] = Fhydro.y/rho;
+	// F_cm[3] = -2.0*Fhydro.x*u.x*(m00 - 1.0)/(m00*rho);
+	// F_cm[4] = -2.0*Fhydro.y*u.y*(m00 - 1.0)/(m00*rho);
+	// F_cm[5] = (-Fhydro.x*m00*u.y + Fhydro.x*u.y - Fhydro.y*m00*u.x + Fhydro.y*u.x)/rho;
+	// F_cm[6] = (2.0*Fhydro.x*m00*uxuy - 2.0*Fhydro.x*uxuy + Fhydro.y*m00*ux2 + 1./3.*Fhydro.y - Fhydro.y*ux2)/rho;
+	// F_cm[7] = (Fhydro.x*m00*uy2 + 1./3.*Fhydro.x - Fhydro.x*uy2 + 2.0*Fhydro.y*m00*uxuy - 2.0*Fhydro.y*uxuy)/rho;
+	// F_cm[8] = (-2.0*Fhydro.x*m00*u.x*uy2 - 2./3.*Fhydro.x*m00*u.x + 2.0*Fhydro.x*u.x*uy2 + 2./3.*Fhydro.x*u.x - 2.0*Fhydro.y*m00*ux2*u.y - 2./3.*Fhydro.y*m00*u.y + 2.0*Fhydro.y*ux2*u.y + 2./3.*Fhydro.y*u.y)/rho;
+	
+
 	//collide eq: (eye(9)-S)*cm + S*cm_eq + (eye(9)-S/2.)*force_in_cm_space
 	f_in[0] = 0.5*F_cm[0] + cm_eq[0];
 	f_in[1] = 0.5*F_cm[1] + cm_eq[1];
@@ -1149,7 +1161,11 @@ CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 
 		// Sharp update:		
 		// real_t pf_avg = (PhaseField_h + PhaseField_l)/2.;
-		// tau =  (myPhaseF >= pf_avg) ? 0.5 + tau_h : 0.5 + tau_l;
+		// tau = (myPhaseF >= pf_avg) ? 0.5 + tau_h : 0.5 + tau_l;
+
+		// real_t mu_h = Viscosity_h * myRho;
+		// real_t mu_l = Viscosity_l * myRho;
+		// tau = (myPhaseF >= pf_avg) ? 0.5 + 3*mu_h/Density_h : 0.5 + 3*mu_l/Density_l;
 
 		// Viscosity update: eq24 & 25
 		// real_t DynVisc = Density_l*Viscosity_l + normPhaseF* (Density_h*Viscosity_h - Density_l*Viscosity_l);
@@ -1161,7 +1177,12 @@ CudaDeviceFunction real_t calcTau(real_t myPhaseF, real_t myRho)
 
 CudaDeviceFunction real_t calcRho(real_t myPhaseF)
 {
+	// Linear update:
 	real_t rho = Density_l + (myPhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
+	
+	// Sharp update: // doesn't work 
+	// real_t pf_avg = (PhaseField_h + PhaseField_l)/2.;
+	// real_t rho = (myPhaseF >= pf_avg) ? Density_h : Density_l;
 	return rho;
 }
 

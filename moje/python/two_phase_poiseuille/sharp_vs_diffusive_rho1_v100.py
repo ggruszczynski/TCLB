@@ -5,6 +5,7 @@ from utilites import read_data
 from numpy.linalg import norm
 
 from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal, calc_gx
+from two_phase_poiseuille.TwoPhasePoiseuilleFD import TwoPhasePoiseuilleFD
 
 folder_path = os.path.join("../data_for_plots", "Poiseuille", "sharp_vs_diff_interface")
 
@@ -23,31 +24,33 @@ kin_visc_l = 100
 
 
 mu_l = rho_l * kin_visc_l
-mu_g = rho_h * kin_visc_h
-mu_ratio = mu_l / mu_g
+mu_h = rho_h * kin_visc_h
+mu_ratio = mu_l / mu_h
 
 y_ = np.linspace(-h, h, 101)
 
-gx = calc_gx(uc, mu_l, mu_g, rho_l, rho_h, h)
-pa = TwoPhasePoiseuilleAnal(gx=gx, mu_l=mu_l, mu_h=mu_g, rho_h=rho_h, rho_l=rho_l, h=h)
+gx = calc_gx(uc, mu_l, mu_h, rho_l, rho_h, h)
 
-print("Body force Gx = %10.2e" % pa.gx)
+p_anal = TwoPhasePoiseuilleAnal(gx=gx, mu_l=mu_l, mu_h=mu_h, rho_h=rho_h, rho_l=rho_l, h=h)
+u_anal = np.array([p_anal.get_u_profile(y_[i]) for i in range(len(y_))])
 
-u = np.array([pa.get_u_profile(y_[i]) for i in range(len(y_))])
+y_fd = np.linspace(-h, h, 10000)
+p_fd = TwoPhasePoiseuilleFD(gx=gx, mu_l=mu_l, mu_h=mu_h, rho_h=rho_h, rho_l=rho_l, h=h)
+u_fd = p_fd.get_u_profile(y_fd, W=5)
 
 
-pa2 = TwoPhasePoiseuilleAnal(gx=gx, mu_l=100, mu_h=1, rho_l=100, rho_h=1, h=h)
-u2 = np.array([pa2.get_u_profile(y_[i]) for i in range(len(y_))])
+y_ = np.linspace(-h, h, 101)
 
 # make plot
 plt.rcParams.update({'font.size': 24})
 plt.figure(figsize=(12, 8))
 
-plt.plot(u, y_, color="blue", linestyle="--", marker="x", label='analytical solution')
-# plt.plot(y_, u2, color="blue", linestyle="-.", label=r'$analytical \, solution2$')
-# plt.plot(x_exp_cm_Guo - len(x_exp_cm_Guo)/2 + 0.5, u_exp_cm_Guo, color="red", marker=">", linestyle="-", label=r'$cm \, Guo$')  # channel d = 49, thus add 0.5
-plt.plot(u_sharp, x_sharp - len(x_sharp)/2 + 0.5, color="green", marker=">", linestyle="-.", label='sharp interface')
-plt.plot(u_diff, x_diff - len(x_diff)/2 + 0.5, color="red", marker="<", linestyle="-.", label='diffusive interface')
+# channel d = 49, thus add 0.5
+plt.plot(u_sharp, x_sharp - len(x_sharp)/2 + 0.5, color="red", marker=">", linestyle="-.", label='current model - sharp interface')
+plt.plot(u_anal, y_, color="black", linestyle="-", label='analytical solution')
+
+plt.plot(u_diff, x_diff - len(x_diff)/2 + 0.5, color="green", marker="<", linestyle="-.", label='current model - diffusive interface')
+plt.plot(u_fd, y_fd, color="blue", linestyle="-", label='FD - diffusive interface')
 
 plt.ylabel(r'$y$')
 plt.xlabel(r'$u_x$')

@@ -1,6 +1,7 @@
 import numpy as np
 import csv
 
+
 def remove_duplicates(values):
     output = []
     seen = set()
@@ -21,7 +22,7 @@ def normalize(x, shift=25):
     return x
 
 
-def clip_x(x,y, clip=25):
+def clip_x(x, y, clip=25):
     assert len(x) == len(y)
     indices = []
     for i in range(len(x)):
