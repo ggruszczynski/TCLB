@@ -139,7 +139,7 @@ CudaDeviceFunction vector_t calcGradPhi(){
 		return gradPhi;
 }
 
-real_t get_lpPhi(real_t myPhase)
+CudaDeviceFunction real_t get_lpPhi(real_t myPhase)
 {
 	// input myPhase - PhaseF at given node (usually 0,0 or the one from BC)
 
