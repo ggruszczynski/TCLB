@@ -12,7 +12,7 @@ from SymbolicCollisions.core.sym_col_fun import \
     get_continuous_force_He_MB, \
     get_discrete_EDF_hydro, \
     get_discrete_force_He, \
-    get_discrete_force_Guo_second_order, get_continuous_force_Guo_second_order, \
+    get_discrete_force_Guo_second_order, get_continuous_force_Guo, \
     get_gamma, get_continuous_hydro_DF, get_continuous_force_He_hydro_DF
 
 from SymbolicCollisions.core.printers import print_as_vector
@@ -96,7 +96,7 @@ class TestSymbolicCalc(TestCase):
 
     def test_get_F_cm_Guo_continuous_and_discrete(self):
         F_cm_Guo_disc = get_cm_vector_from_discrete_def(get_discrete_force_Guo_second_order)
-        F_cm_Guo_cont = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
+        F_cm_Guo_cont = get_cm_vector_from_continuous_def(get_continuous_force_Guo)
 
         results = [F_cm_Guo_disc, F_cm_Guo_cont]
 

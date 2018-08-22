@@ -86,3 +86,39 @@ def read_data(filepath):
     x, u = remove_duplicates_y(x, u)
     return x, u
 
+
+def read_data_from_timestep(filepath):
+    n_rows = None
+    with open(filepath, 'r') as file:
+        n_rows = len(file.readlines())
+
+    x = np.empty(n_rows)
+    u = np.empty(n_rows)
+    rho = np.empty(n_rows)
+
+    # x = np.empty(0)
+    # u = np.empty(0)
+    # rho = np.empty(0)
+
+    with open(filepath, 'r') as csvfile:
+        reader = csv.reader(csvfile, delimiter='\t')
+        headers = next(reader, None)  # returns the headers or `None` if the input is empty
+        # "0flag"	"1ADDITIONALS"	"2BODY"	"3BOUNDARY"	"4COLLISION"	"5DESIGNSPACE"
+        # "6SETTINGZONE"	"7NONE"	"8Rho"	"9PhaseField"
+        # "10U:0"	"11U:1"	"12U:2"	"13NormalizedPressure"	"14Pressure"	"15Normal:0"	"16Normal:1"	"17Normal:2"
+        # "18vtkValidPointMask"	"19arc_length"	"20Points:0"	"21Points:1"	"22Points:2"
+        i = 0
+        for row in reader:
+            x[i] = float(row[19])
+            u[i] = float(row[10])
+            rho[i] = float(row[8])
+
+            # x = np.append(x, float(row[19]))
+            # u = np.append(u, float(row[10]))
+            # rho = np.append(rho, float(row[8]))
+
+            i = i+1
+
+    #x, u = remove_duplicates_y(x, u)
+    return x, u, rho
+

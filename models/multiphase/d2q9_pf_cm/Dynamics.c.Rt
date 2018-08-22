@@ -33,6 +33,11 @@
 // 			- Moving walls seem to work well for bubble deformation
 //			- Pressure/velocity not fully tested - use at your own PERIL!
 
+
+// Maintainer: Grzegorz Gruszczynski @ggruszczynski
+// Code updates:
+//		16/08/2018: Cascaded collision scheme
+
 #include <math.h>
 #define PI 3.1415926535897
 
@@ -88,7 +93,6 @@ CudaDeviceFunction real_t getPressure(){
 	//	model for immiscible fluids at high density ratios"
 	real_t p =  <?R C(sum(g)) ?> ;//Normalised pressure
 	real_t rho = getRho();
-	// real_t rho = h[0]+h[1]+h[2]+h[3]+h[4]+h[5]+h[6]+h[7]+h[8];
 	p = p*rho/3.0; 
 	return p;
 }
@@ -348,12 +352,6 @@ CudaDeviceFunction void Init_distributions(){
 	#endif
 }
 
-CudaDeviceFunction void PhaseF_Smoothing() { 
-	real_t lap_phf = get_lpPhi(PhaseF(0,0));
-	PhaseF = PhaseF(0,0) + diffusion_coeff * diffusion_coeff * lap_phf;
-}
-
-
 //	ITERATION:
 CudaDeviceFunction void BC_Switcher ()
 {
@@ -390,9 +388,9 @@ CudaDeviceFunction void BC_Switcher ()
 }
 
 CudaDeviceFunction void calcHydroIter() {
+	log_data_from_special_nodes();
 
 	if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
-		//PhaseF_Smoothing();
 		Init_distributions();
 	}
 	else{
@@ -411,12 +409,17 @@ CudaDeviceFunction void calcHydroIter() {
 		}
 	}
 
-	//log_data_from_special_nodes();
+	
 }
 
-
 CudaDeviceFunction void log_data_from_special_nodes ()
-{
+{	
+	real_t myPhaseF = PhaseF(0,0);
+	real_t rho = calcRho(myPhaseF);
+
+	AddToMomentumX(U*rho);
+	AddToMomentumY(V*rho);
+
 	switch (NodeType & NODE_ADDITIONALS) {
 		real_t location;
 		case NODE_SpikeTrack:
@@ -446,7 +449,7 @@ CudaDeviceFunction void calcPhaseFIter(){
 		PhaseOld = PhaseF(0,0);
 	#endif
 	
-	// TODO: BC_Switcher(); here?
+	BC_Switcher(); 
 
 	// eq 12 from "Improved locality of the phase-field lattice Boltzmann 
 	//	model for immiscible fluids at high density ratios"	
@@ -858,7 +861,7 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceCM(vector_t gradPhi, real_
 	// gradPhi - Phase field gradients
 	// myPhaseF - PhaseField value at cell of interest (0,0 or BC like inlet_PhaseF, moving_wall_PhaseF)
 
-	//// Fluid Properties: ////
+	// Fluid Properties: //
 	// real_t rho - fluid density
 	// real_t tau - relaxation parameter
 	// real_t mu - chemical potential 
@@ -1061,7 +1064,7 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceMRT(
 	// gradPhi - Phase field gradients
 	// myPhaseF - PhaseField value at cell of interest (0,0 or BC like inlet_PhaseF, moving_wall_PhaseF)
 
-	//// Fluid Properties: ////
+	// Fluid Properties: //
 	// real_t rho - fluid density
 	// real_t tau - relaxation parameter
 	// real_t mu - chemical potential 
@@ -1320,14 +1323,14 @@ CudaDeviceFunction void CollisionCM(){
 CudaDeviceFunction void CollisionBGK(){
 	int i, j;
 	real_t C = PhaseF(0,0), mu;
-	real_t tau, DynVisc, rho, p;			// Macroscopic Properties
-	vector_t gradPhi;				// Phase field gradients
-	real_t nx, ny;					// Normals
-	real_t Gamma[9], geq[9], mag;			// equilibrium, pressure equilibrium, velocity magnitude
+	real_t tau, DynVisc, rho, p;		// Macroscopic Properties
+	vector_t gradPhi;					// Phase field gradients
+	real_t nx, ny;						// Normals
+	real_t Gamma[9], geq[9], mag;		// equilibrium, pressure equilibrium, velocity magnitude
 	real_t F_pressure[2], F_body[2], F_mu[2], F_total[2]; // Forces
 	real_t tmp1, stress[3];				// Stress tensor calculation
 	real_t F_phi[9], heq[9];			// Phase field collision terms
-	real_t F_i[9];					// Momentum distribution forcing term
+	real_t F_i[9];						// Momentum distribution forcing term
 
 	// Find Macroscopic Details
 	mu = calcMu( C );
@@ -1575,7 +1578,7 @@ CudaDeviceFunction void NVelocity()
 	// with density and viscosity contrasts" by Y. Q. Zu and S. He, 2013
 	real_t v = h[3] - heq[3] + h[1] - heq[1];
 
-	// h[4] = heq[4] - (h[2]-heq[2]); 			 // eq C23a
+	// h[4] = heq[4] - (h[2]-heq[2]); 			// eq C23a
 	// h[7] = heq[7] - (h[5]-heq[5]) - v*0.5;   // eq C23b
 	// h[8] = heq[8] - (h[6]-heq[6]) - v*0.5;   // eq C23b
 
@@ -1634,7 +1637,7 @@ CudaDeviceFunction void BounceBack()
 		p1.y = p1.y*rho + 0.5*Fhydro.y;
 	}
 
-	AddToTestCounter(g[8]-g[7]); //OK
+	//AddToTestCounter(g[8]-g[7]); //OK
 
 	real_t tmp;
 	tmp = g[1];
@@ -1663,7 +1666,7 @@ CudaDeviceFunction void BounceBack()
 	h[6] = h[8];
 	h[8] = tmp;
 
-	AddToTestCounter(-(g[5]-g[6]));	//OK
+	//AddToTestCounter(-(g[5]-g[6]));	//OK
 
 	//Summing the difference in momentum before/after collision
 	if((NodeType & NODE_BODY) == NODE_Body) {

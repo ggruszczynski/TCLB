@@ -205,7 +205,7 @@ def get_continuous_weight(dzeta=(dzeta_x, dzeta_y)):
     return w_
 
 
-def get_continuous_force_Guo_second_order(dzeta=(dzeta_x, dzeta_y)):
+def get_continuous_force_Guo(dzeta=(dzeta_x, dzeta_y)):
     cs2 = 1. / 3.
     # cs2 = Symbol('cs2')
     # extended version with second order terms

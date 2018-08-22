@@ -171,6 +171,9 @@ AddGlobal(name="FDrag", comment='Force exerted on body in X-direction', unit="N"
 AddGlobal(name="FLift", comment='Force exerted on body in Y-direction', unit="N")
 AddGlobal(name="FTotal", comment='Force exerted on body in X+Y -direction', unit="N")
 
+AddGlobal(name="MomentumX", comment='Total momentum in the domain', unit="")
+AddGlobal(name="MomentumY", comment='Total momentum in the domain', unit="")
+
 if (Options$Outflow) {
 	AddNodeType(name="Convective_E", group="BOUNDARY")
 	AddNodeType(name="Convective_N", group="BOUNDARY")

@@ -75,7 +75,7 @@ print_as_vector(F_cm, 'F_cm', regex=True)
 print('\n//Force -> Force_cm - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
-F_cm = get_cm_vector_from_continuous_def(get_continuous_force_Guo_second_order)
+F_cm = get_cm_vector_from_continuous_def(get_continuous_force_Guo)
 print_as_vector(F_cm, 'F_cm', regex=True)
 
 print('\n//N*M*F_He_continous ')
