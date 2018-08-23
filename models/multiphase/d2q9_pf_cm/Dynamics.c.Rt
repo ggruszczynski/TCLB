@@ -388,14 +388,19 @@ CudaDeviceFunction void BC_Switcher ()
 }
 
 CudaDeviceFunction void calcHydroIter() {
-	log_data_from_special_nodes();
+	//log_data_from_special_nodes();
 
 	if ((NodeType & NODE_ADDITIONALS) == NODE_Smoothing){
 		Init_distributions();
 	}
 	else{
-		BC_Switcher();
+		real_t myPhaseF = PhaseF(0,0);
+		real_t rho = calcRho(myPhaseF);
+	
+		AddToMomentumX(U*rho);
+		AddToMomentumY(V*rho);
 
+		BC_Switcher();
 		switch (NodeType & NODE_COLLISION) {
 			case NODE_MRT:
 				CollisionMRT();
@@ -407,19 +412,19 @@ CudaDeviceFunction void calcHydroIter() {
 				CollisionBGK();
 				break;
 		}
+
+		myPhaseF = PhaseF(0,0);
+		rho = calcRho(myPhaseF);
+	
+		AddToMomentumX_afterCol(U*rho);
+		AddToMomentumY_afterCol(V*rho);
 	}
 
-	
+
 }
 
 CudaDeviceFunction void log_data_from_special_nodes ()
 {	
-	real_t myPhaseF = PhaseF(0,0);
-	real_t rho = calcRho(myPhaseF);
-
-	AddToMomentumX(U*rho);
-	AddToMomentumY(V*rho);
-
 	switch (NodeType & NODE_ADDITIONALS) {
 		real_t location;
 		case NODE_SpikeTrack:
@@ -434,11 +439,11 @@ CudaDeviceFunction void log_data_from_special_nodes ()
 			}
 	}
 
-	// log data:
 	if ((NodeType & NODE_BOUNDARY) == NODE_Wall)
 	{
 		// this shall work on if S wall is the only one
-		real_t rho = calcRho(PhaseF);
+		real_t myPhaseF = PhaseF(0,0);
+		real_t rho = calcRho(myPhaseF);
 		AddToWallForceMeasure(-2*(g[5]-g[6])*rho); // for bottom wall  -outgoing distributions - after collision
 	}
 }
@@ -880,10 +885,15 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceCM(vector_t gradPhi, real_
 	// eq 19
 	real_t density_coeff = (Density_h-Density_l)/(PhaseField_h-PhaseField_l);
 	F_pressure[0] = (-1.0/3.0) * p * density_coeff * gradPhi.x;
-	F_pressure[1] = (-1.0/3.0) * p * density_coeff * gradPhi.y;
-	
+	F_pressure[1] = (-1.0/3.0) * p * density_coeff * gradPhi.y;	
+	AddToF_pressureX(F_pressure[0]);
+	AddToF_pressureY(F_pressure[1]);
+
 	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
 	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
+	AddToF_bodyX(F_body[0]);
+	AddToF_bodyY(F_body[1]);
+	
 
 	// TODO: HACK - add gravitation only to higher density fluid ;p
 	// real_t bfsc = 0.506*tanh(5*myPhaseF-2.5) + 0.5; // bfsc - body force smoothing coefficient
@@ -896,6 +906,8 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceCM(vector_t gradPhi, real_
 	// eq 4
 	F_surf_tension[0] = mu*gradPhi.x;
 	F_surf_tension[1] = mu*gradPhi.y;
+	AddToF_surf_tensionX(F_surf_tension[0]);
+	AddToF_surf_tensionY(F_surf_tension[1]);
 
 	// Calculate viscous force
 	for (int j=0;j<1;j++){
@@ -933,6 +945,10 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceCM(vector_t gradPhi, real_
 		U = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*F_total_hydro.x/rho;
 		V = g[2]-g[4]+g[5]+g[6]-g[7]-g[8] + 0.5*F_total_hydro.y/rho;
 	}
+	AddToF_muX(F_mu[0]);
+	AddToF_muY(F_mu[1]);
+	AddToF_total_hydroX(F_total_hydro.x);
+	AddToF_total_hydroY(F_total_hydro.y);
 
 	return F_total_hydro;
 }
@@ -1084,10 +1100,13 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceMRT(
 	real_t density_coeff = (Density_h-Density_l)/(PhaseField_h-PhaseField_l);
 	F_pressure[0] = (-1.0/3.0) * p * density_coeff * gradPhi.x;
 	F_pressure[1] = (-1.0/3.0) * p * density_coeff * gradPhi.y;
-	
+	AddToF_pressureX(F_pressure[0]);
+	AddToF_pressureY(F_pressure[1]);
+
 	F_body[0] = (rho-Density_h)*BuoyancyX + rho*GravitationX;
 	F_body[1] = (rho-Density_h)*BuoyancyY + rho*GravitationY;
-
+	AddToF_bodyX(F_body[0]);
+	AddToF_bodyY(F_body[1]);
 	// TODO: HACK - add gravitation only to higher density fluid ;p
 	// real_t bfsc = 0.506*tanh(5*myPhaseF-2.5) + 0.5; // bfsc - body force smoothing coefficient
 	// bfsc = (bfsc < 0.004) ? 0 : bfsc;
@@ -1099,6 +1118,8 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceMRT(
 	// eq 4
 	F_surf_tension[0] = mu*gradPhi.x;
 	F_surf_tension[1] = mu*gradPhi.y;
+	AddToF_surf_tensionX(F_surf_tension[0]);
+	AddToF_surf_tensionY(F_surf_tension[1]);
 
 	// Calculate viscous force
 	for (int j=0;j<1;j++){
@@ -1140,6 +1161,10 @@ CudaDeviceFunction vector_t calcTotalHydrodynamicForceMRT(
 		U = g[1]-g[3]+g[5]-g[6]-g[7]+g[8] + 0.5*F_total_hydro.x/rho;
 		V = g[2]-g[4]+g[5]+g[6]-g[7]-g[8] + 0.5*F_total_hydro.y/rho;
 	}
+	AddToF_muX(F_mu[0]);
+	AddToF_muY(F_mu[1]);
+	AddToF_total_hydroX(F_total_hydro.x);
+	AddToF_total_hydroY(F_total_hydro.y);
 
 	return F_total_hydro;
 }
@@ -1183,7 +1208,7 @@ CudaDeviceFunction real_t calcRho(real_t myPhaseF)
 	// Linear update:
 	real_t rho = Density_l + (myPhaseF - PhaseField_l)*(Density_h - Density_l) / (PhaseField_h - PhaseField_l);
 	
-	// Sharp update: // doesn't work 
+	// Sharp update: // doesnt work 
 	// real_t pf_avg = (PhaseField_h + PhaseField_l)/2.;
 	// real_t rho = (myPhaseF >= pf_avg) ? Density_h : Density_l;
 	return rho;
@@ -1236,6 +1261,8 @@ CudaDeviceFunction void CollisionMRT(){
 			F_phi[i] = calcF_phi(i, tmp1, nx, ny); // Forcing Terms
 			heq[i] = myPhaseF * Gamma[i] - 0.5*F_phi[i];  // heq
 		#endif
+			AddToF_phiX(F_phi[i]*d2q9_ex[i]);
+			AddToF_phiY(F_phi[i]*d2q9_ey[i]);
 			h[i] = h[i] - omega_phi * (h[i]-heq[i]) + F_phi[i];	// collision
 		}
 
@@ -1302,6 +1329,9 @@ CudaDeviceFunction void CollisionCM(){
 	// PHASE FIELD POPULATION UPDATE:
 	vector_t u; u.x = U; u.y = V;
 	vector_t F_phi_vect = calcF_phi_xy(gradPhi,  myPhaseF,  pfavg);
+	AddToF_phiX(F_phi_vect.x);
+	AddToF_phiY(F_phi_vect.y);
+
 	relax_and_collide_CM_phase_field(h, 1./omega_phi, u, F_phi_vect);
 	
 	//  PRESSURE EVOLUTION UPDATE:

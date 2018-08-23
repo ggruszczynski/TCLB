@@ -173,6 +173,23 @@ AddGlobal(name="FTotal", comment='Force exerted on body in X+Y -direction', unit
 
 AddGlobal(name="MomentumX", comment='Total momentum in the domain', unit="")
 AddGlobal(name="MomentumY", comment='Total momentum in the domain', unit="")
+AddGlobal(name="MomentumX_afterCol", comment='Total momentum in the domain', unit="")
+AddGlobal(name="MomentumY_afterCol", comment='Total momentum in the domain', unit="")
+
+
+AddGlobal(name="F_pressureX", comment='Pressure force X', unit="")
+AddGlobal(name="F_pressureY", comment='Pressure force Y', unit="")
+AddGlobal(name="F_bodyX", comment='Body force X', unit="")
+AddGlobal(name="F_bodyY", comment='Body force Y', unit="")
+AddGlobal(name="F_surf_tensionX", comment='Surface tension force X', unit="")
+AddGlobal(name="F_surf_tensionY", comment='Surface tension force Y', unit="")
+AddGlobal(name="F_muX", comment='Viscous tension force X', unit="")
+AddGlobal(name="F_muY", comment='Viscous tension force Y', unit="")
+AddGlobal(name="F_total_hydroX", comment='Total hydrodynamic force X', unit="")
+AddGlobal(name="F_total_hydroY", comment='Total hydrodynamic force Y', unit="")
+
+AddGlobal(name="F_phiX", comment='Forcing term for interface tracking X', unit="")
+AddGlobal(name="F_phiY", comment='Forcing term for interface tracking Y', unit="")
 
 if (Options$Outflow) {
 	AddNodeType(name="Convective_E", group="BOUNDARY")
