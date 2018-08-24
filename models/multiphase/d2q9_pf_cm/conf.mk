@@ -1,6 +1,7 @@
 ADJOINT=0
 TEST=FALSE
-OPT="(GF+RT+Outflow)*autosym"
+OPT="(GF+RT+Outflow+GuoCM)*autosym"
+
 # GF: Guo Forcing;
 #	This is using a higher order Forcing scheme
 #	from the work of Guo et al. (2002) for the hydrodynamics
@@ -14,3 +15,6 @@ OPT="(GF+RT+Outflow)*autosym"
 # 	so results in a slower code.
 # autosym:
 # 	Allows symmetry node type flags introduced in v6.2
+# Guo_CM:
+#   Use transformation of the Guo's scheme in central moments space. 
+#   Default is the He's scheme.

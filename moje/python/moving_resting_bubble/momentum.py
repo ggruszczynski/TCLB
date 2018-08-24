@@ -17,39 +17,84 @@ frame_mrt_resting = pd.read_csv(os.path.join(folder_path, "mrt_resting_bubble_Lo
 frame_cm_moving = pd.read_csv(os.path.join(folder_path, "cm_moving_bubble_Log_P00_00000025.csv"), delimiter=",")
 frame_mrt_moving = pd.read_csv(os.path.join(folder_path, "mrt_moving_bubble_Log_P00_00000025.csv"), delimiter=",")
 
+# make plot
+plt.figure(1)
+plt.figure(figsize=(18, 14))
 plt.rcParams.update({'font.size': 22})
-plt.figure(figsize=(12, 8))
-plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['MomentumX'],  color="red",  marker="", linestyle="-.", label=r'current model')
-plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['MomentumX'], color="blue", marker="", linestyle="--", label=r'MRT')
-# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['MomentumY'],  color="red",  marker="", linestyle="-.", label=r'current model')
-# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['MomentumY'], color="blue", marker="", linestyle="--", label=r'MRT')
 
+# frame_n = 1
 
-# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['MomentumX'],  color="red",  marker="", linestyle="-.", label=r'current model')
-# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['MomentumX'], color="blue", marker="", linestyle="--", label=r'MRT')
-# # plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['MomentumY'],  color="red",  marker=">", linestyle="-.", label=r'current model')
-# # plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['MomentumY'], color="blue", marker="<", linestyle="--", label=r'MRT')
-# #
+plt.subplot(211)
+plt.title('Resting frame')
 
-# plt.plot(line_size, theoretical, color="black", marker="x", linestyle="", label='theoretical')
+### CM ###
+plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['MomentumX'], color="red", marker="", linestyle="-.", label='CM MomentumX')
+# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['MomentumX_afterCol'], color="blue", marker="", linestyle="--", label='MomentumX_afterCol')
 
-# plt.plot(frames_cm[150]['arc_length'], frames_cm[150]['U:0'],  color="red",  marker="<", linestyle="", label=r'current model')
-# plt.plot(frames_mrt[150]['arc_length'], frames_mrt[150]['U:0'], color="blue", marker=">", linestyle="", label=r'MRT')
+# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['F_pressureX'], color="red", marker="", linestyle="-.", label='F_pressureX')
+# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['F_surf_tensionX'], color="blue", marker="", linestyle="--", label='F_surf_tensionX')
+# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['F_muX'], color="green", marker="", linestyle="-.", label='F_muX')
+# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['F_total_hydroX'], color="orange", marker="", linestyle="--", label='F_total_hydroX')
+# plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['F_phiX'], color="purple", marker="", linestyle="-.", label='F_phiX')
+
+### MRT ###
+plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['MomentumX'], color="red", marker="", linestyle="-", label='MRT MomentumX')
+# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['MomentumX_afterCol'], color="blue", marker="", linestyle="--", label='MomentumX_afterCol')
+
+# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['F_pressureX'], color="red", marker="", linestyle="-.", label='F_pressureX')
+# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['F_surf_tensionX'], color="blue", marker="", linestyle="--", label='F_surf_tensionX')
+# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['F_muX'], color="green", marker="", linestyle="-.", label='F_muX')
+# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['F_total_hydroX'], color="orange", marker="", linestyle="--", label='F_total_hydroX')
+# plt.plot(frame_mrt_resting['Iteration'], frame_mrt_resting['F_phiX'], color="purple", marker="", linestyle="-.", label='F_phiX')
 
 axes = plt.gca()
-# axes.set_xlim([0,0.5*1E6])
-# axes.set_ylim([0, 1.0])
-
+# axes.set_xlim([xmin,xmax])
+# axes.set_ylim([55, 105])
 plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
-plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-plt.ylabel(r'MomentumX')
-plt.xlabel(r'iterations')
-
-plt.title(r'MomentumX ')
+plt.ylabel(r'Force Magnitude')
+# plt.xlabel(r'iterations')
 plt.grid(True)
 plt.legend()
 
+
+
+plt.subplot(212)
+plt.title(r'Moving frame')
+### CM ###
+plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['MomentumX'], color="red", marker="", linestyle="-.", label='CM MomentumX')
+# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['MomentumX_afterCol'], color="blue", marker="", linestyle="--", label='MomentumX_afterCol')
+
+# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['F_pressureX'], color="red", marker="", linestyle="-.", label='F_pressureX')
+# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['F_surf_tensionX'], color="blue", marker="", linestyle="--", label='F_surf_tensionX')
+# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['F_muX'], color="green", marker="", linestyle="-.", label='F_muX')
+# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['F_total_hydroX'], color="orange", marker="", linestyle="--", label='F_total_hydroX')
+# plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['F_phiX'], color="purple", marker="", linestyle="-.", label='F_phiX')
+
+### MRT ###
+plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['MomentumX'], color="red", marker="", linestyle="-", label='MRT MomentumX')
+# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['MomentumX_afterCol'], color="blue", marker="", linestyle="--", label='MomentumX_afterCol')
+
+# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['F_pressureX'], color="red", marker="", linestyle="-.", label='F_pressureX')
+# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['F_surf_tensionX'], color="blue", marker="", linestyle="--", label='F_surf_tensionX')
+# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['F_muX'], color="green", marker="", linestyle="-.", label='F_muX')
+# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['F_total_hydroX'], color="orange", marker="", linestyle="--", label='F_total_hydroX')
+# plt.plot(frame_mrt_moving['Iteration'], frame_mrt_moving['F_phiX'], color="purple", marker="", linestyle="-.", label='F_phiX')
+
+axes = plt.gca()
+# axes.set_xlim([xmin,xmax])
+# axes.set_ylim([55, 105])
+plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+plt.ylabel(r'Force Magnitude')
+plt.xlabel(r'iterations')
+plt.grid(True)
+plt.legend()
+
+# plt.text(0.0, 0.0, r'cm_bubble diam = %.2f' % diam_x_cm_moving[frame_n])
+
 fig = plt.gcf()  # get current figure
+plt.tight_layout()
 fig.savefig('momentum_rho%s_v%s.png' % (rho_ratio, v))
+# plt.subplots_adjust(top=1.55)
 plt.show()
-plt.close(fig) # close the figure
+#plt.close(fig)    # close the figure
+
