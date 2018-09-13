@@ -1,6 +1,6 @@
 
 from SymbolicCollisions.core.sym_col_fun import *
-from SymbolicCollisions.core.cm_symbols import *
+from SymbolicCollisions.core.cm_symbols import w
 from sympy.matrices import Matrix
 from sympy import pretty_print, exp
 from SymbolicCollisions.core.cm_symbols import ex, ey
