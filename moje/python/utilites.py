@@ -71,12 +71,12 @@ def remove_duplicates_y(x, y):
 
 
 # read experimental data
-def read_data(filepath):
+def read_data(filepath, delimiter='t'):
     x = np.empty(0)
     u = np.empty(0)
 
     with open(filepath, 'r') as csvfile:
-        reader = csv.reader(csvfile, delimiter='\t')
+        reader = csv.reader(csvfile, delimiter=delimiter)
         headers = next(reader, None)  # returns the headers or `None` if the input is empty
 
         for row in reader:

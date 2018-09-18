@@ -6,8 +6,12 @@ import glob, os
 import re
 import csv
 
-output_filename = os.path.normpath("output/parsed_lines_cm.log")
-data = pd.read_csv(os.path.join(output_filename), delimiter="\t")
+
+input_folder_path = os.path.join("../data_for_plots",
+                           "slurm_logs", )
+
+input_filename = os.path.normpath(os.path.join(input_folder_path,"parsed_logs", "parsed_lines_cm.log"))
+data = pd.read_csv(os.path.join(input_filename), delimiter="\t")
 
 
 def filter_data(velocity_x=0.01, is_stopped_by_NaN = False):

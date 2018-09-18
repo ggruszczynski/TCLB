@@ -1,6 +1,6 @@
 ADJOINT=0
 TEST=FALSE
-OPT="(GF+RT+Outflow+GuoCM)*autosym"
+OPT="(GF+RT+Outflow+GuoCM+PF_FOI)*autosym"
 
 # GF: Guo Forcing;
 #	This is using a higher order Forcing scheme
@@ -18,3 +18,6 @@ OPT="(GF+RT+Outflow+GuoCM)*autosym"
 # Guo_CM:
 #   Use transformation of the Guo's scheme in central moments space. 
 #   Default is the He's scheme.
+# PF_FOI: 
+#   First order integration (rectangular disretization)
+#   Deafult is second order integration (trapezoidal discretization)

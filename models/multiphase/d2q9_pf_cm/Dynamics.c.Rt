@@ -241,6 +241,9 @@ CudaDeviceFunction vector_t calcF_phi_xy(vector_t gradPhi, real_t myPhaseF, real
 		f_phi.y += d2q9_ey[i] *tmp;
 	}
 	
+	// f_phi.x *= 3.0; // *= 1/cs2
+	// f_phi.y *= 3.0; // *= 1/cs2
+
 	return f_phi;
 }
 
@@ -827,15 +830,29 @@ CudaDeviceFunction void relax_and_collide_CM_phase_field(real_t f_in[9], real_t 
 	#endif
 
 	//collide
-	f_in[0] = F_phi_cm[0]/2 + cm_eq[0];
-	f_in[1] = F_phi_cm[1]/2 + cm_eq[1];
-	f_in[2] = F_phi_cm[2]/2 + cm_eq[2];
-	f_in[3] = F_phi_cm[3]*(-s_b/4 - s_v/4 + 1) + F_phi_cm[4]*(-s_b/4 + s_v/4) + cm_eq[3]*(s_b/2 + s_v/2) + cm_eq[4]*(s_b/2 - s_v/2) + temp[3]*(-s_b/2 - s_v/2 + 1) + temp[4]*(-s_b/2 + s_v/2);
-	f_in[4] = F_phi_cm[3]*(-s_b/4 + s_v/4) + F_phi_cm[4]*(-s_b/4 - s_v/4 + 1) + cm_eq[3]*(s_b/2 - s_v/2) + cm_eq[4]*(s_b/2 + s_v/2) + temp[3]*(-s_b/2 + s_v/2) + temp[4]*(-s_b/2 - s_v/2 + 1);
-	f_in[5] = F_phi_cm[5]*(-s_v/2 + 1) + cm_eq[5]*s_v + temp[5]*(-s_v + 1);
-	f_in[6] = F_phi_cm[6]/2 + cm_eq[6];
-	f_in[7] = F_phi_cm[7]/2 + cm_eq[7];
-	f_in[8] = F_phi_cm[8]/2 + cm_eq[8];
+	#ifdef OPTIONS_PF_FOI
+	// First order integration (rectangular disretization)
+		f_in[0] = F_phi_cm[0] + cm_eq[0];
+		f_in[1] = F_phi_cm[1] + cm_eq[1];
+		f_in[2] = F_phi_cm[2] + cm_eq[2];
+		f_in[3] = F_phi_cm[3] + 0.5*cm_eq[3]*(s_b + s_v) + 0.5*cm_eq[4]*(s_b - s_v) - temp[3]*(0.5*s_b + 0.5*s_v - 1.0) - 0.5*temp[4]*(s_b - s_v);
+		f_in[4] = F_phi_cm[4] + 0.5*cm_eq[3]*(s_b - s_v) + 0.5*cm_eq[4]*(s_b + s_v) - 0.5*temp[3]*(s_b - s_v) - temp[4]*(0.5*s_b + 0.5*s_v - 1.0);
+		f_in[5] = F_phi_cm[5] + cm_eq[5]*s_v - temp[5]*(s_v - 1.0);
+		f_in[6] = F_phi_cm[6] + cm_eq[6];
+		f_in[7] = F_phi_cm[7] + cm_eq[7];
+		f_in[8] = F_phi_cm[8] + cm_eq[8];
+	#else
+	// Deafult is second order integration (trapezoidal discretization)
+		f_in[0] = F_phi_cm[0]/2 + cm_eq[0];
+		f_in[1] = F_phi_cm[1]/2 + cm_eq[1];
+		f_in[2] = F_phi_cm[2]/2 + cm_eq[2];
+		f_in[3] = F_phi_cm[3]*(-s_b/4 - s_v/4 + 1) + F_phi_cm[4]*(-s_b/4 + s_v/4) + cm_eq[3]*(s_b/2 + s_v/2) + cm_eq[4]*(s_b/2 - s_v/2) + temp[3]*(-s_b/2 - s_v/2 + 1) + temp[4]*(-s_b/2 + s_v/2);
+		f_in[4] = F_phi_cm[3]*(-s_b/4 + s_v/4) + F_phi_cm[4]*(-s_b/4 - s_v/4 + 1) + cm_eq[3]*(s_b/2 - s_v/2) + cm_eq[4]*(s_b/2 + s_v/2) + temp[3]*(-s_b/2 + s_v/2) + temp[4]*(-s_b/2 - s_v/2 + 1);
+		f_in[5] = F_phi_cm[5]*(-s_v/2 + 1) + cm_eq[5]*s_v + temp[5]*(-s_v + 1);
+		f_in[6] = F_phi_cm[6]/2 + cm_eq[6];
+		f_in[7] = F_phi_cm[7]/2 + cm_eq[7];
+		f_in[8] = F_phi_cm[8]/2 + cm_eq[8];
+	#endif
 
 	//back to raw moments
 	temp[0] = f_in[0];
@@ -1724,12 +1741,16 @@ CudaDeviceFunction void BounceBack()
 //	MISCELLANIOUS FUNCTIONS:
 CudaDeviceFunction float2 Color() {
         float2 ret;
-        vector_t u = getU();
-        ret.x = sqrt(u.x*u.x + u.y*u.y);
+        //vector_t u = getU();
+		//ret.x = sqrt(u.x*u.x + u.y*u.y);
+		
         if (PhaseF(0,0) < 0.8){
                 ret.y = 0;
         } else {
                 ret.y = 1;
-        }
+		}
+		
+		ret.x = sqrt(U*U+V*V);
+		//ret.y =1;
         return ret;
 }
