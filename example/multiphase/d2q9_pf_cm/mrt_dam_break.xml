@@ -19,7 +19,7 @@
     <Model>
        <Params Density_h="1.0" Density_l="0.01" />
     <Params
-        Viscosity_h="0.1666" Viscosity_l="0.1666"
+        Viscosity_h="0.01666" Viscosity_l="0.01666"
         PhaseField_h="1.0" PhaseField_l="0.0" 
 
         ContactAngle="110" 
@@ -30,7 +30,7 @@
         />
     <Params  />
      <Params omega_bulk="1.0"/>
-    <Params GravitationY="-5.0E-05" />
+    <Params GravitationY="-1.0E-05" />
     </Model> 
     <Solve Iterations="25" output="output/"> <VTK Iterations="10"/> </Solve>
 
@@ -41,6 +41,7 @@
 </Geometry>
 <Solve Iterations="50" output="output/"> <VTK Iterations="10"/> </Solve>
 <Failcheck Iterations="1000" nx="128" ny="128"/>
+<Log Iterations="1000"/>
 <Solve Iterations="30000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>
 

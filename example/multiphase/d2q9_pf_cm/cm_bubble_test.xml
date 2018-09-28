@@ -26,7 +26,7 @@
         PhaseField_init-bubble="1.0"
         PhaseField_init-sciana="0.0"
 
-        W="5" M="0.05" sigma="5e-5"
+        W="5" M="0.05" sigma="5e-6"
         />
     <Params  />
      <Params omega_bulk="1.0"/>
