@@ -1,15 +1,15 @@
 
 <?R
 #    tab = expand.grid(VelocityX=c(0.0577350269, 0.1154700538, 0.1732050808, 0.2309401077, 0.2886751346), Viscosity_h=seq(0.1,1.0,0.1))
-    tab = expand.grid(VelocityX=c(0.01), Viscosity_h=c(0.01,0.05,0.01,0.05,0.1, 0.15, 0.2, 0.3, 0.4, 0.5), Density_h=c(1,5,10,50,100,200,300,400,500,600,700,800,900,1000))
+    tab = expand.grid(VelocityX=c(0.01, 0.05, 0.1, 0.2), Viscosity_h=c(0.01,0.05,0.01,0.05,0.1, 0.15, 0.2, 0.3, 0.4, 0.5), Density_h=c(1,5,10,50,100,200,300,400,500,600,700,800,900,1000))
 
-    tab$output = paste("/net/scratch/people/plgmuaddieb/output/batch_test/","_vh_", tab$Viscosity_h,"_dh_",tab$Density_h,"_U_", tab$VelocityX)
+#    tab$output = paste("/net/scratch/people/plgmuaddieb/output/batch_test_cm/","_vh_", tab$Viscosity_h,"_dh_",tab$Density_h,"_U_", tab$VelocityX)
 
     # paste0 - pastes without extra spaces between commas: ','
 
-    dir.create("batch_test")
-    tab$dir_name=paste0("batch_test/",tab$VelocityX)
-    tab$name = paste0("batch_test/cm_moving","_dh_",tab$Density_h,"_vh_",round(tab$Viscosity_h,3),"_U_",tab$VelocityX)
+    dir.create("batch_test_cm")
+    tab$dir_name=paste0("batch_test_cm/",tab$VelocityX)
+    tab$name = paste0("batch_test_cm/cm_moving","_dh_",tab$Density_h,"_vh_",round(tab$Viscosity_h,3),"_U_",tab$VelocityX)
     tab$xml = paste0(tab$name,".xml")
 
     write.csv(tab, "cm_moving_main.csv", row.names=FALSE)
@@ -23,7 +23,7 @@
         ?>
 
 <?xml version="1.0"?>
-<CLBConfig version="2.0" output="/net/scratch/people/plgmuaddieb/output/batch_test/">
+<CLBConfig version="2.0" output="/net/scratch/people/plgmuaddieb/output/batch_test_cm/">
         <Geometry nx="256" ny="256">
         <CM><Box/></CM>
         <Smoothing><Box /></Smoothing> 

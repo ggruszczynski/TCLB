@@ -7,43 +7,42 @@ from sympy import pretty_print
 from sympy import *
 start = time.process_time()
 
-print('// === welcome to cm! === \n ')
-print('// === discrete cm ===\n ')
+print('// === welcome to central moments space! === \n ')
+print('// === discrete central moments ===\n ')
 
 
 print('\n//F_cm_Guo_extended')
-F_cm_Guo_extended = get_cm_vector_from_discrete_def(get_discrete_force_Guo_second_order)
+F_cm_Guo_extended = get_mom_vector_from_discrete_def(get_discrete_force_Guo_second_order, discrete_transform=get_discrete_m)
 print_as_vector(F_cm_Guo_extended, 'F_cm', regex=True)
 #
 #
-print('\n//N*M*F_cm_Guo_extended ')
-F_cm_Guo_extended = get_cm_vector_shift_NM(get_discrete_force_Guo_second_order)
+print('\n//M*F_cm_Guo_extended ')
+F_cm_Guo_extended = get_mom_vector_from_shift_Mat(get_discrete_force_Guo_second_order, Mat=Nraw * Mraw)
 print_as_vector(F_cm_Guo_extended, 'F_cm', regex=True)
 
-print('\n\n// === continous cm === \n ')
+print('\n\n// === continuous central moments === \n ')
 
 
 print('\n//Force -> Force_cm - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
-F_cm = get_cm_vector_from_continuous_def(get_continuous_force_Guo)
+F_cm = get_mom_vector_from_continuous_def(get_continuous_force_Guo, continous_transformation=get_continous_cm)
 print_as_vector(F_cm, 'F_cm', regex=True)
 
 print('\n//population_eq -> cm_eq - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
-# cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
-cm_eq = get_cm_vector_from_continuous_def(get_continuous_hydro_DF)
+# cm_eq = get_mom_vector_from_continuous_def(get_continuous_Maxwellian_DF, continous_transformation=get_continous_cm)
+cm_eq = get_mom_vector_from_continuous_def(get_continuous_hydro_DF, continous_transformation=get_continous_cm)
 print_as_vector(cm_eq, 'cm_eq', regex=True)
 
 print('\n//Force -> Force_cm - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
       'where fun = forceM(rho,u,x,y) *(x-ux)^m (y-uy)^n ')
-# F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_first_order_MB)
-# F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_hydro_DF)
-F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_MB)
+# F_cm = get_mom_vector_from_continuous_def(get_continuous_force_He_first_order_MB, continous_transformation=get_continous_cm)
+# F_cm = get_mom_vector_from_continuous_def(get_continuous_force_He_hydro_DF, continous_transformation=get_continous_cm)
+F_cm = get_mom_vector_from_continuous_def(get_continuous_force_He_MB, continous_transformation=get_continous_cm)
 print_as_vector(F_cm, 'F_cm', regex=True)
-
 
 
 print('\n\n Done in %s [s].'

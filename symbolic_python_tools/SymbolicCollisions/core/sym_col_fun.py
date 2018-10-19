@@ -15,7 +15,7 @@ from sympy.matrices import Matrix
 from sympy.interactive.printing import init_printing
 from SymbolicCollisions.core.cm_symbols import ex, ey, ux, uy, w, m00, \
     Fx, Fy, F_phi_x, F_phi_y, rho, dzeta_x, dzeta_y, \
-    Nraw, Mraw
+    Nraw, Mraw, M_ortho_GS
 
 
 from SymbolicCollisions.core.printers import round_and_simplify
@@ -165,24 +165,41 @@ def get_discrete_cm(m, n, fun):
     return round_and_simplify(k)
 
 
-def get_cm_vector_from_discrete_def(fun):
-    cm_ = [get_discrete_cm(0, 0, fun),
-           get_discrete_cm(1, 0, fun),
-           get_discrete_cm(0, 1, fun),
-           get_discrete_cm(2, 0, fun),
-           get_discrete_cm(0, 2, fun),
-           get_discrete_cm(1, 1, fun),
-           get_discrete_cm(2, 1, fun),
-           get_discrete_cm(1, 2, fun),
-           get_discrete_cm(2, 2, fun)
+def get_mom_vector_from_discrete_def(fun, discrete_transform):
+    #  for example: discrete_transform=get_discrete_cm
+
+    mom_ = [discrete_transform(0, 0, fun),
+            discrete_transform(1, 0, fun),
+            discrete_transform(0, 1, fun),
+            discrete_transform(2, 0, fun),
+            discrete_transform(0, 2, fun),
+            discrete_transform(1, 1, fun),
+            discrete_transform(2, 1, fun),
+            discrete_transform(1, 2, fun),
+            discrete_transform(2, 2, fun)
            ]
-    return Matrix([cm_])
+    return Matrix([mom_])
+
+# def get_mom_vector_from_discrete_def(fun, discrete_transform):
+#     #  for example: discrete_transform=get_discrete_cm
+#
+#     cm_ = [discrete_transform(0, 0, fun),
+#            discrete_transform(1, 0, fun),
+#            discrete_transform(0, 1, fun),
+#            discrete_transform(2, 0, fun),
+#            discrete_transform(0, 2, fun),
+#            discrete_transform(1, 1, fun),
+#            discrete_transform(2, 1, fun),
+#            discrete_transform(1, 2, fun),
+#            discrete_transform(2, 2, fun)
+#            ]
+#     return Matrix([cm_])
 
 
-def get_cm_vector_shift_NM(fun):
+def get_mom_vector_from_shift_Mat(fun, Mat):
     pop = Matrix([fun(i) for i in range(9)])
     # pop = Matrix(9, 1, lambda i,j: i+j)  # column vect
-    cm_ = Nraw * Mraw * pop
+    cm_ = Mat * pop  #for example: Mat=Nraw * Mraw)
     cm_ = round_and_simplify(cm_)
     return Matrix([cm_])
 
@@ -287,6 +304,12 @@ def get_continuous_force_He_MB(dzeta=(dzeta_x, dzeta_y)):
     R = get_continuous_Maxwellian_DF(dzeta) * euF / (rho * cs2)
     return R
 
+def get_continous_m(m, n, DF):
+    fun = DF((dzeta_x, dzeta_y)) * pow((dzeta_x), m) * pow((dzeta_y), n)
+
+    result = integrate(fun, (dzeta_x, -oo, oo), (dzeta_y, -oo, oo))
+    return round_and_simplify(result)
+
 
 def get_continous_cm(m, n, DF):
     fun = DF((dzeta_x, dzeta_y)) * pow((dzeta_x - ux), m) * pow((dzeta_y - uy), n)
@@ -295,15 +318,18 @@ def get_continous_cm(m, n, DF):
     return round_and_simplify(result)
 
 
-def get_cm_vector_from_continuous_def(fun):
-    cm_ = [get_continous_cm(0, 0, fun),
-           get_continous_cm(1, 0, fun),
-           get_continous_cm(0, 1, fun),
-           get_continous_cm(2, 0, fun),
-           get_continous_cm(0, 2, fun),
-           get_continous_cm(1, 1, fun),
-           get_continous_cm(2, 1, fun),
-           get_continous_cm(1, 2, fun),
-           get_continous_cm(2, 2, fun)
+def get_mom_vector_from_continuous_def(fun, continous_transformation):
+    # for example: continous_transformation=get_continous_cm
+
+    m_ = [continous_transformation(0, 0, fun),
+           continous_transformation(1, 0, fun),
+           continous_transformation(0, 1, fun),
+           continous_transformation(2, 0, fun),
+           continous_transformation(0, 2, fun),
+           continous_transformation(1, 1, fun),
+           continous_transformation(2, 1, fun),
+           continous_transformation(1, 2, fun),
+           continous_transformation(2, 2, fun)
            ]
-    return Matrix([cm_])
+    return Matrix([m_])
+

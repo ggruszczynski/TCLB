@@ -62,15 +62,14 @@ quantities = {"stopped_by_NaN": None,
               "Viscosity_l": None,
               "VelocityX": None}
 
-input_folder_path = os.path.join("../data_for_plots",
-                           "slurm_logs", )
+input_folder_path = os.path.join("../data_for_plots", "slurm_logs")
 
 parse_logs(input_dir=os.path.join(input_folder_path, "cm"),
-           output_file=os.path.normpath(os.path.join(input_folder_path,"parsed_logs", "parsed_lines_cm.log")),
+           output_file=os.path.normpath(os.path.join(input_folder_path, "parsed_logs", "parsed_lines_cm.log")),
            quantities_of_interest=quantities)
 
 parse_logs(input_dir=os.path.join(input_folder_path, "mrt"),
-           output_file=os.path.normpath(os.path.join(input_folder_path,"parsed_logs/parsed_lines_mrt.log")),
+           output_file=os.path.normpath(os.path.join(input_folder_path, "parsed_logs/parsed_lines_mrt.log")),
            quantities_of_interest=quantities)
 
 print("DONE")

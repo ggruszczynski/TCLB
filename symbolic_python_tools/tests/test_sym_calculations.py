@@ -7,13 +7,16 @@ from sympy import Symbol
 from SymbolicCollisions.core.cm_symbols import w
 
 from SymbolicCollisions.core.sym_col_fun import \
-    get_cm_vector_from_discrete_def, get_cm_vector_shift_NM, \
-    get_cm_vector_from_continuous_def, get_continuous_Maxwellian_DF, \
+    get_mom_vector_from_discrete_def, get_mom_vector_from_shift_Mat, \
+    get_mom_vector_from_continuous_def, get_continuous_Maxwellian_DF, \
     get_continuous_force_He_MB, \
     get_discrete_EDF_hydro, \
     get_discrete_force_He, \
     get_discrete_force_Guo_second_order, get_continuous_force_Guo, \
-    get_gamma, get_continuous_hydro_DF, get_continuous_force_He_hydro_DF
+    get_gamma, get_continuous_hydro_DF, get_continuous_force_He_hydro_DF, \
+    get_continous_cm, get_discrete_cm
+
+from SymbolicCollisions.core.cm_symbols import Mraw, Nraw
 
 from SymbolicCollisions.core.printers import print_as_vector
 
@@ -64,8 +67,8 @@ class TestSymbolicCalc(TestCase):
         functions = [lambda i: w[i], get_discrete_force_He, get_discrete_force_Guo_second_order]
 
         for fun in functions:
-            F_in_cm = get_cm_vector_from_discrete_def(fun)  # calculate from definition of cm
-            NMF_cm = get_cm_vector_shift_NM(fun)  # calculate using shift matrices
+            F_in_cm = get_mom_vector_from_discrete_def(fun, discrete_transform=get_discrete_cm)  # calculate from definition of cm
+            NMF_cm = get_mom_vector_from_shift_Mat(fun, Mat=Nraw * Mraw)  # calculate using shift matrices
 
             f = io.StringIO()
             with redirect_stdout(f):
@@ -80,7 +83,7 @@ class TestSymbolicCalc(TestCase):
             assert out == out2
 
     def test_get_cm_eq_from_continuous_Maxwellian_DF(self):
-        cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
+        cm_eq = get_mom_vector_from_continuous_def(get_continuous_Maxwellian_DF, continous_transformation=get_continous_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -95,8 +98,8 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_F_cm_Guo_continuous_and_discrete(self):
-        F_cm_Guo_disc = get_cm_vector_from_discrete_def(get_discrete_force_Guo_second_order)
-        F_cm_Guo_cont = get_cm_vector_from_continuous_def(get_continuous_force_Guo)
+        F_cm_Guo_disc = get_mom_vector_from_discrete_def(get_discrete_force_Guo_second_order, discrete_transform=get_discrete_cm)
+        F_cm_Guo_cont = get_mom_vector_from_continuous_def(get_continuous_force_Guo, continous_transformation=get_continous_cm)
 
         results = [F_cm_Guo_disc, F_cm_Guo_cont]
 
@@ -114,7 +117,7 @@ class TestSymbolicCalc(TestCase):
             assert out == expected_result
 
     def test_get_F_cm_using_He_scheme_and_continuous_Maxwellian_DF(self):
-        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_MB)
+        F_cm = get_mom_vector_from_continuous_def(get_continuous_force_He_MB, continous_transformation=get_continous_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -134,7 +137,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_F_cm_using_He_scheme_and_continuous_Maxwellian_DF(self):
-        F_cm = get_cm_vector_from_continuous_def(get_continuous_force_He_hydro_DF)
+        F_cm = get_mom_vector_from_continuous_def(get_continuous_force_He_hydro_DF, continous_transformation=get_continous_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -154,7 +157,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_force_He_original(self):
-        F_in_cm = get_cm_vector_from_discrete_def(get_discrete_force_He)
+        F_in_cm = get_mom_vector_from_discrete_def(get_discrete_force_He, discrete_transform=get_discrete_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -184,7 +187,7 @@ class TestSymbolicCalc(TestCase):
         assert expected_result == out
 
     def test_get_cm_eq_hydro_discrete(self):
-        cm_eq = get_cm_vector_from_discrete_def(get_discrete_EDF_hydro)
+        cm_eq = get_mom_vector_from_discrete_def(get_discrete_EDF_hydro, discrete_transform=get_discrete_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -218,7 +221,7 @@ class TestSymbolicCalc(TestCase):
         # k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) '
         # where fun = fM(rho,u,x,y) *(x-ux)^m (y-uy)^n')
 
-        cm_eq = get_cm_vector_from_continuous_def(get_continuous_hydro_DF)
+        cm_eq = get_mom_vector_from_continuous_def(get_continuous_hydro_DF, continous_transformation=get_continous_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -260,7 +263,7 @@ class TestSymbolicCalc(TestCase):
         2017
         """
 
-        cm_eq = get_cm_vector_from_discrete_def(lambda i: Symbol('m00') * get_gamma(i))
+        cm_eq = get_mom_vector_from_discrete_def(lambda i: Symbol('m00') * get_gamma(i), discrete_transform=get_discrete_cm)
 
         f = io.StringIO()
         with redirect_stdout(f):

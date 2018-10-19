@@ -5,7 +5,7 @@ set -e
 
 DIRNAME=$1
 
-MODEL="d2q9_pf_cm"
+MODEL="d2q9_pf_cm_GF"
 
 if test -d $DIRNAME
 then

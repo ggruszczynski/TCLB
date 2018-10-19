@@ -2,7 +2,7 @@ from sympy.matrices import eye
 
 from SymbolicCollisions.core.cm_symbols import sv, sb, Mraw, Nraw, S_relax
 from SymbolicCollisions.core.sym_col_fun import get_DF, get_m00, \
-      get_cm_vector_from_continuous_def, get_cm_vector_from_discrete_def, get_continuous_force_He_MB, get_discrete_force_Guo_second_order
+      get_cm_vector_from_continuous_def, get_mom_vector_from_discrete_def, get_continuous_force_He_MB, get_discrete_force_Guo_second_order
 from SymbolicCollisions.core.printers import print_u2, print_as_vector, print_ccode
 from SymbolicCollisions.core.hardcoded_results import hardcoded_cm_pf_eq, hardcoded_F_cm_pf
 

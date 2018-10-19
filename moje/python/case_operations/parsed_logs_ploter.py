@@ -10,7 +10,7 @@ import csv
 input_folder_path = os.path.join("../data_for_plots",
                            "slurm_logs", )
 
-input_filename = os.path.normpath(os.path.join(input_folder_path,"parsed_logs", "parsed_lines_cm.log"))
+input_filename = os.path.normpath(os.path.join(input_folder_path,"parsed_logs", "parsed_lines_mrt.log"))
 data = pd.read_csv(os.path.join(input_filename), delimiter="\t")
 
 
@@ -45,12 +45,12 @@ axes = plt.gca()
 plt.ylabel(r'$\nu^*$')
 plt.xlabel(r'$\rho^*$')
 
-plt.title(r'CM Stability')
+plt.title(r'MRT Stability')
 plt.grid(True)
 plt.legend()
 
 fig = plt.gcf()  # get current figure
-plt_file_name = 'CM_Stability_ux=%s.png' % re.sub("\.", '_', str(VelocityX))
+plt_file_name = 'MRT_Stability_ux=%s.png' % re.sub("\.", '_', str(VelocityX))
 fig.savefig(plt_file_name)
 plt.show()
 
