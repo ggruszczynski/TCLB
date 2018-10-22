@@ -23,7 +23,7 @@ def round_and_simplify(stuff):
     simplified_stuff = simplify(stuff)
     rounded_stuff = simplified_stuff
 
-    for a in preorder_traversal(simplified_stuff):
+    for a in preorder_traversal(rounded_stuff):
         if isinstance(a, Float):
             rounded_stuff = rounded_stuff.subs(a, round(a, 14))
 

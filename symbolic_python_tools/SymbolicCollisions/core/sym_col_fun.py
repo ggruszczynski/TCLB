@@ -178,22 +178,7 @@ def get_mom_vector_from_discrete_def(fun, discrete_transform):
             discrete_transform(1, 2, fun),
             discrete_transform(2, 2, fun)
            ]
-    return Matrix([mom_])
-
-# def get_mom_vector_from_discrete_def(fun, discrete_transform):
-#     #  for example: discrete_transform=get_discrete_cm
-#
-#     cm_ = [discrete_transform(0, 0, fun),
-#            discrete_transform(1, 0, fun),
-#            discrete_transform(0, 1, fun),
-#            discrete_transform(2, 0, fun),
-#            discrete_transform(0, 2, fun),
-#            discrete_transform(1, 1, fun),
-#            discrete_transform(2, 1, fun),
-#            discrete_transform(1, 2, fun),
-#            discrete_transform(2, 2, fun)
-#            ]
-#     return Matrix([cm_])
+    return Matrix([mom_]).transpose()
 
 
 def get_mom_vector_from_shift_Mat(fun, Mat):
@@ -250,7 +235,7 @@ def get_continuous_Maxwellian_DF(dzeta=(dzeta_x, dzeta_y), psi=m00, u=(ux, uy)):
     # DF *= exp(-dzeta_u2 / (2 * cs2))
 
     cs2 = 1. / 3.
-    dzeta_u2 = (dzeta[0] - u[0]) * (dzeta[0] - ux) + (dzeta[1] - u[1]) * (dzeta[1] - u[1])
+    dzeta_u2 = (dzeta[0] - u[0]) * (dzeta[0] - u[0]) + (dzeta[1] - u[1]) * (dzeta[1] - u[1])
     DF = psi / (2 * pi * cs2)
     DF *= exp(-dzeta_u2 / (2 * cs2))
 
@@ -304,32 +289,33 @@ def get_continuous_force_He_MB(dzeta=(dzeta_x, dzeta_y)):
     R = get_continuous_Maxwellian_DF(dzeta) * euF / (rho * cs2)
     return R
 
-def get_continous_m(m, n, DF):
+
+def get_continuous_m(m, n, DF):
     fun = DF((dzeta_x, dzeta_y)) * pow((dzeta_x), m) * pow((dzeta_y), n)
 
     result = integrate(fun, (dzeta_x, -oo, oo), (dzeta_y, -oo, oo))
     return round_and_simplify(result)
 
 
-def get_continous_cm(m, n, DF):
+def get_continuous_cm(m, n, DF):
     fun = DF((dzeta_x, dzeta_y)) * pow((dzeta_x - ux), m) * pow((dzeta_y - uy), n)
 
     result = integrate(fun, (dzeta_x, -oo, oo), (dzeta_y, -oo, oo))
     return round_and_simplify(result)
 
 
-def get_mom_vector_from_continuous_def(fun, continous_transformation):
-    # for example: continous_transformation=get_continous_cm
+def get_mom_vector_from_continuous_def(fun, continuous_transformation):
+    # for example: continous_transformation=get_continuous_cm
 
-    m_ = [continous_transformation(0, 0, fun),
-           continous_transformation(1, 0, fun),
-           continous_transformation(0, 1, fun),
-           continous_transformation(2, 0, fun),
-           continous_transformation(0, 2, fun),
-           continous_transformation(1, 1, fun),
-           continous_transformation(2, 1, fun),
-           continous_transformation(1, 2, fun),
-           continous_transformation(2, 2, fun)
-           ]
+    m_ = [continuous_transformation(0, 0, fun),
+          continuous_transformation(1, 0, fun),
+          continuous_transformation(0, 1, fun),
+          continuous_transformation(2, 0, fun),
+          continuous_transformation(0, 2, fun),
+          continuous_transformation(1, 1, fun),
+          continuous_transformation(2, 1, fun),
+          continuous_transformation(1, 2, fun),
+          continuous_transformation(2, 2, fun)
+          ]
     return Matrix([m_])
 
