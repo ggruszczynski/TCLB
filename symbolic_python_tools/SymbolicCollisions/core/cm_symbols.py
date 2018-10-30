@@ -150,6 +150,8 @@ S_relax = diag(1, 1, 1, s_plus, s_plus, sv, 1, 1, 1)
 S_relax[3, 4] = s_minus
 S_relax[4, 3] = s_minus
 
+S_relax_phi = diag(1, sv, sv, 1, 1, 1, 1, 1, 1)
+
 S_relax_MRT_GS = diag(1, 1, 1, 1, 1, 1, 1, sv, sv)   #
 # S_relax_MRT_GS = diag(0, 0, 0, 0, 0, 0, 0, sv, sv)   #
 

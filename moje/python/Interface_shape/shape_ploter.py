@@ -27,24 +27,40 @@ def anal_shape(x_, x0=128, W=20):
     return x_, phi_result
 
 
-M = '05'  # 05, 005, 0005
+M = '00005'  # 05, 005, 0005
 
+x,y =  read_data(os.path.normpath(os.path.join(input_folder_path,"CM_M%s_W20_SOI.csv" % M)), delimiter=',', intepolate=False)
+# xn= np.array(list(filter(lambda x: x > 50 and x <51, x)))
+
+ind = np.where((x > 100) & (x < 175))
+xn=x[ind]
+yn=y[ind]
+
+ind2 = np.where((yn < 0.95) & (yn > 0.05))
+yn2=yn[ind2]
+xn2=xn[ind2]  # same as xn[(yn < 0.9) & (yn > 0.1)]
+
+print(max(xn2)-min(xn2))
+
+
+# ymax = max(yn[yn > 0.95])
+# ymin = min(yn[yn > 0.95])
 ## make plot
 plt.rcParams.update({'font.size': 22})
 plt.figure(figsize=(12, 8))
 
 x,y =  read_data(os.path.normpath(os.path.join(input_folder_path,"CM_M%s_W20_SOI.csv" % M)), delimiter=',')
-plt.plot(x,y,  color="red",  marker=">", linestyle="", label=r'CM SOI')
+plt.plot(x,y,  color="green",  marker=">", linestyle="", label=r'CM SOI')
 
-x,y =  read_data(os.path.normpath(os.path.join(input_folder_path,"CM_M%s_W20_FOI.csv" % M)), delimiter=',')
+x,y =  read_data(os.path.normpath(os.path.join(input_folder_path,"CM_M%s_W20_FOI.csv" % M)), delimiter=',', intepolate=True)
 plt.plot(x,y, color="blue", marker="x", linestyle="", label=r'CM FOI')
 
 x,y =  read_data(os.path.normpath(os.path.join(input_folder_path,"MRT_M%s_W20.csv" % M)), delimiter=',')
-plt.plot(x,y, color="brown",  marker="<", linestyle="", label=r'BGK SOI')
+plt.plot(x,y, color="red",  marker="<", linestyle="", label=r'BGK SOI')
 
 
 x, phi_anal = anal_shape(x)
-plt.plot(x, phi_anal,  color="green",  linestyle="-",  marker="", label=r'analytical')
+plt.plot(x, phi_anal,  color="black",  linestyle="-",  marker="", label=r'analytical')
 
 
 axes = plt.gca()
@@ -57,7 +73,7 @@ axes = plt.gca()
 plt.ylabel(r'$\phi$')
 plt.xlabel(r'$x$')
 
-plt.title('interface profile')
+plt.title('Interface profile')
 plt.grid(True)
 plt.legend()
 

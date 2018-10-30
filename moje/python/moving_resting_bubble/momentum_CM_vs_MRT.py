@@ -13,20 +13,21 @@ import pandas as pd
 import csv
 
 
-rho_ratio = '1'
-v = '01'
+rho_ratio = '10'
+v = '001'
 # folder_path = os.path.join("../data_for_plots",
 #                            "moving_vs_resting_bubble",
 #                            "forces_L_shape_rho%s_v%s" % (rho_ratio, v))
 
-# folder_path = os.path.join("../data_for_plots",
-#                            "moving_vs_resting_bubble",
-#                            "forces_L_shape_rho%s_v%s_U001_GF" % (rho_ratio, v))
-rho_ratio = '1'
-v = '001'
 folder_path = os.path.join("../data_for_plots",
                            "moving_vs_resting_bubble",
-                           "forces_rho%s_v%s_circular_U01_GF" % (rho_ratio, v))
+                           "forces_L_shape_rho%s_v%s_U01" % (rho_ratio, v))
+
+# rho_ratio = '1'
+# v = '001'
+# folder_path = os.path.join("../data_for_plots",
+#                            "moving_vs_resting_bubble",
+#                            "forces_rho%s_v%s_circular_U01_GF" % (rho_ratio, v))
 
 # folder_path = os.path.join("../data_for_plots",
 #                            "moving_vs_resting_bubble",
@@ -45,7 +46,7 @@ def make_plot(frame_moving, frame_resting, plot_name):
     # make plot
     plt.figure(1)
     plt.figure(figsize=(18, 14))
-    plt.rcParams.update({'font.size': 22})
+    plt.rcParams.update({'font.size': 26})
 
     # frame_n = 1
 
@@ -57,12 +58,12 @@ def make_plot(frame_moving, frame_resting, plot_name):
     # plt.plot(frame_cm_resting['Iteration'][start:stop], frame_cm_resting['MomentumX'][start:stop], color="red", marker="", linestyle="-.", label='CM MomentumX')
     # plt.plot(frame_cm_resting['Iteration'], frame_cm_resting['MomentumX_afterCol'], color="blue", marker="", linestyle="--", label='MomentumX_afterCol')
 
-    # plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_pressureX'][start:stop], color="red", marker="", linestyle="-.", label='F_pressureX')
-    # plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_surf_tensionX'][start:stop], color="blue", marker="", linestyle="--", label='F_surf_tensionX')
-    # plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_muX'][start:stop], color="green", marker="", linestyle="-.", label='F_muX')
-    # plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_total_hydroX'][start:stop], color="orange", marker="", linestyle="--", label='F_total_hydroX')
-    #
-    plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_phiX'][start:stop], color="purple", marker="", linestyle="-.", label='F_phiX')
+    plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_pressureX'][start:stop], color="red", marker="", linestyle="-.", label=r'$F_{X, p}$')  # pressure
+    plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_surf_tensionX'][start:stop], color="blue", marker="", linestyle="--", label=r'$F_{X, s}$')  #
+    plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_muX'][start:stop], color="green", marker="", linestyle=":", label=r'$F_{X, \mu}$')
+    plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_total_hydroX'][start:stop], color="brown", marker="", linestyle="-", label=r'$F_{X, total}$')
+
+    # plt.plot(frame_resting['Iteration'][start:stop], frame_resting['F_phiX'][start:stop], color="purple", marker="", linestyle="-", label=r'$F_{X, \phi}$')
 
     axes = plt.gca()
     # axes.set_xlim([xmin,xmax])
@@ -72,7 +73,7 @@ def make_plot(frame_moving, frame_resting, plot_name):
     plt.ylabel(r'Magnitude')
     # plt.xlabel(r'iterations')
     plt.grid(True)
-    plt.legend()
+    plt.legend(loc='upper right')
 
 
     plt.subplot(212)
@@ -82,12 +83,12 @@ def make_plot(frame_moving, frame_resting, plot_name):
     # plt.plot(frame_cm_moving['Iteration'][start:stop], frame_cm_moving['MomentumX'][start:stop], color="red", marker="", linestyle="-.", label='CM MomentumX')
     # plt.plot(frame_cm_moving['Iteration'], frame_cm_moving['MomentumX_afterCol'], color="blue", marker="", linestyle="--", label='MomentumX_afterCol')
 
-    # plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_pressureX'][start:stop], color="red", marker="", linestyle="-.", label='F_pressureX')
-    # plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_surf_tensionX'][start:stop], color="blue", marker="", linestyle="--", label='F_surf_tensionX')
-    # plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_muX'][start:stop], color="green", marker="", linestyle="-.", label='F_muX')
-    # plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_total_hydroX'][start:stop], color="orange", marker="", linestyle="--", label='F_total_hydroX')
+    plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_pressureX'][start:stop], color="red", marker="", linestyle="-.", label=r'$F_{X, p}$')
+    plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_surf_tensionX'][start:stop], color="blue", marker="", linestyle="--", label=r'$F_{X, s}$')
+    plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_muX'][start:stop], color="green", marker="", linestyle=":", label=r'$F_{X, \mu}$')
+    plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_total_hydroX'][start:stop], color="brown", marker="", linestyle="-", label=r'$F_{X, total}$')
 
-    plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_phiX'][start:stop], color="purple", marker="", linestyle="-.", label='F_phiX')
+    # plt.plot(frame_moving['Iteration'][start:stop], frame_moving['F_phiX'][start:stop], color="purple", marker="", linestyle="-", label=r'$F_{X, \phi}$')
 
 
     # axes = plt.gca()
@@ -101,7 +102,7 @@ def make_plot(frame_moving, frame_resting, plot_name):
     plt.ylabel(r'Magnitude')
     plt.xlabel(r'iterations')
     plt.grid(True)
-    plt.legend()
+    plt.legend(loc='upper right')
 
     # plt.text(0.0, 0.0, r'cm_bubble diam = %.2f' % diam_x_cm_moving[frame_n])
 
@@ -112,9 +113,9 @@ def make_plot(frame_moving, frame_resting, plot_name):
     plt.show()
     plt.close(fig)    # close the figure
 
+#
+make_plot(frame_cm_moving, frame_cm_resting, plot_name="cm_hydro_GF")
+make_plot(frame_mrt_moving, frame_mrt_resting, plot_name="mrt_hydro_GF")
 
-# make_plot(frame_cm_moving, frame_cm_resting, plot_name="cm_hydro_GF")
-# make_plot(frame_mrt_moving, frame_mrt_resting, plot_name="mrt_hydro_GF")
-
-make_plot(frame_cm_moving, frame_cm_resting, plot_name="cm_pf_GF_circular_bubble")
-make_plot(frame_mrt_moving, frame_mrt_resting, plot_name="mrt_pf_GF_circular_bubble")
+# make_plot(frame_cm_moving, frame_cm_resting, plot_name="cm_pf_GF_circular_bubble")
+# make_plot(frame_mrt_moving, frame_mrt_resting, plot_name="mrt_pf_GF_circular_bubble")

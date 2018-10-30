@@ -71,9 +71,9 @@ def remove_duplicates_y(x, y):
 
 
 # read experimental data
-def read_data(filepath, delimiter='t'):
+def read_data(filepath, delimiter='t', intepolate=False):
     x = np.empty(0)
-    u = np.empty(0)
+    y = np.empty(0)
 
     with open(filepath, 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=delimiter)
@@ -81,10 +81,20 @@ def read_data(filepath, delimiter='t'):
 
         for row in reader:
             x = np.append(x, float(row[0]))
-            u = np.append(u, float(row[1]))
+            y = np.append(y, float(row[1]))
 
-    x, u = remove_duplicates_y(x, u)
-    return x, u
+    x, y = remove_duplicates_y(x, y)
+
+    if intepolate==True:
+        x_max = max(x)
+        n= len(x)
+        xvals = np.linspace(0, x_max, 10 * n)
+        yinterp = np.interp(xvals, x, y)
+
+        x = xvals
+        y = yinterp
+
+    return x, y
 
 
 def read_data_from_timestep(filepath):
