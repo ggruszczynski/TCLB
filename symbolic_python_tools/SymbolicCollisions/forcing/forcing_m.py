@@ -41,7 +41,7 @@ print_as_vector(T_raw_to_ortho*F_m.transpose(), 'F_GS_m', regex=True)
 
 print('\n//population_eq -> m_eq - from continous definition: \n'
       'k_mn = integrate(fun, (x, -oo, oo), (y, -oo, oo)) \n'
-      'where fun = forceM(rho,u,x,y) *(x)^m (y)^n ')
+      'where fun = fMB(rho,u,x,y) *(x)^m (y)^n ')
 # cm_eq = get_cm_vector_from_continuous_def(get_continuous_Maxwellian_DF)
 m_eq = get_mom_vector_from_continuous_def(get_continuous_hydro_DF, continuous_transformation=get_continuous_m)
 print_as_vector(m_eq, 'm_raw_eq', regex=True)

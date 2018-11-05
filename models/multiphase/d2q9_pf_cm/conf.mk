@@ -1,6 +1,6 @@
 ADJOINT=0
 TEST=FALSE
-OPT="(GF+RT+Outflow+GuoCM+PF_FOI+PCU_CM)*autosym"
+OPT="(GF+RT+Outflow+GuoCM+PF_FOI+EDM_CMFOI+CMPCU)*autosym"
 
 # GF: Guo Forcing;
 #	This is using a higher order Forcing scheme

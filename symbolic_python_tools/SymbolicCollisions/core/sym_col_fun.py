@@ -229,32 +229,20 @@ def get_continuous_Maxwellian_DF(dzeta=(dzeta_x, dzeta_y), psi=m00, u=(ux, uy)):
     eq 22
     """
 
-    # cs2 = 1. / 3.
-    # dzeta_u2 = (dzeta_x_ - ux) * (dzeta_x_ - ux) + (dzeta_y_ - uy) * (dzeta_y_ - uy)
-    # DF = m00 / (2 * pi * cs2)
-    # DF *= exp(-dzeta_u2 / (2 * cs2))
-
     cs2 = 1. / 3.
-    dzeta_u2 = (dzeta[0] - u[0]) * (dzeta[0] - u[0]) + (dzeta[1] - u[1]) * (dzeta[1] - u[1])
+    dzeta_u2 = 0
+    for dzeta_i, u_i in zip(dzeta, u):
+        dzeta_u2 += (dzeta_i-u_i)*(dzeta_i-u_i)
+
     DF = psi / (2 * pi * cs2)
     DF *= exp(-dzeta_u2 / (2 * cs2))
 
     return DF
 
 def get_continuous_hydro_DF(dzeta=(dzeta_x, dzeta_y)):
-    """
-    :param dzeta: direction (x,y)
-    :param u: velocity (x,y)
-    :param rho: density
-    :return: continous, local Maxwell-Boltzmann distribution
-    """
-    cs2 = 1. / 3.
-    dzeta_2 = dzeta[0]*dzeta[0] + dzeta[1] * dzeta[1]
-    DF_p = (m00-1) / (2 * pi * cs2)*exp(-dzeta_2 / (2 * cs2))
 
-    dzeta_u2 = (dzeta[0] - ux) * (dzeta[0] - ux) + (dzeta[1] - uy) * (dzeta[1] - uy)
-    DF_gamma = 1 / (2 * pi * cs2)*exp(-dzeta_u2 / (2 * cs2))
-
+    DF_p = get_continuous_Maxwellian_DF(dzeta=(dzeta_x, dzeta_y),psi=(m00-1), u=(0, 0))
+    DF_gamma = get_continuous_Maxwellian_DF(dzeta=(dzeta_x, dzeta_y),psi=(1), u=(ux, uy))
     return DF_p + DF_gamma
 
 
