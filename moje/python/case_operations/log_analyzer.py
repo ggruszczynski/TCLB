@@ -1,3 +1,7 @@
+#!/usr/bin/python
+
+
+import sys, getopt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -5,7 +9,7 @@ import glob, os
 import re
 import csv
 
-# Regex used to match relevant loglines (in this case, a specific IP address)
+# Regex used to match relevant loglines (in this case, a crash due to NaN)
 line_regex = re.compile(r"Stopping due to Nan value")
 
 
@@ -51,9 +55,6 @@ def parse_logs(input_dir, output_file, quantities_of_interest):
     print("\n\nwriting result to %s" % output_file)
 
 
-# Output file, where the matched loglines will be copied to
-output_file = os.path.normpath("output/parsed_lines.log")
-
 quantities = {"stopped_by_NaN": None,
               "Job_No": None,
               "Density_h": None,
@@ -62,14 +63,49 @@ quantities = {"stopped_by_NaN": None,
               "Viscosity_l": None,
               "VelocityX": None}
 
-input_folder_path = os.path.join("../data_for_plots", "slurm_logs")
+def sample_run():
+    input_folder_path = os.path.join("../data_for_plots", "slurm_logs")
 
-parse_logs(input_dir=os.path.join(input_folder_path, "cm"),
-           output_file=os.path.normpath(os.path.join(input_folder_path, "parsed_logs", "parsed_lines_cm.log")),
-           quantities_of_interest=quantities)
+    parse_logs(input_dir=os.path.join(input_folder_path, "cm"),
+               output_file=os.path.normpath(os.path.join(input_folder_path, "parsed_logs", "parsed_lines_cm.log")),
+               quantities_of_interest=quantities)
 
-parse_logs(input_dir=os.path.join(input_folder_path, "mrt"),
-           output_file=os.path.normpath(os.path.join(input_folder_path, "parsed_logs/parsed_lines_mrt.log")),
-           quantities_of_interest=quantities)
+    parse_logs(input_dir=os.path.join(input_folder_path, "mrt"),
+               output_file=os.path.normpath(os.path.join(input_folder_path, "parsed_logs", "parsed_lines_mrt.log")),
+               quantities_of_interest=quantities)
 
-print("DONE")
+    print("DONE")
+
+
+def main(argv):
+    inputdir = ''
+
+    # Output file, where the matched loglines will be copied to
+    path = os.path.join("../data_for_plots", "slurm_logs")
+    outputfile = os.path.normpath(os.path.join(path, "parsed_logs", "parsed_lines.log"))
+
+    try:
+        opts, args = getopt.getopt(argv, "hi:o:", ["idir=", "ofile="])
+    except getopt.GetoptError:
+        print('test.py -i <inputdir> -o <outputfile>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('test.py -i <inputdir> -o <outputfile>')
+            sys.exit()
+        elif opt in ("-i", "--idir"):
+            inputdir = arg
+        elif opt in ("-o", "--ofile"):
+            outputfile = arg
+
+    print(f"Launching with arguments: \n input_dir={inputdir} \n outputfile={outputfile}")
+    parse_logs(input_dir=inputdir,
+               output_file=outputfile,
+               quantities_of_interest=quantities)
+
+    print("DONE")
+
+
+if __name__ == "__main__":
+    # sample_run()
+    main(sys.argv[1:])

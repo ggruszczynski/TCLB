@@ -26,12 +26,31 @@ from SymbolicCollisions.core.hardcoded_results import \
 
 class TestSymbolicCalc(TestCase):
 
+    def test_get_raw_matrix_d2q9(self):
+        from SymbolicCollisions.core.MatrixGenerator import MatrixGenerator
+        from SymbolicCollisions.core.cm_symbols import ex, ey, Mraw
+
+        M = MatrixGenerator().get_raw_moments_matrix(ex_=ex, ey_=ey)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            print_as_vector(Mraw, 's', regex=True)
+        out = f.getvalue()
+
+        f2 = io.StringIO()
+        with redirect_stdout(f2):
+            print_as_vector(M, 's', regex=True)
+        out2 = f2.getvalue()
+
+        assert out == out2
+
+
     def test_Shift_ortho_Straka_d2q5(self):
-        from SymbolicCollisions.core.shift_matrix_d2q9 import get_shift_matrix
+        from SymbolicCollisions.core.MatrixGenerator import MatrixGenerator
         from SymbolicCollisions.core.cm_symbols import Shift_ortho_Straka_d2q5, K_ortho_Straka_d2q5, ex_Straka_d2_q5, \
             ey_Straka_d2_q5
 
-        Smat = get_shift_matrix(K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5)
+        Smat = MatrixGenerator().get_shift_matrix(K_ortho_Straka_d2q5, ex_Straka_d2_q5, ey_Straka_d2_q5)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -46,10 +65,10 @@ class TestSymbolicCalc(TestCase):
         assert out == out2
 
     def test_Shift_ortho_Geier_d2q9(self):
-        from SymbolicCollisions.core.shift_matrix_d2q9 import get_shift_matrix
+        from SymbolicCollisions.core.MatrixGenerator import MatrixGenerator
         from SymbolicCollisions.core.cm_symbols import Shift_ortho_Geier, K_ortho_Geier, ex_Geier, ey_Geier
 
-        Smat = get_shift_matrix(K_ortho_Geier, ex_Geier, ey_Geier)
+        Smat = MatrixGenerator().get_shift_matrix(K_ortho_Geier, ex_Geier, ey_Geier)
 
         f = io.StringIO()
         with redirect_stdout(f):
@@ -90,10 +109,10 @@ class TestSymbolicCalc(TestCase):
             print_as_vector(cm_eq, 'cm_eq', regex=True)
         out = f.getvalue()
 
-        f = io.StringIO()
-        with redirect_stdout(f):
+        f2= io.StringIO()
+        with redirect_stdout(f2):
             print_as_vector(hardcoded_cm_pf_eq, 'cm_eq', regex=True)
-        expected_result = f.getvalue()
+        expected_result = f2.getvalue()
 
         assert expected_result == out
 
@@ -114,9 +133,11 @@ class TestSymbolicCalc(TestCase):
                 print_as_vector(result, 'F_cm', regex=True)
             out = f.getvalue()
 
-            assert out == expected_result
+        assert out == expected_result
 
     def test_get_F_cm_using_He_scheme_and_continuous_Maxwellian_DF(self):
+        from SymbolicCollisions.core.hardcoded_results import hardcoded_F_cm_hydro_LB_density_based
+
         F_cm = get_mom_vector_from_continuous_def(get_continuous_force_He_MB, continuous_transformation=get_continuous_cm)
 
         f = io.StringIO()
@@ -124,15 +145,10 @@ class TestSymbolicCalc(TestCase):
             print_as_vector(F_cm, 'F_cm', regex=True)
         out = f.getvalue()
 
-        expected_result = 'F_cm[0] = 0;\n' \
-                          'F_cm[1] = Fhydro.x*m00/rho;\n' \
-                          'F_cm[2] = Fhydro.y*m00/rho;\n' \
-                          'F_cm[3] = 0;\n' \
-                          'F_cm[4] = 0;\n' \
-                          'F_cm[5] = 0;\n' \
-                          'F_cm[6] = 1./3.*Fhydro.y*m00/rho;\n' \
-                          'F_cm[7] = 1./3.*Fhydro.x*m00/rho;\n' \
-                          'F_cm[8] = 0;\n'
+        f2 = io.StringIO()
+        with redirect_stdout(f2):
+            print_as_vector(hardcoded_F_cm_hydro_LB_density_based, 'F_cm', regex=True)
+            expected_result = f2.getvalue()
 
         assert expected_result == out
 
@@ -227,11 +243,6 @@ class TestSymbolicCalc(TestCase):
         with redirect_stdout(f):
             print_as_vector(cm_eq, 'cm_eq', regex=True)
         out = f.getvalue()
-
-        # f = io.StringIO()
-        # with redirect_stdout(f):
-        #     print_as_vector(hardcoded_cm_hydro_eq, 'cm_eq', regex=False)
-        # expected_result = f.getvalue()
 
         expected_result = 'cm_eq[0] = m00;\n' \
                           'cm_eq[1] = u.x*(-m00 + 1);\n' \

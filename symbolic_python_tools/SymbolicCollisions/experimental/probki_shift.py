@@ -4,7 +4,7 @@ from sympy.matrices import Matrix, eye, zeros, ones, diag
 from sympy import pretty_print
 from SymbolicCollisions.core.sym_col_fun import *
 from SymbolicCollisions.core.cm_symbols import *
-from SymbolicCollisions.core.shift_matrix_d2q9 import *
+from SymbolicCollisions.core.MatrixGenerator import *
 from SymbolicCollisions.core.printers import *
 
 
@@ -12,7 +12,7 @@ from SymbolicCollisions.core.printers import *
 cm = Matrix([0.123, 0.234, 0.345, 0.456, 0.567, 0.678, 0.789, 0.890, 0.901])
 
 
-ShiftMat = get_shift_matrix(M_ortho_GS, ex, ey)
+ShiftMat = MatrixGenerator().get_shift_matrix(M_ortho_GS, ex, ey)
 ShiftMat = ShiftMat.subs({
             'u.x': 0.0123,
             'u.y': 0.0234

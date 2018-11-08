@@ -62,7 +62,14 @@ print("//calculate forces in cm space")
 print_as_vector(hardcoded_F_cm_pf, F_cm_str, regex=True)  # save time
 print("//collide")
 # cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * cm_eq + (eye(9) - S_relax / 2) * F_cm  # eq 8
-cm_after_collision = (eye(9) - S_relax_phi) * temp_populations + S_relax_phi * hardcoded_cm_pf_eq + (eye(9) - S_relax_phi / 2) * hardcoded_F_cm_pf  # eq 8
+# Relax 2nd moments, FOI
+# cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * hardcoded_cm_pf_eq +  hardcoded_F_cm_pf
+
+# Relax 2nd moments, SOI
+cm_after_collision = (eye(9) - S_relax) * temp_populations + S_relax * hardcoded_cm_pf_eq + (eye(9) - S_relax / 2) * hardcoded_F_cm_pf
+
+# Relax 1st moments, SOI
+#cm_after_collision = (eye(9) - S_relax_phi) * temp_populations + S_relax_phi * hardcoded_cm_pf_eq + (eye(9) - S_relax_phi / 2) * hardcoded_F_cm_pf  # eq 8
 
 print_as_vector(cm_after_collision, print_symbol=pop_in_str, regex=True)
 
