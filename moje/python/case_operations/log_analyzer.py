@@ -109,3 +109,6 @@ def main(argv):
 if __name__ == "__main__":
     # sample_run()
     main(sys.argv[1:])
+
+# example
+# python3 log_analyzer.py -i ../data_for_plots/slurm_logs/bubble_mrt_stability_rho10/ -o ../data_for_plots/slurm_logs/parsed_logs/rho10_mrt.log

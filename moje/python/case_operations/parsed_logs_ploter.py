@@ -7,10 +7,9 @@ import re
 import csv
 
 
-input_folder_path = os.path.join("../data_for_plots",
-                           "slurm_logs", )
+input_folder_path = os.path.join("../data_for_plots", "slurm_logs", )
 
-input_filename = os.path.normpath(os.path.join(input_folder_path,"parsed_logs", "parsed_lines_mrt.log"))
+input_filename = os.path.normpath(os.path.join(input_folder_path,"parsed_logs", "rho10_mrt.log"))
 data = pd.read_csv(os.path.join(input_filename), delimiter="\t")
 
 
@@ -21,7 +20,7 @@ data = pd.read_csv(os.path.join(input_filename), delimiter="\t")
 #
 #     return density_ratio, viscosity_ratio
 
-def filter_data(is_stopped_by_NaN = False, Density_h=1.0, Density_l=1.0):
+def filter_data(is_stopped_by_NaN = False, Density_h=10.0, Density_l=1.0):
     filtered_data = data[(data.Density_h == Density_h) & (data.Density_l == Density_l) & (data.stopped_by_NaN == is_stopped_by_NaN)]
     x = filtered_data['VelocityX']
     y = filtered_data['Viscosity_h']
