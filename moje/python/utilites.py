@@ -71,7 +71,7 @@ def remove_duplicates_y(x, y):
 
 
 # read experimental data
-def read_data(filepath, delimiter='t', intepolate=False):
+def read_data(filepath, delimiter='\t', intepolate=False):
     x = np.empty(0)
     y = np.empty(0)
 

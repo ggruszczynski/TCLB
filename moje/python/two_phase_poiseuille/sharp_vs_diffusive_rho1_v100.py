@@ -7,11 +7,13 @@ from numpy.linalg import norm
 from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal, calc_gx
 from two_phase_poiseuille.TwoPhasePoiseuilleFD import TwoPhasePoiseuilleFD
 
-folder_path = os.path.join("../data_for_plots", "Poiseuille", "sharp_vs_diff_interface")
+# folder_path = os.path.join("~/DATA_FOR_PLOTS", "Poiseuille", "sharp_vs_diff_interface")
+#
+# x_sharp, u_sharp = read_data(os.path.join(folder_path, "u_rho1_v100_sharp.csv"))
+# x_diff, u_diff = read_data(os.path.join(folder_path, "u_rho1_v100_diff.csv"))  # powinien widziec pliki Oo
 
-x_sharp, u_sharp = read_data(os.path.join(folder_path, "u_rho1_v100_sharp.csv"))
-x_diff, u_diff = read_data(os.path.join(folder_path, "u_rho1_v100_diff.csv"))
-
+x_sharp, u_sharp = read_data("u_rho1_v100_sharp.csv")
+x_diff, u_diff = read_data("u_rho1_v100_diff.csv")
 
 h = 49
 uc = 0.0076  # --> max(u) = 0.1
@@ -42,20 +44,22 @@ u_fd = p_fd.get_u_profile(y_fd, W=5)
 y_ = np.linspace(-h, h, 101)
 
 # make plot
-plt.rcParams.update({'font.size': 24})
-plt.figure(figsize=(12, 8))
+plt.rcParams.update({'font.size': 30})
+plt.figure(figsize=(14, 9))
 
 # channel d = 49, thus add 0.5
-plt.plot(u_sharp, x_sharp - len(x_sharp)/2 + 0.5, color="red", marker=">", linestyle="-.", label='current model - sharp interface')
+plt.plot(u_sharp, (x_sharp - len(x_sharp)/2 + 0.5), color="red", marker=">", linestyle="-.", label='current model - step interface')
 plt.plot(u_anal, y_, color="black", linestyle="-", label='analytical solution')
 
-plt.plot(u_diff, x_diff - len(x_diff)/2 + 0.5, color="green", marker="<", linestyle="-.", label='current model - diffusive interface')
+plt.plot(u_diff, (x_diff - len(x_diff)/2 + 0.5), color="green", marker="o", linestyle="-.", label='current model - diffusive interface')
 plt.plot(u_fd, y_fd, color="blue", linestyle="-", label='FD - diffusive interface')
 
+axes = plt.gca()
+axes.set_ylim([-60, 60])
 plt.ylabel(r'$y$')
 plt.xlabel(r'$u_x$')
 
-plt.title('two phase Poiseuille flow')
+# plt.title('two phase Poiseuille flow')
 plt.grid(True)
 plt.legend()
 

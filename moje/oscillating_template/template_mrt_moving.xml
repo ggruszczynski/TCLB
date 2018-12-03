@@ -1,0 +1,76 @@
+
+<?R
+#    tab = expand.grid(VelocityX=c(0.0577350269, 0.1154700538, 0.1732050808, 0.2309401077, 0.2886751346), Viscosity=seq(0.1,1.0,0.1))
+    tab = expand.grid(VelocityX=c(0.1, 0.01, 0.001), Viscosity=c(0.1,0.01, 0.001))
+
+    # paste0 - pastes without extra spaces between commas: ','
+    
+    base_dir_name <- "oscillating_batch"
+    dir.create(base_dir_name)
+
+    tab$dir_name= paste0(base_dir_name,"/","rho1_v",gsub("[.]","",tab$Viscosity,3),"_oscillating_U",gsub("[.]","",tab$VelocityX))
+    tab$name    = paste0(tab$dir_name,"/mrt_moving")
+    tab$output = paste0("/net/scratch/people/plgmuaddieb/output/",tab$name)
+
+    tab$xml = paste0(tab$name,".xml")
+
+    write.csv(tab, "cm_moving_main.csv", row.names=FALSE)
+    for (i in 1:nrow(tab)) {
+        attach(tab[i,,drop=FALSE])
+
+        dir.create(dir_name)
+        print(xml)
+        sink(xml) # zapis do pliku o nazwie xml 
+        ?>
+
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="<?%s output ?>">
+        <Geometry nx="256" ny="256">
+        <MRT><Box/></MRT>
+        <Smoothing><Box /></Smoothing> 
+        <None name="bubble">
+        <!-- <Sphere ny="56" nx="56" dx="100" dy="100"/> -->
+        <Sphere ny="112" nx="56" dx="100" dy="72"/>
+        </None>     
+<!--            <Wall mask="ALL" name="border" >
+                        <Box nx="1"/>
+                        <Box dx="-1"/>
+                        <Box ny="1"/>
+                        <Box dy="-1"/>
+                </Wall> -->            
+        </Geometry>
+    <Model>
+    <Params
+        Density_h="1.0" Density_l="1.0" 
+        Viscosity_h="<?%f Viscosity ?>" Viscosity_l="<?%f Viscosity ?>"
+        PhaseField_h="1.0" PhaseField_l="0.0" 
+        ContactAngle="135" 
+      
+        PhaseField_init="0.0"
+        PhaseField_init-bubble="1.0"
+        PhaseField_init-sciana="0.0"
+
+        W="5" M="0.1666666" sigma="1e-4"
+        />
+    <Params  />
+    <Params VelocityX="<?%f VelocityX ?>" />
+    </Model> 
+    <Solve Iterations="25" >
+     <!-- <VTK Iterations="5"/> -->
+    </Solve>
+<Geometry>
+  <None mask="ADDITIONALS">
+    <Box nx="256" ny="256"/>
+  </None>
+</Geometry>
+<Failcheck Iterations="5000" nx="256" ny="256"/>
+<Log Iterations="1000"/>
+<Solve Iterations="1000000" > <VTK Iterations="1000"/> </Solve>
+</CLBConfig>
+
+<?R
+    sink()
+    detach()
+}
+?>
+

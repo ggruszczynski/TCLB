@@ -5,7 +5,7 @@ import numpy as np
 def get_tanh_profile(y, h, phi_h, phi_l, W=1):
     """
     :param y: bottom y=-h, top y=h
-    :param h: channel diameter
+    :param h: # distance from the center to the channel walls
     :param phi_h: quantity of interest - higher part of the channel
     :param phi_l: quantity of interest - lower part of the channel
     :param W: inteface thickness
