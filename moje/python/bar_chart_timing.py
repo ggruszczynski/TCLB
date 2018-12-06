@@ -5,6 +5,8 @@ import numpy as np
 
 #time = [3570/4302, 4093/4154, 4154/4154]
 
+# CM Total duration: 524.180000 s = 8.736333 min = 0.145606 h
+# MRT Total duration: 575.900000 s = 9.598333 min = 0.159972 h
 time = [231/309, 262/309, 309/309]
 x = np.arange(len(time))
 
