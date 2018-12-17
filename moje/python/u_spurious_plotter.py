@@ -32,12 +32,14 @@ x1, cm_u_kinvisc = read_data(os.path.join(folder, "parasitic_cm_kinvisc", "cm_um
 x2, cm_u_dynvisc = read_data(os.path.join(folder, "parasitic_cm_dynvisc", "cm_umag_spurious_dynvisc.csv"))
 
 # make plot
-plt.rcParams.update({'font.size': 26})
+plt.rcParams.update({'font.size': 28})
 plt.figure(figsize=(14, 8))
+# The basic slice syntax is i:j:k where i is the starting index, j is the stopping index, and k is the step
+
 # plt.plot(rho_ratio, u_MRT_Guo, color="red", marker=".", linestyle="", label='u MRT linear relaxation')
 # plt.semilogy(x0 / x0.max(), mrt_u_kinvisc.flatten(), marker="<", linestyle="-", color="red")#, label=r'$ eq23$')
-plt.semilogy(x1 / x1.max(), cm_u_kinvisc.flatten(), color="green")#, label=r'$ eq25$')
-plt.semilogy(x2 / x2.max(), cm_u_dynvisc.flatten(), color="blue", linestyle=":")#, label=r'$ eq25$')
+plt.semilogy(x1 / x1.max(), cm_u_kinvisc.flatten(), color="red", marker="o", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
+plt.semilogy(x2 / x2.max(), cm_u_dynvisc.flatten(), color="blue", marker="", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
 
 plt.xlabel(r'$x$')
 plt.ylabel(r'$u_{mag}$ [lu/ts]')
