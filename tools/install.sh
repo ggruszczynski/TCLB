@@ -46,12 +46,12 @@ PMS=""
 pms_array=( apt-get yum )
 for i in "${pms_array[@]}"
 do
-	if [ -x "$(command -v $i)" ] ; then
+	if [ -x "$(command -v $i)" ] ; then 
 	  echo "Discovered Package Manager: $i"
 	  PMS=$i
 	fi
 done
-
+ 
 test -z "$PMS" && echo "Unknown type of Package Manager, only apt-get and yum are supported." && usage
 
 
@@ -96,7 +96,7 @@ function github_install {
 	name=$(echo $1 | sed "s/\//./g")
 	rm -f $name.tar.gz
 	try "Downloading $name" wget $WGETOPT https://github.com/$1/archive/master.tar.gz -O $name.tar.gz
-	try "Installing $name" R CMD INSTALL $name.tar.gz
+	try "Installing $name" R CMD INSTALL $name.tar.gz 
 }
 
 function normal_install {
@@ -131,7 +131,7 @@ r)
 	    try "Installing R base" sudo yum install -y R
 	    try "Changing access to R lib paths" chmod 2777 /usr/lib64/R/library /usr/share/R/library
 	fi
-
+	
 	if test "x$PMS" == "xapt-get"
 	then
 	    try "Adding repository" add-apt-repository "deb ${CRAN}/bin/linux/ubuntu $DIST/"
@@ -167,12 +167,12 @@ cuda)
 	CUDA=$1
 	shift
 	echo "#### Installing CUDA library ####"
-
+	
 	if test "x$PMS" == "xyum"
 	then
 		echo "The install script doesnt support yum yet, please install CUDA manually."
 	fi
-
+	
 	if test "x$PMS" == "xapt-get"
 	then
 	    try "Downloading CUDA dist" wget $WGETOPT http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1204/x86_64/cuda-repo-ubuntu1204_${CUDA}_amd64.deb
@@ -200,11 +200,11 @@ openmpi)
 	fi
 	;;
 coveralls)
-	if test "x$PMS" == "xyum"
+	if test "x$PMS" == "xyum"	
 	then
 		echo "The install script doesnt support yum yet, please install CUDA manually."
-	fi
-
+	fi 
+	
 	if test "x$PMS" == "xapt-get"
 	then
 		try "Installing lcov" apt-get install -y lcov
@@ -224,20 +224,20 @@ submodules)
 	try "Loading gitmodules" mv gitmodules ../.gitmodules
 	;;
 python-dev)
-	if test "x$PMS" == "xyum"
+	if test "x$PMS" == "xyum"	
 	then
 		try "Installing python-devel from yum" yum install -y python-devel
-		try "Installing numpy from yum" yum install -y numpy
+		try "Installing numpy from yum" yum install -y numpy 
 		try "Installing sympy from yum" yum install -y sympy
 	fi
-
+	
 	if test "x$PMS" == "xapt-get"
 	then
 		try "Installing python-dev from APT" apt-get install -qq python-dev python-numpy python-sympy
 	fi
 	;;
 module)
-	try "Installing dependencies: tcl" yum -y install tcl
+	try "Installing dependencies: tcl" yum -y install tcl 
 	try "Installing dependencies: tcl-devel" yum -y install tcl-devel
 	try "Downloading module" wget https://github.com/cea-hpc/modules/releases/download/v4.1.0/modules-4.1.0.tar.bz2
 	try "Unpacking archive" tar -xjf modules-4.1.0.tar.bz2 -C .
@@ -246,7 +246,7 @@ module)
 	try "make" make
 	try "make install" make install
 	try "Leaving module directory" cd ..
-	try "Remember to restart terminal" . ~/.bashrc
+	try "Remember to restart terminal" . ~/.bashrc	
 	;;
 *)
 	echo "Unknown type of install $inst"

@@ -8,7 +8,11 @@
 		<Outlet nx='1' dx='-5'><Box/></Outlet> -->
 		<Wall>
 			<Box ny="1"/>
-                        <Box dy="-1"/>
+            		<Box dy="-1"/>
+           		 <Wedge dx="120" nx="20" dy="50" ny="20" direction="LowerRight"/>
+			<Wedge dx="120" nx="20" dy="30" ny="20" direction="UpperRight"/>
+			<Wedge dx="140" nx="20" dy="50" ny="20" direction="LowerLeft"/>
+			<Wedge dx="140" nx="20" dy="30" ny="20" direction="UpperLeft"/>
 		</Wall>
 	</Geometry>
 	<Model>
