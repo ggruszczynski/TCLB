@@ -38,8 +38,8 @@ plt.figure(figsize=(14, 8))
 
 # plt.plot(rho_ratio, u_MRT_Guo, color="red", marker=".", linestyle="", label='u MRT linear relaxation')
 # plt.semilogy(x0 / x0.max(), mrt_u_kinvisc.flatten(), marker="<", linestyle="-", color="red")#, label=r'$ eq23$')
-plt.semilogy(x1 / x1.max(), cm_u_kinvisc.flatten(), color="red", marker="o", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
-plt.semilogy(x2 / x2.max(), cm_u_dynvisc.flatten(), color="blue", marker="", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
+plt.semilogy(x1 / x1.max(), cm_u_kinvisc.flatten(), color="black", marker="o", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
+plt.semilogy(x2 / x2.max(), cm_u_dynvisc.flatten(), color="black", marker="", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
 
 plt.xlabel(r'$x$')
 plt.ylabel(r'$u_{mag}$ [lu/ts]')
@@ -51,5 +51,5 @@ plt.grid(True)
 
 # plt.text(0.0, 5E-6, r'$\rho^* = %s$' % rho_ratio)
 fig = plt.gcf()  # get current figure
-fig.savefig('spurious_currents.png')
+fig.savefig('bw_spurious_currents.pdf', bbox_inches='tight')
 plt.show()

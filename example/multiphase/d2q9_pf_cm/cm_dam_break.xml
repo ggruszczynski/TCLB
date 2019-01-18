@@ -1,7 +1,7 @@
 
 <?xml version="1.0"?>
 <CLBConfig version="2.0" output="output/">
-    <Geometry nx="128" ny="128"> 
+    <Geometry nx="256" ny="256"> 
       <CM><Box /></CM>    
       <Smoothing><Box /></Smoothing> 
         <None name="water">
@@ -29,18 +29,18 @@
         W="4" M="0.05" sigma="1E-04"
         />
     <Params  />
-     <Params omega_bulk="1.0"/>
+     <!-- <Params omega_bulk="1.0"/> -->
     <Params GravitationY="-1.0E-05" />
     </Model> 
     <Solve Iterations="25" output="output/"> <VTK Iterations="10"/> </Solve>
 
 <Geometry>
   <None mask="ADDITIONALS">
-    <Box nx="128" ny="128"/>
+    <Box nx="256" ny="256"/>
   </None>
 </Geometry>
 <Solve Iterations="50" output="output/"> <VTK Iterations="10"/> </Solve>
-<Failcheck Iterations="1000" nx="128" ny="128"/>
+<Failcheck Iterations="1000" nx="256" ny="256"/>
 <Log Iterations="1000"/>
 <Solve Iterations="30000" output="output/"> <VTK Iterations="500"/> </Solve>
 </CLBConfig>

@@ -133,8 +133,8 @@ AddSetting(name="bulk_visc", omega_bulk='1.0/(3*bulk_visc+0.5)',  comment='bulk 
 AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
 AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
-AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX')
-AddSetting(name="GravitationY", default=0.0, comment='applied (rho)*GravitationY')
+AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX', zonal=T)
+AddSetting(name="GravitationY", default=0.0, comment='applied (rho)*GravitationY', zonal=T)
 AddSetting(name="BuoyancyX", default=0.0, comment='applied (rho-rho_h)*BuoyancyX')
 AddSetting(name="BuoyancyY", default=0.0, comment='applied (rho-rho_h)*BuoyancyY')
 

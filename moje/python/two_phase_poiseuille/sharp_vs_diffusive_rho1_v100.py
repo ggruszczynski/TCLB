@@ -48,11 +48,12 @@ plt.rcParams.update({'font.size': 30})
 plt.figure(figsize=(14, 9))
 
 # channel d = 49, thus add 0.5
-plt.plot(u_sharp, (x_sharp - len(x_sharp)/2 + 0.5), color="red", marker=">", linestyle="-.", label='current model - step interface')
-plt.plot(u_anal, y_, color="black", linestyle="-", label='analytical solution')
 
-plt.plot(u_diff, (x_diff - len(x_diff)/2 + 0.5), color="green", marker="o", linestyle="-.", label='current model - diffusive interface')
-plt.plot(u_fd, y_fd, color="blue", linestyle="-", label='FD - diffusive interface')
+plt.plot(u_anal, y_, color="black", linestyle=":",  linewidth=3, label='analytical solution - step interface')
+plt.plot(u_sharp, (x_sharp - len(x_sharp)/2 + 0.5), color="black", marker=">", markersize=9, linestyle="", label='current model - step interface')
+
+plt.plot(u_fd, y_fd, color="black", linestyle="-",  linewidth=2, label='FD - diffusive interface')
+plt.plot(u_diff, (x_diff - len(x_diff)/2 + 0.5), color="black", marker="o", markersize=9, linestyle="", label='current model - diffusive interface')
 
 axes = plt.gca()
 axes.set_ylim([-60, 60])
@@ -67,7 +68,7 @@ plt.legend()
 # plt.text(0.0, 5E-6, r'$\mu^* = %s$' % str(mu_ratio))
 # plt.text(0.0, 5E-6, r'$\rho^* = %s$' % str(rho_l/rho_g))
 fig = plt.gcf()  # get current figure
-fig.savefig('two_phase_Poiseuille_benchmark_rho%s_v%s.png' % (str(rho_h/rho_l), str(kin_visc_h/kin_visc_l)))
+fig.savefig(f'bw_two_phase_Poiseuille_benchmark_rho{rho_h/rho_l}_v{kin_visc_h/kin_visc_l}.pdf', bbox_inches='tight')
 plt.show()
 
 # norm(u_exp_cm_Guo - u)/norm(u)
