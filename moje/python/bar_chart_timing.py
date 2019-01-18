@@ -27,7 +27,7 @@ plt.ylabel(r'$normalized \, time$')
 
 # ax.yaxis.set_major_formatter(formatter)
 
-plt.bar(x, time)
+plt.bar(x, time, color="black", width=0.6)
 plt.xticks(x, ('BGK', 'MRT', 'CM'))
 
 plt.grid(True)
@@ -35,5 +35,5 @@ plt.grid(True)
 
 fig = plt.gcf()  # get current figure
 # fig.savefig('Couette_benchmark_100.png')
-fig.savefig('CM_MRT_BGK_timing.png')
+fig.savefig('CM_MRT_BGK_timing.pdf',  bbox_inches='tight')
 plt.show()
