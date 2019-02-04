@@ -44,7 +44,7 @@ u_fd = p_fd.get_u_profile(y_fd, W=5)
 y_ = np.linspace(-h, h, 101)
 
 # make plot
-plt.rcParams.update({'font.size': 30})
+plt.rcParams.update({'font.size': 22})
 plt.figure(figsize=(14, 9))
 
 # channel d = 49, thus add 0.5
@@ -52,11 +52,19 @@ plt.figure(figsize=(14, 9))
 plt.plot(u_anal, y_, color="black", linestyle=":",  linewidth=3, label='analytical solution - step interface')
 plt.plot(u_sharp, (x_sharp - len(x_sharp)/2 + 0.5), color="black", marker=">", markersize=9, linestyle="", label='current model - step interface')
 
-plt.plot(u_fd, y_fd, color="black", linestyle="-",  linewidth=2, label='FD - diffusive interface')
-plt.plot(u_diff, (x_diff - len(x_diff)/2 + 0.5), color="black", marker="o", markersize=9, linestyle="", label='current model - diffusive interface')
+plt.plot(u_fd, y_fd, color="black", linestyle="-",  linewidth=2, label='FD - diffuse interface')
+plt.plot(u_diff, (x_diff - len(x_diff)/2 + 0.5), color="black", marker="o", markersize=9, linestyle="", label='current model - diffuse interface')
 
 axes = plt.gca()
-axes.set_ylim([-60, 60])
+axes.set_yticks(np.arange(-50, 51, 25))
+axes.set_ylim([-50, 50])
+
+plt.xlim(0, 0.12)
+axes.set_xticks(np.arange(0., 0.12, 0.02))
+#     plt.ylim(y1.min(), y1.max())
+#     plt.ylim(1.25*min(y1.min(), y2.min()), 1.25*max(y1.max(), y2.max()))
+
+
 plt.ylabel(r'$y$')
 plt.xlabel(r'$u_x$')
 

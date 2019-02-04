@@ -38,12 +38,15 @@ plt.figure(figsize=(14, 8))
 
 # plt.plot(rho_ratio, u_MRT_Guo, color="red", marker=".", linestyle="", label='u MRT linear relaxation')
 # plt.semilogy(x0 / x0.max(), mrt_u_kinvisc.flatten(), marker="<", linestyle="-", color="red")#, label=r'$ eq23$')
-plt.semilogy(x1 / x1.max(), cm_u_kinvisc.flatten(), color="black", marker="o", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
-plt.semilogy(x2 / x2.max(), cm_u_dynvisc.flatten(), color="black", marker="", markevery=25, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
+plt.semilogy(x1 / x1.max(), cm_u_kinvisc.flatten(), color="black", marker="o", markevery=20, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
+plt.semilogy(x2 / x2.max(), cm_u_dynvisc.flatten(), color="black", marker="", markevery=20, markersize=12, linestyle="-", linewidth=2)#, label=r'$ eq25$')
 
-plt.xlabel(r'$x$')
+plt.xlabel(r'$x/L$')
 plt.ylabel(r'$u_{mag}$ [lu/ts]')
 
+axes = plt.gca()
+axes.set_xlim([0, 1])
+axes.set_ylim([1E-12, 1E-4 ])
 # plt.title('Spurious Currents')
 plt.grid(True)
 #plt.legend()
