@@ -7,13 +7,13 @@ from numpy.linalg import norm
 from two_phase_poiseuille.TwoPhasePoiseuilleAnal import TwoPhasePoiseuilleAnal, calc_gx
 from two_phase_poiseuille.TwoPhasePoiseuilleFD import TwoPhasePoiseuilleFD
 
-# folder_path = os.path.join("~/DATA_FOR_PLOTS", "Poiseuille", "sharp_vs_diff_interface")
-#
-# x_sharp, u_sharp = read_data(os.path.join(folder_path, "u_rho1_v100_sharp.csv"))
-# x_diff, u_diff = read_data(os.path.join(folder_path, "u_rho1_v100_diff.csv"))  # powinien widziec pliki Oo
+folder_path = os.path.join("/media/grzegorz/Container/DATA_FOR_PLOTS", "Poiseuille", "sharp_vs_diff_interface")
 
-x_sharp, u_sharp = read_data("u_rho1_v100_sharp.csv")
-x_diff, u_diff = read_data("u_rho1_v100_diff.csv")
+x_sharp, u_sharp = read_data(os.path.join(folder_path, "u_rho1_v100_sharp.csv"))
+x_diff, u_diff = read_data(os.path.join(folder_path, "u_rho1_v100_diff.csv"))  # powinien widziec pliki Oo
+
+# x_sharp, u_sharp = read_data("u_rho1_v100_sharp.csv")
+# x_diff, u_diff = read_data("u_rho1_v100_diff.csv")
 
 h = 49
 uc = 0.0076  # --> max(u) = 0.1
@@ -44,7 +44,7 @@ u_fd = p_fd.get_u_profile(y_fd, W=5)
 y_ = np.linspace(-h, h, 101)
 
 # make plot
-plt.rcParams.update({'font.size': 22})
+plt.rcParams.update({'font.size': 18})
 plt.figure(figsize=(14, 9))
 
 # channel d = 49, thus add 0.5

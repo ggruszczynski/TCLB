@@ -74,8 +74,8 @@ def make_plot(x1, y1, x2, y2, fig_name, y_label, label1, label2):
     plt.figure(figsize=(14, 8))
     # The basic slice syntax is i:j:k where i is the starting index, j is the stopping index, and k is the step
 
-    plt.plot(x1, y1, color="black", marker="o", markevery=25, markersize=12, linestyle="-", linewidth=2, label=label1)
-    plt.plot(x2, y2, color="black", marker="", markevery=25, markersize=12, linestyle="-.", linewidth=2, label=label2)
+    plt.plot(x1, y1, color="black", marker="", markevery=25, markersize=12, linestyle="-", linewidth=2, label=label1)
+    plt.plot(x2, y2, color="black", marker="o", markevery=25, markersize=12, linestyle="", linewidth=2, label=label2)
 
     axes = plt.gca()
     #     axes.set_xlim([0, 2*1E5])
