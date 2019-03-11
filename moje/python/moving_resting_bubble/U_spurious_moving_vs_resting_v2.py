@@ -15,6 +15,7 @@ folder_path = os.path.join("/media/grzegorz/Container/DATA_FOR_PLOTS",
                            f"rho{rho_ratio}_v{v}_circular_U{Ustr}",
                            "line_data")
 
+# folder_path = os.path.join("line_data")
 domain_size = 256
 frame_n = 999  # last time-frame
 
@@ -66,15 +67,15 @@ def make_plot(x1, y1, x2, y2, fig_name, y_label):
     plt.show()
     plt.close(fig)  # close the figure
 
-#
-# make_plot(x1=frame_cm_resting['arc_length']/domain_size, y1=frame_cm_resting['U:0'],
-#           x2=frame_mrt_resting['arc_length']/domain_size, y2=frame_mrt_resting['U:0'],
-#           fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_resting_frame.pdf',
-#           y_label=r'$u_{x}$ [lu/ts]'
-#          )
 
-make_plot(x1=frame_cm_moving['arc_length'] / domain_size, y1=frame_cm_moving['U:0'] - Uf,
-          x2=frame_mrt_moving['arc_length'] / domain_size, y2=frame_mrt_moving['U:0'] - Uf,
-          fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_moving_frame.pdf',
-          y_label=r'$(u_{x} - \overline{u_x})$ [lu/ts]'
-          )
+make_plot(x1=frame_cm_resting['arc_length']/domain_size, y1=frame_cm_resting['U:0'],
+          x2=frame_mrt_resting['arc_length']/domain_size, y2=frame_mrt_resting['U:0'],
+          fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_resting_frame.pdf',
+          y_label=r'$u_{x}$ [lu/ts]'
+         )
+
+# make_plot(x1=frame_cm_moving['arc_length'] / domain_size, y1=frame_cm_moving['U:0'] - Uf,
+#           x2=frame_mrt_moving['arc_length'] / domain_size, y2=frame_mrt_moving['U:0'] - Uf,
+#           fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_moving_frame.pdf',
+#           y_label=r'$(u_{x} - \overline{u_x})$ [lu/ts]'
+#           )

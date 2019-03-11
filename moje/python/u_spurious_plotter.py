@@ -26,13 +26,13 @@ def read_data(filepath):
 # x23, u_eq23_rho10 = read_data(os.path.join(folder, "mrt_u_spurious_eq_23.csv"))
 # x25, u_eq25_rho10 = read_data(os.path.join(folder, "mrt_u_spurious_eq_25.csv"))
 
-folder = os.path.join("/home","ggruszczynski/","DATA_FOR_PLOTS", "relaxation_interpolation")
+folder = os.path.join("/media/grzegorz/Container/","DATA_FOR_PLOTS", "relaxation_interpolation")
 x0, mrt_u_kinvisc = read_data(os.path.join(folder, "parasitic_mrt_kinvisc", "mrt_umag_spurious_kinvisc.csv"))
 x1, cm_u_kinvisc = read_data(os.path.join(folder, "parasitic_cm_kinvisc", "cm_umag_spurious_kinvisc.csv"))
 x2, cm_u_dynvisc = read_data(os.path.join(folder, "parasitic_cm_dynvisc", "cm_umag_spurious_dynvisc.csv"))
 
 # make plot
-plt.rcParams.update({'font.size': 28})
+plt.rcParams.update({'font.size': 24})
 plt.figure(figsize=(14, 8))
 # The basic slice syntax is i:j:k where i is the starting index, j is the stopping index, and k is the step
 
@@ -46,7 +46,15 @@ plt.ylabel(r'$u_{mag}$ [lu/ts]')
 
 axes = plt.gca()
 axes.set_xlim([0, 1])
-axes.set_ylim([1E-12, 1E-4 ])
+
+# yhl = 1E-4
+# yll = 1E-12
+# axes.set_ylim([yll, yhl ])
+# axes.set_yticks(np.linspace(yll, yhl, 6))
+# axes.set_yticks(np.arange(yll, yhl, 1E-2))
+axes.set_yticks([1E-4, 1E-6, 1E-8, 1E-10, 1E-12])
+axes.set_ylim([1E-12, 1E-4])
+
 # plt.title('Spurious Currents')
 plt.grid(True)
 #plt.legend()
