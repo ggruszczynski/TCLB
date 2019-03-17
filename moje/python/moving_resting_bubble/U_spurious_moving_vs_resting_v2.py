@@ -10,12 +10,12 @@ v = '01'
 U = '0.01'
 Uf = float(U)
 Ustr = re.sub("\.", '', U)
-folder_path = os.path.join("/media/grzegorz/Container/DATA_FOR_PLOTS",
-                           "moving_vs_resting_bubble",
-                           f"rho{rho_ratio}_v{v}_circular_U{Ustr}",
-                           "line_data")
+# folder_path = os.path.join("/media/grzegorz/Container/DATA_FOR_PLOTS",
+#                            "moving_vs_resting_bubble",
+#                            f"rho{rho_ratio}_v{v}_circular_U{Ustr}",
+#                            "line_data")
 
-# folder_path = os.path.join("line_data")
+folder_path = os.path.join(os.getcwd(), "figure6")
 domain_size = 256
 frame_n = 999  # last time-frame
 
@@ -32,6 +32,10 @@ u_mrt = np.sqrt(
 # make plot
 def make_plot(x1, y1, x2, y2, fig_name, y_label):
     from matplotlib.ticker import FormatStrFormatter
+    # from matplotlib.ticker import  ScalarFormatter
+    # xfmt = ScalarFormatter()
+    # xfmt.set_powerlimits((-1, 1))
+    # xfmt.set_useOffset(10)
 
     plt.rcParams.update({'font.size': 32})
     plt.figure(figsize=(14, 8))
@@ -44,19 +48,22 @@ def make_plot(x1, y1, x2, y2, fig_name, y_label):
 
     axes = plt.gca()
     plt.plot(smooth(x1), smooth(y1), color="black", marker="", markevery=10, markersize=15, linestyle="-", linewidth=2, label='current model')
-    # yll = -2.*1E-7
-    # yhl = 2.*1E-7
+    yll = 1*1E-7
+    yhl = 6*1E-7
 
     # plt.plot(smooth(x2), smooth(y2), color="black", marker="", linestyle="-", linewidth=2, label='MRT')
     # yll = -1.5 * 1E-5
-    # yhl = -1 * 1E-5
-    # axes.set_yticks(np.linspace(yll, yhl, 5))
-    # axes.set_ylim([yll, yhl])
+    # yhl = -1.4 * 1E-5
+
+    axes.set_yticks(np.linspace(yll, yhl, 5))
+    axes.set_ylim([yll, yhl])
+
+    # axes.yaxis.set_major_formatter(xfmt)
 
     # plt.yscale('log')
     plt.xlim(x1.min(), x1.max())
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))  # scilimits=(-8, 8)
     plt.xlabel(r'x/L')
     plt.ylabel(y_label)
     plt.legend()
@@ -68,14 +75,14 @@ def make_plot(x1, y1, x2, y2, fig_name, y_label):
     plt.close(fig)  # close the figure
 
 
-make_plot(x1=frame_cm_resting['arc_length']/domain_size, y1=frame_cm_resting['U:0'],
-          x2=frame_mrt_resting['arc_length']/domain_size, y2=frame_mrt_resting['U:0'],
-          fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_resting_frame.pdf',
-          y_label=r'$u_{x}$ [lu/ts]'
-         )
+# make_plot(x1=frame_cm_resting['arc_length']/domain_size, y1=frame_cm_resting['U:0'],
+#           x2=frame_mrt_resting['arc_length']/domain_size, y2=frame_mrt_resting['U:0'],
+#           fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_resting_frame.pdf',
+#           y_label=r'$u_{x}  \cdot 10^{-7}$ [lu/ts]'
+#          )
 
-# make_plot(x1=frame_cm_moving['arc_length'] / domain_size, y1=frame_cm_moving['U:0'] - Uf,
-#           x2=frame_mrt_moving['arc_length'] / domain_size, y2=frame_mrt_moving['U:0'] - Uf,
-#           fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_moving_frame.pdf',
-#           y_label=r'$(u_{x} - \overline{u_x})$ [lu/ts]'
-#           )
+make_plot(x1=frame_cm_moving['arc_length'] / domain_size, y1=frame_cm_moving['U:0'] - Uf,
+          x2=frame_mrt_moving['arc_length'] / domain_size, y2=frame_mrt_moving['U:0'] - Uf,
+          fig_name=f'spurious_currents_CM_vs_MRT_rho{rho_ratio}_v{v}_U{Ustr}_moving_frame.pdf',
+          y_label=r'$(u_{x} - \overline{u_x}) \cdot 10^{-7}$ [lu/ts]'
+          )

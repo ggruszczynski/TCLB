@@ -11,7 +11,8 @@ plt.figure(figsize=(12, 8))
 plt.rcParams.update({'font.size': 32})
 
 plt.ylabel('normalized time')
-plt.bar(x, time, color="black", width=0.7)
+plt.bar(x, time, color="grey", edgecolor='black', linewidth=8, width=0.7)
+
 plt.xticks(x, ('SRT', 'MRT', 'CM'))
 
 plt.grid(True)
