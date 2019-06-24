@@ -878,9 +878,15 @@ CudaDeviceFunction void generalVelocity()
 		real_t r;
 		r = sqrt((Y-Center)*(Y-Center) + (Z-Center)*(Z-Center)  );
 		if ( myK > 0 ){ //Annular pipe
+			if ( r < myK * R) {
+			U = 0.0;
+			V = 0.0;
+			W = 0.0;
+			} else {
 			U = VelocityX + Uavg * (1 - (r/R)*(r/R) + (1-myK*myK)*log(r/R) / log(1/myK));
 			V = 0.0;
 			W = 0.0;
+			}
 		} else {
 			U = VelocityX + 2.0 * Uavg * ( 1.0 - ( r*r ) / (R*R) );
 			V = 0.0;
@@ -892,11 +898,6 @@ CudaDeviceFunction void generalVelocity()
 		W = VelocityZ;
 	}
 
-	if (n.x*n.x + n.y*n.y + n.z*n.z < 1e-4) {
-		U = 0.0;
-		V = 0.0;
-		W = 0.0;
-	}
 <?R
   velocityBC = function( n, g.=g,eq=EQ, velocity=U) {
 	#n = c(nx,ny,nz)
