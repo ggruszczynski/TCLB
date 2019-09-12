@@ -1,53 +1,35 @@
-# Density - table of variables of LB Node to stream
-#	Velocity-based Evolution d3q27:
-AddDensity( name="g0", dx= 0, dy= 0, dz= 0, group="g")
-AddDensity( name="g1", dx= 1, dy= 0, dz= 0, group="g")
-AddDensity( name="g2", dx=-1, dy= 0, dz= 0, group="g")
-AddDensity( name="g3", dx= 0, dy= 1, dz= 0, group="g")
-AddDensity( name="g4", dx= 0, dy=-1, dz= 0, group="g")
-AddDensity( name="g5", dx= 0, dy= 0, dz= 1, group="g")
-AddDensity( name="g6", dx= 0, dy= 0, dz=-1, group="g")
-AddDensity( name="g7", dx= 1, dy= 1, dz= 1, group="g")
-AddDensity( name="g8", dx=-1, dy= 1, dz= 1, group="g")
-AddDensity( name="g9", dx= 1, dy=-1, dz= 1, group="g")
-AddDensity( name="g10",dx=-1, dy=-1, dz= 1, group="g")
-AddDensity( name="g11",dx= 1, dy= 1, dz=-1, group="g")
-AddDensity( name="g12",dx=-1, dy= 1, dz=-1, group="g")
-AddDensity( name="g13",dx= 1, dy=-1, dz=-1, group="g")
-AddDensity( name="g14",dx=-1, dy=-1, dz=-1, group="g")
-AddDensity( name="g15",dx= 1, dy= 1, dz= 0, group="g")
-AddDensity( name="g16",dx=-1, dy= 1, dz= 0, group="g")
-AddDensity( name="g17",dx= 1, dy=-1, dz= 0, group="g")
-AddDensity( name="g18",dx=-1, dy=-1, dz= 0, group="g")
-AddDensity( name="g19",dx= 1, dy= 0, dz= 1, group="g")
-AddDensity( name="g20",dx=-1, dy= 0, dz= 1, group="g")
-AddDensity( name="g21",dx= 1, dy= 0, dz=-1, group="g")
-AddDensity( name="g22",dx=-1, dy= 0, dz=-1, group="g")
-AddDensity( name="g23",dx= 0, dy= 1, dz= 1, group="g")
-AddDensity( name="g24",dx= 0, dy=-1, dz= 1, group="g")
-AddDensity( name="g25",dx= 0, dy= 1, dz=-1, group="g")
-AddDensity( name="g26",dx= 0, dy=-1, dz=-1, group="g")
+source("lib/lattice.R")
 
-#	Phase Field Evolution d3q15:
-AddDensity( name="h0", dx= 0, dy= 0, dz= 0, group="h")
-AddDensity( name="h1", dx= 1, dy= 0, dz= 0, group="h")
-AddDensity( name="h2", dx=-1, dy= 0, dz= 0, group="h")
-AddDensity( name="h3", dx= 0, dy= 1, dz= 0, group="h")
-AddDensity( name="h4", dx= 0, dy=-1, dz= 0, group="h")
-AddDensity( name="h5", dx= 0, dy= 0, dz= 1, group="h")
-AddDensity( name="h6", dx= 0, dy= 0, dz=-1, group="h")
-AddDensity( name="h7", dx= 1, dy= 1, dz= 1, group="h")
-AddDensity( name="h8", dx=-1, dy= 1, dz= 1, group="h")
-AddDensity( name="h9", dx= 1, dy=-1, dz= 1, group="h")
-AddDensity( name="h10",dx=-1, dy=-1, dz= 1, group="h")
-AddDensity( name="h11",dx= 1, dy= 1, dz=-1, group="h")
-AddDensity( name="h12",dx=-1, dy= 1, dz=-1, group="h")
-AddDensity( name="h13",dx= 1, dy=-1, dz=-1, group="h")
-AddDensity( name="h14",dx=-1, dy=-1, dz=-1, group="h")
+x = c(0,1,-1);
+P = expand.grid(x=0:2,y=0:2,z=0:2)
+U = expand.grid(x,x,x)
+
+
+######DEFINE DENSITIES######
+# Use g for velocity based population.
+gname = paste0("g", P$x, P$y, P$z)
+AddDensity(
+	name 	= gname,
+	dx   	= U[,1],
+	dy	= U[,2],
+	dz	= U[,3],
+	comment	= paste0("Hydrodynamic population g",1:27-1),
+	group	= "g"
+)
+# Use h for interface population.
+hname = paste0("h", P$x, P$y, P$z)
+AddDensity(
+	name 	= hname,
+	dx   	= U[,1],
+	dy	= U[,2],
+	dz	= U[,3],
+	comment	= paste0("Allen-Cahn population h",1:27-1),
+	group	= "h"
+)
 
 if (Options$OutFlow){
 	AddDensity( name=paste("gold",0:26,sep=""), dx=0,dy=0,dz=0,group="gold")
-	AddDensity( name=paste("hold",0:14,sep=""), dx=0,dy=0,dz=0,group="hold")
+	AddDensity( name=paste("hold",0:26,sep=""), dx=0,dy=0,dz=0,group="hold")
 }
 
 AddDensity(name="U", dx=0, dy=0, dz=0, group="Vel")
@@ -64,6 +46,7 @@ if (Options$OutFlow){
 	for (d in rows(DensityAll)) {
 		AddField( name=d$name, dx=-d$dx-1, dy=-d$dy, dz=-d$dz )
 	}
+	# Assuming outflow from x-boundary
 	AddField(name="U",dx=c(-1,0,0))
 }
 
@@ -71,6 +54,7 @@ if (Options$RT){
 	AddDensity(name="PhaseF_old",dx=0, dy=0, dz=0, group="PF")
 }
 
+######DEFINE STAGES and ACTIONS######
 # Stages - processes to run for initialisation and each iteration
 AddStage("PhaseInit" , "Init", save=Fields$name=="PhaseF")
 AddStage("WallInit"  , "Init_wallNorm", save=Fields$group=="nw")
@@ -91,17 +75,32 @@ if (Options$OutFlow){
 }
 AddAction("Iteration", c("BaseIter", "calcPhase", "calcWall"))
 AddAction("Init"     , c("PhaseInit","WallInit" , "calcWall","BaseInit"))
-#AddAction("Init"     , c("BaseInit","WallInit" , "calcWall"))
 
-# 	Outputs:
+######DEFINE OUTPUTS######
 AddQuantity(name="Rho",unit="kg/m3")
 AddQuantity(name="PhaseField",unit="1")
 AddQuantity(name="U",	  unit="m/s",vector=T)
 AddQuantity(name="P",	  unit="Pa")
 AddQuantity(name="Normal", unit=1, vector=T)
-#	Inputs: For phasefield evolution
+######DEFINE INPUTS######
+# Inputs: Fluid Properties
+AddSetting(name="tau_l", comment='relaxation time (low density fluid)')
+AddSetting(name="tau_h", comment='relaxation time (high density fluid)')
+AddSetting(name="Viscosity_l", tau_l='(3*Viscosity_l)', default=0.16666666, comment='kinematic viscosity')
+AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comment='kinematic viscosity')
 AddSetting(name="Density_h", default=1, comment='High density')
 AddSetting(name="Density_l", default=1, comment='Low  density')
+AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
+AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
+AddSetting(name="VelocityZ", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
+AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
+AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX')
+AddSetting(name="GravitationY", default=0.0, comment='applied (rho)*GravitationY')
+AddSetting(name="GravitationZ", default=0.0, comment='applied (rho)*GravitationZ')
+AddSetting(name="BuoyancyX", default=0.0, comment='applied (rho_h-rho)*BuoyancyX')
+AddSetting(name="BuoyancyY", default=0.0, comment='applied (rho_h-rho)*BuoyancyY')
+AddSetting(name="BuoyancyZ", default=0.0, comment='applied (rho_h-rho)*BuoyancyZ')
+# Inputs: Interface Properties
 AddSetting(name="PhaseField_h", default=1, comment='PhaseField in Liquid')
 AddSetting(name="PhaseField_l", default=0, comment='PhaseField gas')
 AddSetting(name="PhaseField", default=1, comment='Initial PhaseField distribution', zonal=T)
@@ -109,11 +108,10 @@ AddSetting(name="IntWidth", default=5, comment='Anti-diffusivity coeff')
 AddSetting(name="omega_phi", comment='one over relaxation time (phase field)')
 AddSetting(name="M", omega_phi='1.0/(3*M+0.5)', default=0.02, comment='Mobility')
 AddSetting(name="sigma", default=1e-5, comment='surface tension')
-
+# Inputs: Three point interface Properties
 AddSetting(name="ContactAngle", radAngle='ContactAngle*3.1415926535897/180', default=90, comment='Contact angle in degrees', zonal=T)
 AddSetting(name="radAngle", comment='Conversion to rads for calcs')
-
-#Domain initialisation (pre-defined set-ups)
+# Inputs: Domain initialisation
 AddSetting(name="RTI_Characteristic_Length", default=-999, comment='Use for RTI instability')
 
 AddSetting(name="Radius", default="0.0", comment='Diffuse Sphere Radius')
@@ -126,23 +124,6 @@ AddSetting(name="DonutTime", default="0.0", comment='Radius of a Torus - initial
 AddSetting(name="Donut_h",   default="0.0", comment='Half donut thickness, i.e. the radius of the cross-section')
 AddSetting(name="Donut_D",   default="0.0", comment='Dilation factor along the x-axis')
 AddSetting(name="Donut_x0",  default="0.0", comment='Position along x-axis')
-
-# 	Inputs: Fluid Properties
-AddSetting(name="tau_l", comment='relaxation time (low density fluid)')
-AddSetting(name="tau_h", comment='relaxation time (high density fluid)')
-AddSetting(name="Viscosity_l", tau_l='(3*Viscosity_l)', default=0.16666666, comment='kinematic viscosity')
-AddSetting(name="Viscosity_h", tau_h='(3*Viscosity_h)', default=0.16666666, comment='kinematic viscosity')
-#	Inputs: Flow Properties
-AddSetting(name="VelocityX", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
-AddSetting(name="VelocityY", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
-AddSetting(name="VelocityZ", default=0.0, comment='inlet/outlet/init velocity', zonal=T)
-AddSetting(name="Pressure" , default=0.0, comment='inlet/outlet/init density', zonal=T)
-AddSetting(name="GravitationX", default=0.0, comment='applied (rho)*GravitationX')
-AddSetting(name="GravitationY", default=0.0, comment='applied (rho)*GravitationY')
-AddSetting(name="GravitationZ", default=0.0, comment='applied (rho)*GravitationZ')
-AddSetting(name="BuoyancyX", default=0.0, comment='applied (rho_h-rho)*BuoyancyX')
-AddSetting(name="BuoyancyY", default=0.0, comment='applied (rho_h-rho)*BuoyancyY')
-AddSetting(name="BuoyancyZ", default=0.0, comment='applied (rho_h-rho)*BuoyancyZ')
 
 # Velocity Tracking on Centerline:
 #AddSetting(name="xyzTrack", default=1,comment='x<-1, y<-2, z<-3')
