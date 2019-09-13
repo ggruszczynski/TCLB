@@ -40,7 +40,6 @@
 //
 <?R
     g=PV(DensityAll$name[DensityAll$group=="g"])
-    wg = PV(paste0("wg[",1:27-1,"]"))
 # Extracting velocity set
     U = as.matrix(DensityAll[DensityAll$group=="g",c("dx","dy","dz")])
     u = PV(c("U","V","W"))
@@ -404,21 +403,6 @@ CudaDeviceFunction real_t calcMu(real_t C){
 	return mu;
 }
 
-/*CudaDeviceFunction real_t calcGamma(int i, real_t u, real_t v, real_t w, real_t u2mag){
-	real_t gamma, tmp;
-	tmp = (d3q27_ex[i]*u+d3q27_ey[i]*v+d3q27_ez[i]*w);
-
-	gamma = wg[i] * (1 + 3.0*(tmp) + 4.5*(tmp*tmp) - 1.5*(u2mag)) ;
-	return gamma;
-}
-
-CudaDeviceFunction real_t calcF_phi(int i, real_t tmp1, real_t nx, real_t ny, real_t nz){
-	real_t f_phi;
-
-	f_phi = wh[i] * tmp1 * (d3q27_ex[i]*nx + d3q27_ey[i]*ny + d3q27_ez[i]*nz);
-	return f_phi;
-}*/
-
 //	INITIALISATION:
 CudaDeviceFunction void Init() {
 	PhaseF = PhaseField;
@@ -462,14 +446,7 @@ CudaDeviceFunction void Init_wallNorm(){
 			    C(solid, pf)
 			    C(myN,t(U) %*% (solid * myWeighting) * (-1/3))
 			?>
-			/*for (i=0;i<27;i++){
-				myNorm[0] += wg[i] * solidFlag[i] * d3q27_ex[i];
-				myNorm[1] += wg[i] * solidFlag[i] * d3q27_ey[i];
-				myNorm[2] += wg[i] * solidFlag[i] * d3q27_ez[i];
 			
-			}
-			myNorm[0] *= -1.0/3.0;myNorm[1] *= -1.0/3.0;myNorm[2] *= -1.0/3.0;
-			*/
 			tmp = myNorm[0]*myNorm[0] + myNorm[1]*myNorm[1] + myNorm[2]*myNorm[2];
 			
 			// Calculate the closest discrete direction for normal:
@@ -505,9 +482,7 @@ CudaDeviceFunction void Init_distributions(){
 	vector_t gradPhi = calcGradPhi();
 	magnPhi = sqrt(gradPhi.x*gradPhi.x + gradPhi.y*gradPhi.y + gradPhi.z*gradPhi.z + 1e-32);
 
-	nx = gradPhi.x/magnPhi;
-	ny = gradPhi.y/magnPhi;
-	nz = gradPhi.z/magnPhi;
+	nx = gradPhi.x/magnPhi; ny = gradPhi.y/magnPhi; nz = gradPhi.z/magnPhi;
 
 // Define Equilibrium, then initialise all da things
 	U = VelocityX;	V = VelocityY;	W = VelocityZ;
@@ -518,34 +493,14 @@ CudaDeviceFunction void Init_distributions(){
 	<?R
 		tmp1 = PV("tmp1")
 		my_n = PV(c("nx","ny","nz"))
-
 # Determine heq:
 		C(gamma, EQ_h$feq)   #Determine Gamma, Fakhari et al. PRE 96 (2017) eq.10
 		C(Fphi, myWeighting * tmp1 * ( my_n %*% t(U) )) #Determine Fphi, Fakhari et al. PRE 96 (2017) eq.7
 		C(h, phase * gamma - 0.5 * Fphi)
-
 # Determine geq:
 		press = PV("Pressure")
 		C(g, press*myWeighting + (gamma-myWeighting) )
 	?>	
-
-//	for (i=0; i< 27; i++){
-//		Gamma[i] = calcGamma(i, U, V, W, mag);
-//		if (i < 15) F_phi[i] = calcF_phi(i, tmp1, nx, ny, nz);
-//	}
-
-<?R
-#	C(h, myWeighting * phase * gamma - 0.5 * Fphi)
-#	C(h, w_h * phase * gamma )
-?>
-	
-// ##### geq
-<?R
-#	w_g = PV(c(paste("wg[",1:27-1,"]",sep="")))
-#	press = PV("Pressure")
-#	C(g, press*w_g + (gammag-w_g) )
-?>
-
 	PhaseF = <?R C(sum(h)) ?>;
 #ifdef OPTIONS_OutFlow
         if ((NodeType & NODE_BOUNDARY) == NODE_EConvect){
@@ -555,8 +510,6 @@ CudaDeviceFunction void Init_distributions(){
         }
 #endif
 }
-
-
 
 //	ITERATION:
 CudaDeviceFunction void Run() {
@@ -580,12 +533,9 @@ CudaDeviceFunction void Run() {
 #endif
 }
 
-
 #ifndef OPTIONS_BGK
 CudaDeviceFunction void CollisionMRT(){
-
 	PhaseF = PhaseF(0,0,0);
-	
 	int i, j;
 	real_t C = PhaseF(0,0,0), mu;
 	real_t tau, DynVisc, rho, p;			// Macroscopic Properties
@@ -632,14 +582,8 @@ CudaDeviceFunction void CollisionMRT(){
 	} else if (C > PhaseField_h) {
 		tau = tau_h + 0.5;
 	} else {
-	// Inverse update:
-		//tau = (C - PhaseField_l)/(PhaseField_h - PhaseField_l) * (1.0/tau_h - 1.0/tau_l) + 1.0/tau_l;
-		//tau = 1.0/tau + 0.5;
 	// Linear update:
 		tau = 0.5 + tau_l + (C-PhaseField_l)*(tau_h - tau_l)/(PhaseField_h - PhaseField_l);
-	// Viscosity update:
-		//DynVisc = Density_l*Viscosity_l + C * (Density_h*Viscosity_h - Density_l*Viscosity_l);
-		//tau = 3.0 * DynVisc / rho + 0.5;
 	}
 
 // GRADIENTS AND NORMALS
@@ -691,9 +635,8 @@ for (j=0;j<2;j++) {
 	tmp1 = (1.0 - 4.0*(C - 0.5)*(C - 0.5))/IntWidth;
 <?R
 	C(heq, EQ_h$feq * PV("C"))
+
 	n = PV("n",c("x","y","z"))
-#	EQ_h = MRT_eq(U[1:15,],PV(1),PV(c(0,0,0)))
-#	wh = c(rep(16/72,1),rep(8/72,6),rep(1/72,8))    #EQ_h$feq
 if (Options$RT) {
 	u_old = PV(c("u_old[0]","u_old[1]","u_old[2]"))
 	pf_old= PV("PhaseF_old")
@@ -712,6 +655,11 @@ if (Options$RT) {
 	C(m, m0 - (m0 - EQ$Req + mF*0.5)[selR] * Omega + mF)
 	C(g, invM %*% m)
 ?>
+	global_trackers( C );
+}
+#endif
+
+CudaDeviceFunction void global_trackers( real_t C ){
 // Locate the front of the bubble
 real_t location_X;
 if (C < 0.5 && PhaseF(1,0,0) > 0.5)
@@ -719,7 +667,6 @@ if (C < 0.5 && PhaseF(1,0,0) > 0.5)
 	location_X = X + (C-0.5)/(C-PhaseF(1,0,0));
 	AddToBubbleFront( location_X );
 }
-
 // 09.09.2019 - Comment out of unnecessary globals
 /*	switch (NodeType & NODE_ADDITIONALS) {
 		real_t location;
@@ -813,8 +760,8 @@ if (C < 0.5 && PhaseF(1,0,0) > 0.5)
 				AddToRTIBubble(location);
 			}
 	}*/
+
 }
-#endif
 
 //	BOUNDARY CONDITIONS:
 #ifdef OPTIONS_OutFlow
@@ -984,31 +931,6 @@ CudaDeviceFunction void BounceBack()
 {
 {<?R FullBounceBack(group='g') ?>}
 {<?R FullBounceBack(group='h') ?>}
-/*	real_t tmp;
-        tmp = g0; g0 = g0; g0 = tmp;
-        tmp = g1; g1 = g2; g2 = tmp;
-        tmp = g3; g3 = g4; g4 = tmp;
-        tmp = g5; g5 = g6; g6 = tmp;
-        tmp = g7; g7 = g14; g14 = tmp;
-        tmp = g8; g8 = g13; g13 = tmp;
-        tmp = g9; g9 = g12; g12 = tmp;
-        tmp = g10; g10 = g11; g11 = tmp;
-        tmp = g15; g15 = g18; g18 = tmp;
-        tmp = g16; g16 = g17; g17 = tmp;
-        tmp = g19; g19 = g22; g22 = tmp;
-        tmp = g20; g20 = g21; g21 = tmp;
-        tmp = g23; g23 = g26; g26 = tmp;
-        tmp = g24; g24 = g25; g25 = tmp;
-
-        tmp = h0; h0 = h0; h0 = tmp;
-        tmp = h1; h1 = h2; h2 = tmp;
-        tmp = h3; h3 = h4; h4 = tmp;
-        tmp = h5; h5 = h6; h6 = tmp;
-        tmp = h7; h7 = h14; h14 = tmp;
-        tmp = h8; h8 = h13; h13 = tmp;
-        tmp = h9; h9 = h12; h12 = tmp;
-        tmp = h10; h10 = h11; h11 = tmp;
-*/
 }
 
 CudaDeviceFunction vector_t getA(){
@@ -1080,13 +1002,8 @@ for (j=0;j<2;j++) {
 		C(gamma, EQ$feq) 
 		p = PV("p")
 		C(geq, myWeighting * p + gamma - myWeighting)
-		?>
-	//for (i=0; i< 27; i++){
-		//Gamma[i] = calcGamma(i, U, V, W, mag);
-	//	geq[i] = wg[i]*p + Gamma[i] - wg[i];
-	//}
-
-<?R 	C( geq, g - geq ) ?>
+ 		C( geq, g - geq ) 
+	?>
 		// Stress/strain Tensor
 	for (i=0; i< 6 ; i++)
 	{
@@ -1119,8 +1036,6 @@ for (j=0;j<2;j++) {
 <?R
 	C(heq, EQ_h$feq * PV("C"))
 	n = PV("n",c("x","y","z"))
-#	EQ_h = MRT_eq(U[1:15,],PV(1),PV(c(0,0,0)))
-#	wh = c(rep(16/72,1),rep(8/72,6),rep(1/72,8))    #EQ_h$feq
 if (Options$RT) {
 	u_old = PV(c("u_old[0]","u_old[1]","u_old[2]"))
 	pf_old= PV("PhaseF_old")
@@ -1132,16 +1047,7 @@ if (Options$RT) {
 # 	SRT Relaxation for h
 	C(h, h - omega * (h - heq + 0.5*Fphi) + Fphi)
 ?>
-//	for (i=0; i< 15; i++){
-//		F_phi[i] = calcF_phi(i, tmp1, nx, ny, nz); 		// Forcing Terms
-//		heq[i] = C * Gamma[i];      	// heq
-//	}
-<?R#	C(h, h - omega * ( h - w_h*heq + 0.5*Fphi) + Fphi) ?>
 
-// PRESSURE EVOLUTION UPDATE:
-//	for (i=0; i< 27; i++) {
-//		F_i[i] = 3.0*wg[i] * (F_total[0]*d3q27_ex[i] + F_total[1]*d3q27_ey[i] + F_total[2]*d3q27_ez[i])/rho;
-//	}
 real_t omega_g = 1.0/tau;
 <?R
 	F_tot = PV(c("F_total[0]","F_total[1]",	"F_total[2]"))	
