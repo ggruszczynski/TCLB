@@ -139,6 +139,9 @@ AddNodeType("Smoothing",group="ADDITIONALS")
 AddNodeType(name="MovingWall_N", group="BOUNDARY")
 AddNodeType(name="MovingWall_S", group="BOUNDARY")
 AddNodeType(name="NVelocity", group="BOUNDARY")
+if (Options$CM){
+AddNodeType(name="CM", group="COLLISION")
+}
 if (Options$OutFlow){
 AddNodeType(name="ENeumann", group="BOUNDARY")
 AddNodeType(name="EConvect", group="BOUNDARY")
@@ -164,4 +167,6 @@ AddGlobal(name="GasTotalVelocityX", comment='use to determine avg velocity of bu
 AddGlobal(name="GasTotalVelocityY", comment='use to determine avg velocity of bubbles', unit="m/s")
 AddGlobal(name="GasTotalVelocityZ", comment='use to determine avg velocity of bubbles', unit="m/s")
 AddGlobal(name="GasCells",	   comment='use in line with GasTotalVelocity to determine average velocity', unit="1")
-
+AddGlobal(name="CoM_X", comment='Centre of mass in X')
+AddGlobal(name="CoM_Y", comment='Centre of mass in Y')
+AddGlobal(name="CoM_Z", comment='Centre of mass in Z')
