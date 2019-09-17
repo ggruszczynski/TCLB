@@ -1,6 +1,6 @@
 ADJOINT=0
 TEST=FALSE
-OPT="(OutFlow+BGK+CM+RT)*autosym"
+OPT="(OutFlow+BGK+CM+RT+filter)*autosym"
 # OutFlow: convective and neumann BC for east facing in x plane are 
 # 	   implemented, but require additional memory access so 
 # 	   are left as an option.

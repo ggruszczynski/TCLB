@@ -54,6 +54,12 @@ if (Options$RT){
 	AddDensity(name="PhaseF_old",dx=0, dy=0, dz=0, group="PF")
 }
 
+if (Options$filter){
+	AddField( name="U", stencil3d=1 ) 
+	AddField( name="V", stencil3d=1 ) 
+	AddField( name="W", stencil3d=1 ) 
+}
+
 ######DEFINE STAGES and ACTIONS######
 # Stages - processes to run for initialisation and each iteration
 AddStage("PhaseInit" , "Init", save=Fields$name=="PhaseF")

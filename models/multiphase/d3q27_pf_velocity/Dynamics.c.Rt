@@ -575,7 +575,7 @@ CudaDeviceFunction void CollisionMRT(){
 	    AddToCoM_Y( Y );
 	    AddToCoM_Z( Z );
 	}
-	
+
 	real_t m0[27];
 <?R
 	m0 = PV("m0[",1:27-1,"]")
@@ -595,6 +595,37 @@ CudaDeviceFunction void CollisionMRT(){
 	// Linear update:
 		tau = 0.5 + tau_l + (C-PhaseField_l)*(tau_h - tau_l)/(PhaseField_h - PhaseField_l);
 	}
+#ifdef OPTIONS_filter
+	real_t Peclet, umag;
+	vector_t Fa = {0.0, 0.0, 0.0};
+	
+	umag = U*U + V*V + W*W;
+	// Apply filter similar to Sitompul et al (2019) cumulant violant two-phase flows
+	if ( umag / ( (tau-0.5)/3.0 ) > 1 ) {
+		real_t u_filter[6];
+		u_filter[0] = 0.5*(U(0,0,0) + U(1,0,0) ); 
+		u_filter[1] = 0.5*(U(0,0,0) + U(-1,0,0)); 
+		u_filter[2] = 0.5*(U(0,0,0) + U(0,1,0) ); 
+		u_filter[3] = 0.5*(U(0,0,0) + U(0,-1,0)); 
+		u_filter[4] = 0.5*(U(0,0,0) + U(0,0,1) ); 
+		u_filter[5] = 0.5*(U(0,0,0) + U(0,0,-1)); 
+		Fa.x = 0.5*rho *( 
+			  u_filter[0] * ( U(1,0,0) - U(0,0,0) ) - u_filter[1] * ( U(0,0,0) - U(-1,0,0) )
+			+ u_filter[2] * ( U(0,1,0) - U(0,0,0) ) - u_filter[3] * ( U(0,0,0) - U(0,-1,0) )
+			+ u_filter[4] * ( U(0,0,1) - U(0,0,0) ) - u_filter[5] * ( U(0,0,0) - U(0,0,-1) )
+			);
+		Fa.y = 0.5*rho *( 
+			  u_filter[0] * ( V(1,0,0) - V(0,0,0) ) - u_filter[1] * ( V(0,0,0) - V(-1,0,0) )
+			+ u_filter[2] * ( V(0,1,0) - V(0,0,0) ) - u_filter[3] * ( V(0,0,0) - V(0,-1,0) )
+			+ u_filter[4] * ( V(0,0,1) - V(0,0,0) ) - u_filter[5] * ( V(0,0,0) - V(0,0,-1) )
+			);
+		Fa.z = 0.5*rho *( 
+			  u_filter[0] * ( W(1,0,0) - W(0,0,0) ) - u_filter[1] * ( W(0,0,0) - W(-1,0,0) )
+			+ u_filter[2] * ( W(0,1,0) - W(0,0,0) ) - u_filter[3] * ( W(0,0,0) - W(0,-1,0) )
+			+ u_filter[4] * ( W(0,0,1) - W(0,0,0) ) - u_filter[5] * ( W(0,0,0) - W(0,0,-1) )
+			);
+	} 
+#endif
 
 // GRADIENTS AND NORMALS
 	gradPhi = calcGradPhi();
@@ -638,6 +669,12 @@ for (j=0;j<2;j++) {
 	F_total[0] = mu*gradPhi.x + F_pressure[0] + F_body[0] + F_mu[0];
 	F_total[1] = mu*gradPhi.y + F_pressure[1] + F_body[1] + F_mu[1];
 	F_total[2] = mu*gradPhi.z + F_pressure[2] + F_body[2] + F_mu[2];
+
+#ifdef OPTIONS_filter
+	F_total[0] += Fa.x;
+	F_total[1] += Fa.y;
+	F_total[2] += Fa.z;
+#endif
 
 <?R 	C( u, m0[2:4] + 0.5 * F_total * rho.inv) ?>
 }
