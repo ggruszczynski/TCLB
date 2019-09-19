@@ -58,6 +58,8 @@ if (Options$filter){
 	AddField( name="U", stencil3d=1 ) 
 	AddField( name="V", stencil3d=1 ) 
 	AddField( name="W", stencil3d=1 ) 
+	AddDensity( name="pressure", dx=0, dy=0, dz=0, group="Vel")
+	AddField( name="pressure", stencil3d=1, group="Vel" )
 }
 
 ######DEFINE STAGES and ACTIONS######

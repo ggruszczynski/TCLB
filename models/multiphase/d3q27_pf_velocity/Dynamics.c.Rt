@@ -314,7 +314,9 @@ CudaDeviceFunction void calcPhaseF(){
 	PhaseF_old = PhaseF(0,0,0);
 #endif
 	PhaseF = <?R C(sum(h))?>;
-
+#ifdef OPTIONS_filter
+	pressure = <?R C(sum(g)) ?>;
+#endif
 }
 
 CudaDeviceFunction void calcWallPhase(){
@@ -502,6 +504,9 @@ CudaDeviceFunction void Init_distributions(){
 		C(g, press*myWeighting + (gamma-myWeighting) )
 	?>	
 	PhaseF = <?R C(sum(h)) ?>;
+#ifdef OPTIONS_filter
+	pressure = <?R C(sum(g)) ?>;
+#endif
 #ifdef OPTIONS_OutFlow
         if ((NodeType & NODE_BOUNDARY) == NODE_EConvect){
                 <?R if (Options$OutFlow){
@@ -585,7 +590,7 @@ CudaDeviceFunction void CollisionMRT(){
 	rho.inv = rho ^ (-1)
 ?>
 	p = m0[0];
-
+	
 // Update tau:
 	if ( C < PhaseField_l){
 		tau = tau_l + 0.5;
@@ -610,21 +615,32 @@ CudaDeviceFunction void CollisionMRT(){
 		u_filter[4] = 0.5*(U(0,0,0) + U(0,0,1) ); 
 		u_filter[5] = 0.5*(U(0,0,0) + U(0,0,-1)); 
 		Fa.x = 0.5*rho *( 
-			  u_filter[0] * ( U(1,0,0) - U(0,0,0) ) - u_filter[1] * ( U(0,0,0) - U(-1,0,0) )
-			+ u_filter[2] * ( U(0,1,0) - U(0,0,0) ) - u_filter[3] * ( U(0,0,0) - U(0,-1,0) )
-			+ u_filter[4] * ( U(0,0,1) - U(0,0,0) ) - u_filter[5] * ( U(0,0,0) - U(0,0,-1) )
+			  u_filter[0] * ( U(0,0,0) - U(-1,0,0) ) - u_filter[1] * ( U(0,0,0) - U(1,0,0) )
+			+ u_filter[2] * ( U(0,0,0) - U(0,-1,0) ) - u_filter[3] * ( U(0,0,0) - U(0,1,0) )
+			+ u_filter[4] * ( U(0,0,0) - U(0,0,-1) ) - u_filter[5] * ( U(0,0,0) - U(0,0,1) )
 			);
 		Fa.y = 0.5*rho *( 
-			  u_filter[0] * ( V(1,0,0) - V(0,0,0) ) - u_filter[1] * ( V(0,0,0) - V(-1,0,0) )
-			+ u_filter[2] * ( V(0,1,0) - V(0,0,0) ) - u_filter[3] * ( V(0,0,0) - V(0,-1,0) )
-			+ u_filter[4] * ( V(0,0,1) - V(0,0,0) ) - u_filter[5] * ( V(0,0,0) - V(0,0,-1) )
+			  u_filter[0] * ( V(0,0,0) - V(-1,0,0) ) - u_filter[1] * ( V(0,0,0) - V(1,0,0) )
+			+ u_filter[2] * ( V(0,0,0) - V(0,-1,0) ) - u_filter[3] * ( V(0,0,0) - V(0,1,0) )
+			+ u_filter[4] * ( V(0,0,0) - V(0,0,-1) ) - u_filter[5] * ( V(0,0,0) - V(0,0,1) )
 			);
 		Fa.z = 0.5*rho *( 
-			  u_filter[0] * ( W(1,0,0) - W(0,0,0) ) - u_filter[1] * ( W(0,0,0) - W(-1,0,0) )
-			+ u_filter[2] * ( W(0,1,0) - W(0,0,0) ) - u_filter[3] * ( W(0,0,0) - W(0,-1,0) )
-			+ u_filter[4] * ( W(0,0,1) - W(0,0,0) ) - u_filter[5] * ( W(0,0,0) - W(0,0,-1) )
+			  u_filter[0] * ( W(0,0,0) - W(-1,0,0) ) - u_filter[1] * ( W(0,0,0) - W(1,0,0) )
+			+ u_filter[2] * ( W(0,0,0) - W(0,-1,0) ) - u_filter[3] * ( W(0,0,0) - W(0,1,0) )
+			+ u_filter[4] * ( W(0,0,0) - W(0,0,-1) ) - u_filter[5] * ( W(0,0,0) - W(0,0,1) )
 			);
 	} 
+
+	p = (1.0/216.0) * ( 64.0*pressure(0,0,0) +
+	                    16.0*(pressure(1,0,0) + pressure(-1,0,0)
+			         +pressure(0,1,0) + pressure(0,-1,0)
+				 +pressure(0,0,1) + pressure(0,0,-1)) +
+			     4.0*(pressure(1,1,0) + pressure(-1,1,0) + pressure(1,-1,0) + pressure(-1,-1,0)
+				 +pressure(1,0,1) + pressure(-1,0,1) + pressure(1,0,-1) + pressure(-1,0,-1)
+				 +pressure(0,1,1) + pressure(0,-1,1) + pressure(0,1,-1) + pressure(0,-1,-1)) + 
+			     1.0*(pressure(1,1,1) + pressure(-1,1,1) + pressure(1,-1,1) + pressure(-1,-1,1)
+				 +pressure(1,1,-1) + pressure(-1,1,-1) + pressure(1,-1,-1) + pressure(-1,-1,-1))
+			  );
 #endif
 
 // GRADIENTS AND NORMALS
