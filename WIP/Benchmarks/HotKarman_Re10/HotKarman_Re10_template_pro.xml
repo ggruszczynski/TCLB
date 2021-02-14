@@ -1,5 +1,4 @@
 
-
 <?R
 
 library(MASS)  # lib which converts decimal -> fraction
@@ -208,7 +207,7 @@ Benchmark against FEM
     }
     ?>  
     <!-- <Stop HeatFluxX2Change="1e-11" Times="5" Iterations="20000"/> -->
-    <Solve Iterations="<?%d 1500000*sizer ?>"> 
+    <Solve Iterations="<?%d 2000000*sizer ?>"> 
         <VTK Iterations="100000" what="H,T,U,Rho"/> 
         <!-- <Average Iterations="50000"/> -->
         <Log Iterations="1000"/>
