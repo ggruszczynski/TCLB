@@ -1,14 +1,4 @@
-<<<<<<< HEAD
-CudneLB - the templated version
-===
-- [![Build Status](https://travis-ci.org/CFD-GO/TCLB.svg?branch=develop)](https://travis-ci.org/CFD-GO/TCLB) [![codecov](https://codecov.io/gh/CFD-GO/TCLB/branch/master/graph/badge.svg)](https://codecov.io/gh/CFD-GO/TCLB) [![documentation](https://raw.githubusercontent.com/CFD-GO/documents/master/assets/documentation.svg?sanitize=true)](https://docs.tclb.io/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3672102.svg)](https://doi.org/10.5281/zenodo.3672102) - Stable release [(`master` branch)](https://github.com/CFD-GO/TCLB/tree/master)
-- [![Build Status](https://travis-ci.org/CFD-GO/TCLB.svg?branch=develop)](https://travis-ci.org/CFD-GO/TCLB) [![codecov](https://codecov.io/gh/CFD-GO/TCLB/branch/develop/graph/badge.svg)](https://codecov.io/gh/CFD-GO/TCLB) [![documentation](https://raw.githubusercontent.com/CFD-GO/documents/master/assets/documentation.svg?sanitize=true)](https://develop.docs.tclb.io/) - Current release [(`develop` branch)](https://github.com/CFD-GO/TCLB/tree/develop)
-
-
-CudneLB is a MPI+CUDA or MPI+CPU high-performance CFD simulation code, based on Lattice Boltzmann Method.
-=======
 ![TCLB Solver Header](https://raw.githubusercontent.com/CFD-GO/documents/master/assets/header.png)
->>>>>>> develop
 
 TCLB Solver [![ZENADO DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3550331.svg)](https://doi.org/10.5281/zenodo.3550331) [![Article](https://zenodo.org/badge/DOI/10.1016/j.camwa.2015.12.043.svg)](https://doi.org/10.1016/j.camwa.2015.12.043)
 ===
