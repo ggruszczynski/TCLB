@@ -35,9 +35,11 @@ AddGlobal(name="NoOfSuspected",       comment='Number of Suspected individuals',
 AddGlobal(name="NoOfInfected",        comment='Number of Infected individuals',  unit="1.")
 AddGlobal(name="NoOfRecovered",       comment='Number of Recovered individuals', unit="1.")
 
-#	Boundary things:
+#	Boundary things:,
+AddNodeType(name="Wall",	        group="BOUNDARY")
 AddNodeType(name="DirichletEQ",     group="BOUNDARY")
 AddNodeType(name="ImageReader",     group="IMAGE") 
+AddNodeType(name="MRT",	            group="COLLISION")
 AddNodeType(name="CROSSMRT",	    group="COLLISION")
 AddNodeType(name="CROSSMRT_FOI",	group="COLLISION")
 

@@ -8,8 +8,10 @@ DIRNAME=$1
 TCLB_PATH="~/GITHUB/TCLB/CLB"
 # MODEL="d2q9_LEM_M"
 # MODEL="d3q27q7_cm_cht_OutFlowNeumann_IBB"
-MODEL="d3q27q27_cm_cht"
+# MODEL="d3q27q27_cm_cht"
 # MODEL="d3q27q7_cm_cht"
+# MODEL="d2q9_diff2_idub"
+MODEL="d2q9_diffusion_fields"
 
 
 if test -d $DIRNAME
