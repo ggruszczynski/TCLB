@@ -31,13 +31,13 @@ CudaDeviceFunction real_t getPhaseField() {
 	return (<?R C(sum(f)) ?>) + getQ() / 2.;
 }
 
-
 CudaDeviceFunction real_t getQ() 
 {	
 	real_t tilde_phi = f000 + f010 + f020 + f100 + f110 + f120 + f200 + f210 + f220;
 	real_t Q;
 	real_t phi;
 	#ifdef OPTIONS_AllenCahn
+	//=== THIS IS AUTOMATICALLY GENERATED CODE ===
 		const real_t dt = 1.;
 		
 		const real_t  x0 = cbrt(3.) ; 
@@ -47,52 +47,19 @@ CudaDeviceFunction real_t getQ()
 		phi = -1.0/3.0*x0*(x0*x1*x2 + pow(x3, 2))/x3 ;  
 		
 		Q = lambda*phi*(1 - pow(phi, 2));
-		// Q = lambda*tilde_phi*(1 - pow(tilde_phi, 2)) ; // approximate (naive implementation)
+		// Q = lambda*tilde_phi*(1 - pow(tilde_phi, 2)) ; // approximate (naive, first order implementation)
 	#elif OPTIONS_ExpotentialDecay
 		// https://en.wikipedia.org/wiki/Exponential_decay
 		phi = 2.*tilde_phi/(2.0+lambda);
 		Q = -lambda*phi;
-	#elif OPTIONS_FisherKPP
-		// https://en.wikipedia.org/wiki/Fisher%27s_equation
-		Q=0;
 	#endif
 	
 	return Q; 
 }
 
 
-
-
-
-
-
 // ------------------------ END OF PARAVIEW OUTPUT BLOCK ------------------------
 
-
-// future
-// CudaDeviceFunction real_t getRandomCPU() {
-// 	real_t x = real_t(rand()) / real_t(RAND_MAX);  // x is from 0 to 1
-// 	x = 2.*x -1.;  // x is from -1 to 1
-// 	return x;
-// }
-
-// https://gist.github.com/NicholasShatokhin/3769635
-// CudaDeviceFunction real_t getRandom() {
-//   /* CUDAs random number library uses curandState_t to keep track of the seed value
-//      we will store a random state for every thread  */
-// 	 curandState_t state;
-
-// 	 /* we have to initialize the state */
-// 	 curand_init(0, /* the seed controls the sequence of random values that are produced */
-// 				 0, /* the sequence number is only important with multiple cores */
-// 				 0, /* the offset is how much extra we advance in the sequence for each call, can be 0 */
-// 				 &state);
-   
-// 	 /* curand works like rand - except that it takes a state as a parameter */
-// 	 real_t result = curand(&state) % MAX;
-
-// 	 return result;
-// }
 
 CudaDeviceFunction void RunBoundaries(vector_t u)
 {	
@@ -133,8 +100,6 @@ CudaDeviceFunction real_t CalcInit_pf_tilde(real_t ipfe)
 	#elif OPTIONS_ExpotentialDecay
 		real_t phi = 2.*ipfe/(2.0+lambda);
 		Q = -lambda*phi;
-	#elif OPTIONS_FisherKPP
-		Q = 0;
 	#endif
 
 	real_t pf_tilde  = ipfe - Q/2.;
@@ -163,7 +128,6 @@ CudaDeviceFunction void Init() {
 	real_t pf_tilde = CalcInit_pf_tilde(ipfe);
 	phaseField_tilde = pf_tilde;
 		
-	//phaseField_tilde = getRandom();
 	Init_eq(phaseField_tilde,u);
 }
 

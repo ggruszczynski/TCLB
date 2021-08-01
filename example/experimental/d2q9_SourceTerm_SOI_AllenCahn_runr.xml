@@ -12,10 +12,11 @@
 		
 		<Param name="lambda" value="0.000250"/>
 
-		<Param name="Init_From_PhaseField_External" value="1" />
+		<Param name="Init_PhaseField" value="1" />
 		<Param name="Init_UX" value="0.0"/>
     	<Param name="Init_UY" value="0.0"/>
     </Model>
+
  	<RunR>
 	 	x = Solver$Geometry$X 
 		y = Solver$Geometry$Y
