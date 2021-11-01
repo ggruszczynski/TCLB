@@ -4,9 +4,8 @@
     By:		T.Mitchell -->
 <CLBConfig version="2.0" output="output/" permissive="true">
 	<Geometry nx="256" ny="1026">
-		<MRT>
-			<Box/>
-		</MRT>
+		<MRT><Box/></MRT>
+		<CM><Box/></CM>
 		<Wall mask="ALL">
 			<Box dy="-1"/>
 		</Wall>

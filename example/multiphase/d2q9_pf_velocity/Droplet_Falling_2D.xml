@@ -17,6 +17,7 @@
 -->
 <Geometry nx="512.000000" ny="1536.000000" >
 	<MRT><Box /></MRT>
+	<!-- <CM><Box/></CM>  -->
 	<Wall mask="ALL">
 	    <Box   ny="1"  />
 	    <Box   dy="-1" />
