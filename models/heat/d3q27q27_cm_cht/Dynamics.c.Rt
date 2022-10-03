@@ -532,7 +532,7 @@ CudaDeviceFunction void ImposeHeatFlux(vector_t n)
 
 }
 
-CudaDeviceFunction void HeaterSource()
+CudaDeviceFunction void HeaterSource_CM(real_t omega_ade)
 {
 	real_t T = InitTemperature;
 	real_t rho = getRho_();
@@ -555,33 +555,33 @@ CudaDeviceFunction void HeaterSource()
 	real_t uz2 = u.z*u.z;
 
 	//back from cm_eq to raw moments
-	real_t temp000 = H;
-	real_t temp100 = H*u.x;
-	real_t temp010 = H*u.y;
-	real_t temp001 = H*u.z;
-	real_t temp110 = H*uxuy;
-	real_t temp101 = H*uxuz;
-	real_t temp011 = H*uyuz;
-	real_t temp200 = H*(Sigma2 + ux2);
-	real_t temp020 = H*(Sigma2 + uy2);
-	real_t temp002 = H*(Sigma2 + uz2);
-	real_t temp120 = H*u.x*(Sigma2 + uy2);
-	real_t temp102 = H*u.x*(Sigma2 + uz2);
-	real_t temp210 = H*u.y*(Sigma2 + ux2);
-	real_t temp201 = H*u.z*(Sigma2 + ux2);
-	real_t temp012 = H*u.y*(Sigma2 + uz2);
-	real_t temp021 = H*u.z*(Sigma2 + uy2);
-	real_t temp111 = H*uxuy*u.z;
-	real_t temp220 = H*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
-	real_t temp202 = H*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uz2 + ux2*uz2);
-	real_t temp022 = H*(Sigma2*Sigma2 + Sigma2*uy2 + Sigma2*uz2 + uy2*uz2);
-	real_t temp211 = H*uyuz*(Sigma2 + ux2);
-	real_t temp121 = H*uxuz*(Sigma2 + uy2);
-	real_t temp112 = H*uxuy*(Sigma2 + uz2);
-	real_t temp122 = H*u.x*(Sigma2*Sigma2 + Sigma2*uy2 + Sigma2*uz2 + uy2*uz2);
-	real_t temp212 = H*u.y*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uz2 + ux2*uz2);
-	real_t temp221 = H*u.z*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
-	real_t temp222 = H*(Sigma2*Sigma2*Sigma2 + Sigma2*Sigma2*ux2 + Sigma2*Sigma2*uy2 + Sigma2*Sigma2*uz2 + Sigma2*ux2*uy2 + Sigma2*ux2*uz2 + Sigma2*uy2*uz2 + ux2*uy2*uz2);
+	real_t temp000 = (1/2.)*H;
+	real_t temp100 = (1. - omega_ade/2.)*H*u.x;
+	real_t temp010 = (1. - omega_ade/2.)*H*u.y;
+	real_t temp001 = (1. - omega_ade/2.)*H*u.z;
+	real_t temp110 = (1/2.)*H*uxuy;
+	real_t temp101 = (1/2.)*H*uxuz;
+	real_t temp011 = (1/2.)*H*uyuz;
+	real_t temp200 = (1/2.)*H*(Sigma2 + ux2);
+	real_t temp020 = (1/2.)*H*(Sigma2 + uy2);
+	real_t temp002 = (1/2.)*H*(Sigma2 + uz2);
+	real_t temp120 = (1. - omega_ade/2.)*H*u.x*(Sigma2 + uy2);
+	real_t temp102 = (1. - omega_ade/2.)*H*u.x*(Sigma2 + uz2);
+	real_t temp210 = (1. - omega_ade/2.)*H*u.y*(Sigma2 + ux2);
+	real_t temp201 = (1. - omega_ade/2.)*H*u.z*(Sigma2 + ux2);
+	real_t temp012 = (1. - omega_ade/2.)*H*u.y*(Sigma2 + uz2);
+	real_t temp021 = (1. - omega_ade/2.)*H*u.z*(Sigma2 + uy2);
+	real_t temp111 = (1. - omega_ade/2.)*H*uxuy*u.z;
+	real_t temp220 = (1/2.)*H*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
+	real_t temp202 = (1/2.)*H*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uz2 + ux2*uz2);
+	real_t temp022 = (1/2.)*H*(Sigma2*Sigma2 + Sigma2*uy2 + Sigma2*uz2 + uy2*uz2);
+	real_t temp211 = (1/2.)*H*uyuz*(Sigma2 + ux2);
+	real_t temp121 = (1/2.)*H*uxuz*(Sigma2 + uy2);
+	real_t temp112 = (1/2.)*H*uxuy*(Sigma2 + uz2);
+	real_t temp122 = (1. - omega_ade/2.)*H*u.x*(Sigma2*Sigma2 + Sigma2*uy2 + Sigma2*uz2 + uy2*uz2);
+	real_t temp212 = (1. - omega_ade/2.)*H*u.y*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uz2 + ux2*uz2);
+	real_t temp221 = (1. - omega_ade/2.)*H*u.z*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
+	real_t temp222 = (1/2.)*H*(Sigma2*Sigma2*Sigma2 + Sigma2*Sigma2*ux2 + Sigma2*Sigma2*uy2 + Sigma2*Sigma2*uz2 + Sigma2*ux2*uy2 + Sigma2*ux2*uz2 + Sigma2*uy2*uz2 + ux2*uy2*uz2);
 
 	//back to density-probability functions
 	h000 += temp000 - temp002 - temp020 + temp022 - temp200 + temp202 + temp220 - temp222;
@@ -612,6 +612,28 @@ CudaDeviceFunction void HeaterSource()
 	h122 += 1/8.*temp111 - 1/8.*temp112 - 1/8.*temp121 + 1/8.*temp122 + 1/8.*temp211 - 1/8.*temp212 - 1/8.*temp221 + 1/8.*temp222;
 	h222 += -1/8.*temp111 + 1/8.*temp112 + 1/8.*temp121 - 1/8.*temp122 + 1/8.*temp211 - 1/8.*temp212 - 1/8.*temp221 + 1/8.*temp222;
 }
+
+CudaDeviceFunction void HeaterSource_Cumulants()
+{
+	real_t T = InitTemperature;
+	real_t rho = getRho_();
+	vector_t u = getU_();
+
+	real_t H = rho*cp*T;  
+
+	#ifdef OPTIONS_CHT
+		real_t Sigma2 = 1/3.*h_stability_enhancement/(cp*rho);
+	#else
+		real_t Sigma2 = 1/3.;
+	#endif
+
+	<?R
+		cumulants = paste("c",P$x,P$y,P$z,sep="");
+		for (i in cumulants) { ?>
+		real_t <?%s i ?>;
+	<?R } ?>	
+}
+
 
 CudaDeviceFunction void HeatDirichletEquilibriumScheme()
 {
@@ -1043,8 +1065,10 @@ CudaDeviceFunction void RunBoundariesHeat()
 			AddToHeatSource(h2-h1);  
 			break;
 		case NODE_HeaterSource:
-			h1 = <?R C(sum(h)) ?>;   		
-			HeaterSource();
+			h1 = <?R C(sum(h)) ?>; 
+			real_t omega_k = 1.0/(3*conductivity+0.5);  		
+			HeaterSource_CM(omega_k);
+			// HeaterSource_Cumulants(omega_k);
 			h2 = <?R C(sum(h)) ?>;
 			AddToHeatSource(h2-h1);  
 			break;
@@ -1407,12 +1431,13 @@ CudaDeviceFunction void relax_and_collide_ADE_Cumulants(real_t rho, real_t omega
 	// cc = cc - gcor3 * GalileanCorrection;
 
 	//Cumulants relation - heat
+	// h000 = (1-w[0]/2.)*my_heat_source; //
 	c100 = w[0]*u.x + c100 * (1-w[0]);
 	c010 = w[0]*u.y + c010 * (1-w[0]);
 	c001 = w[0]*u.z + c001 * (1-w[0]);
-	c200 =  Sigma2;
-	c020 =  Sigma2;
-	c002 =  Sigma2;
+	c200 = Sigma2;
+	c020 = Sigma2;
+	c002 = Sigma2;
 
 	c110 = 0;
 	c101 = 0;
@@ -2715,12 +2740,11 @@ CudaDeviceFunction vector_t relax_and_collide_hydro(vector_t Force, real_t omega
 	cc = cc - gcor3 * GalileanCorrection;
 
 	//Cumulants relation 
- 	c100 = c100 + Force.x;    //100 - change only due to force term
-
 	c200 = (a + b + cc)/3.;   //200
 	c020 = (cc - 2*a + b)/3.; //020
-	c002 = (cc - 2*b + a)/3.; 
+	c002 = (cc - 2*b + a)/3.; //002
 
+	c100 = c100 + Force.x;    //100 - change only due to force term
 	c010 = c010 + Force.y;    //010 - change only due to force term
 	c001 = c001 + Force.z ;   //001 - change only due to force term
 
