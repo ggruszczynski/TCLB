@@ -16,6 +16,9 @@
       <!-- <EConvective name="Outlet"><Box dx="-1"/></EConvective> -->
       <!-- <EPressure name="Outlet"><Box dx="-1"/></EPressure> -->
 
+        <HeaterSource name="my_ic">
+            <Box dx="37" dy="107" nx="50" ny="50"/>
+        </HeaterSource>
 
 <!-- 
 Second Order BC on cylinder  
@@ -111,7 +114,8 @@ draw cylinder using primitive functions
       <Params CylinderCenterX="135.0" />
       <Params CylinderCenterY="50.0"/> 
       -->
-    
+
+      <Param name="InitTemperature" value="11" zone="my_ic"/>
     </Model>
    
     <Solve Iterations="3"> <VTK Iterations="1"/> </Solve> 
