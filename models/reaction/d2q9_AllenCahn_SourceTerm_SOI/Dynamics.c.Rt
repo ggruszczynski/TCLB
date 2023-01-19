@@ -48,20 +48,27 @@ CudaDeviceFunction real_t getQ()
 	#ifdef OPTIONS_ExpotentialDecay
 		// https://en.wikipedia.org/wiki/Exponential_decay
 		// this is an alternative mode for Q
-		phi = 2.*tilde_phi/(2.0+lambda);
-		Q = -lambda*phi;
+		#ifdef OPTIONS_NaiveQ
+			Q = -lambda*tilde_phi;
+		#else	
+			phi = 2.*tilde_phi/(2.0+lambda);
+			Q = -lambda*phi;
+		#endif
 	#else
-		//=== THIS IS AUTOMATICALLY GENERATED CODE ===
-		const real_t dt = 1.;
-		
-		const real_t  x0 = cbrt(3.) ; 
-		const real_t  x1 = 1/(dt*lambda) ; 
-		const real_t  x2 = dt*lambda - 2 ; 
-		const real_t  x3 = cbrt(-9*tilde_phi*x1 + sqrt(3.)*sqrt((27*pow(tilde_phi, 2) - x1*pow(x2, 3))/(pow(dt, 2)*pow(lambda, 2)))) ; 
-		phi = -1.0/3.0*x0*(x0*x1*x2 + pow(x3, 2))/x3 ;  
-		
-		Q = lambda*phi*(1 - pow(phi, 2));
-		// Q = lambda*tilde_phi*(1 - pow(tilde_phi, 2)) ; // approximate (naive, first order implementation)
+		#ifdef OPTIONS_NaiveQ
+			Q = lambda*tilde_phi*(1 - pow(tilde_phi, 2)) ; // approximate (naive, first order implementation)
+		#else	
+			//=== THIS IS AUTOMATICALLY GENERATED CODE ===
+			const real_t dt = 1.;
+	
+			const real_t  x0 = cbrt(3.) ; 
+			const real_t  x1 = 1/(dt*lambda) ; 
+			const real_t  x2 = dt*lambda - 2 ; 
+			const real_t  x3 = cbrt(-9*tilde_phi*x1 + sqrt(3.)*sqrt((27*pow(tilde_phi, 2) - x1*pow(x2, 3))/(pow(dt, 2)*pow(lambda, 2)))) ; 
+			phi = -1.0/3.0*x0*(x0*x1*x2 + pow(x3, 2))/x3 ;  
+			
+			Q = lambda*phi*(1 - pow(phi, 2));
+		#endif
 	#endif
 	
 	return Q; 
