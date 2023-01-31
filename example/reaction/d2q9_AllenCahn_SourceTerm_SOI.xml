@@ -23,7 +23,7 @@
     <Param name="Init_PhaseField" value="0."/>
     <Param name="Init_PhaseField" value="0.9" zone="up"/>
     <Param name="Init_PhaseField" value="-0.9" zone="down"/>
-    <Param name="Init_UX" value="0.1"/>
+    <Param name="Init_UX" value="0.001"/>
     <Param name="Init_UY" value="0."/>
   </Model>
   <Solve Iterations="10"><VTK Iterations="1"/></Solve>
@@ -42,3 +42,4 @@ There are certain values of magic_parameter that show distinctive properties:
 • magic_parameter 3./16 = 0.1875 results in the boundary wall location implemented via bounce-back for the Poiseuille flow exactly in the middle between horizontal walls and fluid nodes.
 • magic_parameter 1./4 = 0.25 provides the most stable simulations. 
 -->
+
