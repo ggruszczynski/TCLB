@@ -56,12 +56,39 @@ CudaDeviceFunction real_t getQ()
 		#endif
 	#else
 		#ifdef OPTIONS_NaiveQ
-			Q = lambda*tilde_phi*(1 - pow(tilde_phi, 2)) ; // approximate (naive, first order implementation)
+			Q = lambda*tilde_phi*(1 - tilde_phi*tilde_phi); // approximate (naive, first order implementation)
+		#elif OPTIONS_NewtonQ
+			//=== BELOW IS HUMAN CODE ===
+			// lets try Newton's method 
+			// x_(n+1) = x_n - f(x_n)/f'(x_n)
+			// https://en.wikipedia.org/wiki/Newton%27s_method#Slow_convergence_for_roots_of_multiplicity_greater_than_1
+			// https://math.unm.edu/~motamed/Teaching/OLD/Fall20/HPSC/newton.html
+			
+			// tilde_phi(phi) = phi(1-0.5*lambda(1-phi^2))
+			// f(phi) = 0 <=> phi (1-0.5*lambda(1-phi^2)) - tilde_phi  = 0
+			// https://www.wolframalpha.com/input?i2d=true&i=D%5Bx%5C%2840%291+-Divide%5BA%2C2%5D%5C%2840%291-Power%5Bx%2C2%5D%5C%2841%29+-+B%5C%2841%29%2Cx%5D
+			// f'(phi) = 1 - lambda * (3*phi^2 - 1) - tilde_phi
+
+			int maxmitr = 100;
+			real_t max_err = 1E-10;
+			phi = tilde_phi;  // initial guess
+			for (int itr = 0; itr <= maxmitr; ++itr)
+			{	
+				real_t tilde_phi_fun_to_0 = phi - 0.5*lambda*phi*(1-phi*phi) - tilde_phi; // f(phi)
+				real_t d_tilde_phi_fun_to_0 = 1 + 0.5*lambda*(3*phi*phi -1); // f'(phi)
+				
+				if ( fabs(tilde_phi_fun_to_0) < max_err || fabs(d_tilde_phi_fun_to_0) < 1E-6){
+					break;
+				}
+				real_t phi_next = phi - tilde_phi_fun_to_0/d_tilde_phi_fun_to_0;
+				phi = phi_next;
+			}
+			Q = lambda*phi*(1 - phi*phi);
 		#else	
 			//=== THIS IS AUTOMATICALLY GENERATED CODE ===
 			const real_t dt = 1.;
 	
-			const real_t  x0 = cbrt(3.) ; 
+			const real_t  x0 = cbrt(3.); 
 			const real_t  x1 = 1/(dt*lambda) ; 
 			const real_t  x2 = dt*lambda - 2 ; 
 			const real_t  x3 = cbrt(-9*tilde_phi*x1 + sqrt(3.)*sqrt((27*pow(tilde_phi, 2) - x1*pow(x2, 3))/(pow(dt, 2)*pow(lambda, 2)))) ; 

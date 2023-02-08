@@ -23,11 +23,11 @@
     <Param name="Init_PhaseField" value="0."/>
     <Param name="Init_PhaseField" value="0.9" zone="up"/>
     <Param name="Init_PhaseField" value="-0.9" zone="down"/>
-    <Param name="Init_UX" value="0.001"/>
+    <Param name="Init_UX" value="0.00"/>
     <Param name="Init_UY" value="0."/>
   </Model>
-  <Solve Iterations="10"><VTK Iterations="1"/></Solve>
-  <Solve Iterations="12800"><VTK Iterations="640"/></Solve>
+  <!-- <Solve Iterations="10"><VTK Iterations="1"/></Solve> -->
+  <Solve Iterations="10000"><VTK Iterations="50"/></Solve>
   <VTK/>
 </CLBConfig>
 
