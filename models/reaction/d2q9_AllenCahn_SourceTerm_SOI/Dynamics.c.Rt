@@ -58,7 +58,6 @@ CudaDeviceFunction real_t getQ()
 		#ifdef OPTIONS_NaiveQ
 			Q = lambda*tilde_phi*(1 - tilde_phi*tilde_phi); // approximate (naive, first order implementation)
 		#elif OPTIONS_NewtonQ
-			//=== BELOW IS HUMAN CODE ===
 			// lets try Newton's method 
 			// x_(n+1) = x_n - f(x_n)/f'(x_n)
 			// https://en.wikipedia.org/wiki/Newton%27s_method#Slow_convergence_for_roots_of_multiplicity_greater_than_1
@@ -94,7 +93,7 @@ CudaDeviceFunction real_t getQ()
 			const real_t  x3 = cbrt(-9*tilde_phi*x1 + sqrt(3.)*sqrt((27*pow(tilde_phi, 2) - x1*pow(x2, 3))/(pow(dt, 2)*pow(lambda, 2)))) ; 
 			phi = -1.0/3.0*x0*(x0*x1*x2 + pow(x3, 2))/x3 ;  
 			
-			Q = lambda*phi*(1 - pow(phi, 2));
+			Q = lambda*phi*(1 - phi*phi);
 		#endif
 	#endif
 	
