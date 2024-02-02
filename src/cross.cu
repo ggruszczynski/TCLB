@@ -2,7 +2,7 @@
 #include "Consts.h"
 #include "cross.h"
 #include "Global.h"
-#include "LatticeContainer.h"
+#include "CartLatticeContainer.h"
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -11,7 +11,7 @@
 
 uint3 CpuBlock, CpuThread, CpuSize;
 
-void memcpy2D(void * dst_, int dpitch, void * src_, int spitch, int width, int height) {
+void memcpy2D(void * dst_, int dpitch, const void * src_, int spitch, int width, int height) {
 	char * dst = (char*) dst_, *src = (char*) src_;
 	for (int i=0; i<height; i++) {
 		memcpy(dst + i*dpitch, src + i*spitch, width);
@@ -36,21 +36,20 @@ CudaError HandleError( CudaError err,
 #ifndef CROSS_SYNCALLOC
 
         struct ptrpair {
-                void ** ptr;
-                size_t size;
-                ptrpair() { ptr=NULL; size = 0; }
-                ptrpair(const ptrpair & p) { ptr=p.ptr; size=p.size; };
-                ptrpair(void ** ptr_, size_t size_) { ptr=ptr_; size=size_; };
-                inline const bool operator< (const ptrpair & B) const {
+                void ** ptr = nullptr;
+                size_t size = 0;
+                ptrpair() = default;
+                ptrpair(void ** ptr_, size_t size_) { ptr=ptr_; size=size_; }
+                bool operator< (const ptrpair & B) const {
                         return size < B.size;
-                };
+                }
         };
 
         std::vector< ptrpair > ptrlist;
         std::vector< std::pair< void *, std::vector< ptrpair > > > freelist;
 
         CudaError cudaPreAlloc(void ** ptr, size_t size) {
-                debug1("Preallocation of %d b\n", (int) size);
+                debug1("Preallocation of %lu b\n", size);
                 ptrlist.push_back(ptrpair(ptr, size));
         //	return cudaMalloc(ptr, size);
                 return CudaSuccess;
@@ -72,13 +71,13 @@ CudaError HandleError( CudaError err,
                 }
                 char * tmp = NULL;
                 if (fullsize > 1e9) {
-                        NOTICE("[%d] Cumulative allocation of %d b (%.1f GB)\n", D_MPI_RANK, (int) fullsize, ((float) fullsize)/1e9);
+                        NOTICE("[%d] Cumulative allocation of %lu b (%.1f GB)\n", D_MPI_RANK, fullsize, ((float) fullsize)/1e9f);
                 } else if (fullsize > 1e6) {
-                        NOTICE("[%d] Cumulative allocation of %d b (%.1f MB)\n", D_MPI_RANK, (int) fullsize, ((float) fullsize)/1e6);
+                        NOTICE("[%d] Cumulative allocation of %lu b (%.1f MB)\n", D_MPI_RANK, fullsize, ((float) fullsize)/1e6f);
                 } else if (fullsize > 1e3) {
-                        NOTICE("[%d] Cumulative allocation of %d b (%.1f kB)\n", D_MPI_RANK, (int) fullsize, ((float) fullsize)/1e3);
+                        NOTICE("[%d] Cumulative allocation of %lu b (%.1f kB)\n", D_MPI_RANK, fullsize, ((float) fullsize)/1e3f);
                 } else {
-                        NOTICE("[%d] Cumulative allocation of %d b\n", D_MPI_RANK, (int) fullsize);
+                        NOTICE("[%d] Cumulative allocation of %lu b\n", D_MPI_RANK, fullsize);
                 }
                 CudaMalloc((void **) &tmp,fullsize);
                 if (tmp == NULL) {
@@ -103,14 +102,11 @@ CudaError HandleError( CudaError err,
 
 
         CudaError cudaAllocFreeAll() {
-                std::pair< void *, std::vector< ptrpair > > ptr_list;
                 while (!freelist.empty()) {
-                        ptr_list = freelist.back();
+                        auto& ptr_list = freelist.back();
                         CudaFree(ptr_list.first);
-                        std::vector< ptrpair >::iterator it;
-                        for (it=ptr_list.second.begin(); it != ptr_list.second.end(); it++) {
-                                *((*it).ptr) = NULL;
-                        }
+                        for(const auto& ptr_pair : ptr_list.second)
+                            *ptr_pair.ptr = nullptr;
                         freelist.pop_back();
                 }
                 return CudaSuccess;
@@ -122,9 +118,9 @@ CudaError HandleError( CudaError err,
 
         CudaError cudaPreAlloc(void ** ptr, size_t size) {
                 debug1("Preallocation of %d b\n", (int) size);
-                CudaError ret = CudaMalloc(ptr, size);
+                CudaMalloc(ptr, size); // This macro has error checking already
                 CudaMemset( *ptr, 0, size );
-                return ret;
+                return CudaSuccess;
         }
 
         CudaError cudaAllocFinalize() {

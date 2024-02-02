@@ -8,6 +8,10 @@
 #ifndef __GPU_ANIM_H__
 #define __GPU_ANIM_H__
 
+#include "../config.h"
+
+#ifdef GRAPHICS
+
 #include "gl_helper.h"
 
 #include <cuda.h>
@@ -15,10 +19,10 @@
 #include <iostream>
 
 
-PFNGLBINDBUFFERARBPROC    glBindBuffer     = NULL;
-PFNGLDELETEBUFFERSARBPROC glDeleteBuffers  = NULL;
-PFNGLGENBUFFERSARBPROC    glGenBuffers     = NULL;
-PFNGLBUFFERDATAARBPROC    glBufferData     = NULL;
+extern PFNGLBINDBUFFERARBPROC    glBindBuffer;
+extern PFNGLDELETEBUFFERSARBPROC glDeleteBuffers;
+extern PFNGLGENBUFFERSARBPROC    glGenBuffers;
+extern PFNGLBUFFERDATAARBPROC    glBufferData;
 
 
 struct GPUAnimBitmap {
@@ -182,6 +186,6 @@ struct GPUAnimBitmap {
     }
 };
 
-
+#endif  // GRAPHICS
 #endif  // __GPU_ANIM_H__
 

@@ -1,0 +1,16 @@
+BasedOnStyle: Google
+ColumnLimit: 160
+IndentWidth: 4
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Always
+DerivePointerAlignment: false
+PointerAlignment: Left
+BinPackArguments: false
+BinPackParameters: false
+ReflowComments: false
+IncludeBlocks: Regroup
+IncludeIsMainRegex: $
+IndentAccessModifiers: false
+AccessModifierOffset: -4

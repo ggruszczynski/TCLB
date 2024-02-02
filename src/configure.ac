@@ -41,6 +41,25 @@ AC_ARG_WITH([hdf5-include],
 	AS_HELP_STRING([--with-hdf5-include=hdf5],
 		[specify the full path to your hdf5 installation (headers)]))
 
+AC_ARG_WITH([parmetis],
+	AS_HELP_STRING([--with-parmetis=parmetis],
+		[specify the full path to your parmetis installation]))
+AC_ARG_WITH([parmetis-lib],
+	AS_HELP_STRING([--with-parmetis-lib=parmetis],
+		[specify the full path to your parmetis installation (libraries)]))
+AC_ARG_WITH([parmetis-include],
+	AS_HELP_STRING([--with-parmetis-include=parmetis],
+		[specify the full path to your parmetis installation (headers)]))
+AC_ARG_WITH([metis],
+	AS_HELP_STRING([--with-metis=metis],
+		[specify the full path to your metis installation]))
+AC_ARG_WITH([metis-lib],
+	AS_HELP_STRING([--with-metis-lib=metis],
+		[specify the full path to your metis installation (libraries)]))
+AC_ARG_WITH([metis-include],
+	AS_HELP_STRING([--with-metis-include=metis],
+		[specify the full path to your metis installation (headers)]))
+
 AC_ARG_WITH([eigen],
 	AS_HELP_STRING([--with-eigen=eigen],
 		[specify the full path to your Eigen installation (headers)]))
@@ -57,9 +76,9 @@ AC_ARG_WITH([storage],
 	AS_HELP_STRING([--with-storage],
 		[type of storage used: half, half-shift, float, float-shift, double]))
 
-AC_ARG_ENABLE([cpp11],
-	AS_HELP_STRING([--enable-cpp11],
-		[enable C++ 11 standard]))
+AC_ARG_ENABLE([cpp17],
+	AS_HELP_STRING([--enable-cpp17],
+		[enable C++ 17 standard]))
 
 AC_ARG_WITH([cuda-arch],
 	AS_HELP_STRING([--with-cuda-arch=arch],
@@ -89,10 +108,21 @@ AC_ARG_WITH([lammps-lib],
 	AS_HELP_STRING([--with-lammps-lib=libfile],
 		[specify the name of the lammps/liggghts library (.so/.a)]))
 
+AC_ARG_WITH([solid_container],
+	AS_HELP_STRING([--with-solid-container=type],
+		[type of solid (particle) container to use: all/tree/grid]))
+
+AC_ARG_WITH([solid_cache],
+	AS_HELP_STRING([--with-solid-cache=N],
+		[if to use cache of size N for solid (particle) data]))
+
+AC_ARG_ENABLE([opp],
+	AS_HELP_STRING([--enable-opp=N],
+		[enable opportunistic operations]))
+
 AC_ARG_WITH([tapenade],
 	AS_HELP_STRING([--with-tapenade=path],
 		[use tapenade for code differentiation for adjoint]))
-		
 
 AC_ARG_WITH([verbosity_level],
 	AS_HELP_STRING([--with-verbosity-level=level],
@@ -122,17 +152,20 @@ AC_ARG_ENABLE([debug-kernel],
 	AS_HELP_STRING([--with-debug-kernel],
 		[enable NVCC pos compile stats for debug (lots of output!)]))
 
-AC_ARG_WITH([python],
-	AS_HELP_STRING([--with-python],
-		[Enable CallPython handler, requires python-dev]))
+AC_ARG_WITH([x-block],
+	AS_HELP_STRING([--with-x-block],
+		[Set the block size in the x direction (X_BLOCK) (default=32)]))
+AC_ARG_WITH([x-mod],
+	AS_HELP_STRING([--with-x-mod],
+		[Set the value used for dividing the memory arrangement in the x direction (default=none)]))
+AC_ARG_WITH([warp-size],
+	AS_HELP_STRING([--with-warp-size],
+		[Set the value used for the warp size]))
 
-AC_ARG_WITH([python_config],
-	AS_HELP_STRING([--with-python-config],
-		[Set python-config binary to call]))
+AC_ARG_ENABLE([cpu-layout],
+	AS_HELP_STRING([--cpu-layout],
+		[Enable cpu-optimised memory layout]))
 
-AC_ARG_WITH([python_bin],
-	AS_HELP_STRING([--with-python-bin],
-		[Set python binary to call]))
 
 AC_ARG_ENABLE([paranoid],
 	AS_HELP_STRING([--enable-paranoid],
@@ -149,11 +182,9 @@ AC_ARG_WITH([cpp-flags],
 		[privide additionals flags for the compiler]),
 	[CONF_CPPFLAGS="$withval"])		
 
-NVFLAGS=""
-
 if test "x${COMPILER_BINDIR}" != "x"
 then
-	NVFLAGS="-ccbin=${COMPILER_BINDIR} "
+	NVFLAGS="${NVFLAGS} -ccbin=${COMPILER_BINDIR} "
 fi
 
 if test -z "$CXX"
@@ -188,6 +219,9 @@ AC_PROG_CXX
 AC_CHECK_HEADERS([float.h stddef.h stdint.h stdlib.h string.h wchar.h],[],[AC_MSG_ERROR([Cannot find standart headers])])
 AC_CHECK_LIB([m], [sqrt],[],[AC_MSG_ERROR([Didn't find math Library])])
 
+AC_CHECK_HEADERS([cxxabi.h],[AC_DEFINE([HAS_CXXABI_H], [1], [Has demangle])],[AC_MSG_RESULT([Didn't find cxxabi.h])])
+
+
 if test "x${enable_double}" != "xno"
 then
 	AC_DEFINE([CALC_DOUBLE_PRECISION], [1], [Making a double precision version])
@@ -195,21 +229,21 @@ fi
 
 if test "x${with_storage}" == "xhalf-shift"
 then
-	AC_DEFINE([STORAGE_TYPE], [16], [Using half as storage])
+	AC_DEFINE([STORAGE_BITS], [16], [Using half as storage])
 	AC_DEFINE([STORAGE_SHIFT], [1], [Using shift for storage])
 elif test "x${with_storage}" == "xhalf"
 then
-	AC_DEFINE([STORAGE_TYPE], [16], [Using half as storage])
+	AC_DEFINE([STORAGE_BITS], [16], [Using half as storage])
 elif test "x${with_storage}" == "xfloat-shift"
 then
-	AC_DEFINE([STORAGE_TYPE], [32], [Using half as storage])
+	AC_DEFINE([STORAGE_BITS], [32], [Using half as storage])
 	AC_DEFINE([STORAGE_SHIFT], [1], [Using shift for storage])
 elif test "x${with_storage}" == "xfloat"
 then
-	AC_DEFINE([STORAGE_TYPE], [32], [Using half as storage])
+	AC_DEFINE([STORAGE_BITS], [32], [Using half as storage])
 elif test "x${with_storage}" == "xdouble"
 then
-	AC_DEFINE([STORAGE_TYPE], [64], [Using half as storage])
+	AC_DEFINE([STORAGE_BITS], [64], [Using half as storage])
 elif test "x${with_storage}" != "x"
 then
 	AC_MSG_ERROR([Not suppported type of storage: x${with_storage}])
@@ -229,6 +263,18 @@ then
 		AC_MSG_ERROR([Cannot make GLUT graphics with HIP version])
 	fi
 	AC_DEFINE([GRID3D], [1], [Using 3D block grid in HIP])
+	if test "x${with_x_block}" != "x"
+	then
+		AC_DEFINE_UNQUOTED([X_BLOCK], ${with_x_block}, [Using X block from --with-x-block])
+	else
+		AC_DEFINE([X_BLOCK], [32], [Using standard X block])
+	fi
+	if test "x${with_warp_size}" != "x"
+	then
+		AC_DEFINE_UNQUOTED([WARPSIZE], ${with_warp_size}, [Using warp size from --with-warp-size])
+	else
+		AC_DEFINE([WARPSIZE], [32], [Using 32 warpsize to have warp primitives work with x block])
+	fi
 elif test "x${enable_cuda}" != "xno"
 then
 
@@ -340,6 +386,18 @@ then
 	then
 		AC_MSG_ERROR([Cannot make OpenMP support with GPU version])
 	fi
+	if test "x${with_x_block}" != "x"
+	then
+		AC_DEFINE_UNQUOTED([X_BLOCK], ${with_x_block}, [Using X block from --with-x-block])
+	else
+		AC_DEFINE([X_BLOCK], [32], [Using standard X block])
+	fi
+	if test "x${with_warp_size}" != "x"
+	then
+		AC_DEFINE_UNQUOTED([WARPSIZE], ${with_warp_size}, [Using warp size from --with-warp-size])
+	else
+		AC_DEFINE([WARPSIZE], [32], [Using the CUDA standard 32 warp size])
+	fi
 else
 	AC_DEFINE([CROSS_CPU], [1], [Making a CPU version])
 	CROSS_CPU=1
@@ -350,10 +408,47 @@ else
 	if ! test -z "$OPENMP"
 	then
 		CPPFLAGS="${CPPFLAGS} $OPENMP"
-		LDFLAGS="${CPPFLAGS} $OPENMP"
+		LDFLAGS="${LDFLAGS} $OPENMP"
 		AC_DEFINE([CROSS_OPENMP], [1], [Using OpenMP])
 	fi
+	if test "x${with_x_block}" != "x"
+	then
+		if test "x${with_x_block}" != "x1"
+		then
+			AC_MSG_ERROR([x-block size not supported for CPU])
+		fi
+	fi
+	AC_DEFINE([X_BLOCK], [1], [Using standard X block])
+	if test "x${with_warp_size}" != "x"
+	then
+		if test "x${with_warp_size}" != "x1"
+		then
+			AC_MSG_ERROR([warp size size not supported for CPU])
+		fi
+	fi
+	AC_DEFINE([WARPSIZE], [1], [Using the CUDA standard 32 warp size])
+	AC_DEFINE([GRID3D], [1], [Using 3D block grid in HIP])
 fi
+
+if test "x${with_x_mod}" != "x"
+then
+	X_MOD="${with_x_mod}"
+else
+	X_MOD="0"
+fi
+
+if test "x${enable_opp}" == "xyes"
+then
+	AC_DEFINE([USE_ADDOPP], [1], [Opportunistic warp level operations])
+fi
+
+if test "x${enable_cpu_layout}" == "xyes"
+then
+	CPU_LAYOUT="TRUE"
+else
+	CPU_LAYOUT="FALSE"
+fi
+
 
 AC_MSG_CHECKING([MPI include path])
 if test -z "${MPI_INCLUDE}"; then
@@ -458,47 +553,109 @@ if test "x${with_hdf5}" != "xno"; then
 	fi
 fi
 
+if test "x${with_parmetis}" != "xno"; then
+    AC_MSG_CHECKING([METIS path])
+    need_parmetis="no"
+    has_parmetis="no"
+    need_metis="no"
+    has_metis="no"
 
-if  test "x${with_python}" == "xyes"; then
-   
-    AC_CHECK_PROG(python_bin,"${with_python_bin}","${with_python_bin}",python3)
-    AC_CHECK_PROG(python_config,"${with_python_config}","${with_python_config}",${python_bin}-config)
+    # First, try to detect metis
+    if test "x${with_metis}" != "x"; then
+        if test "x${with_metis}" == "xno"; then
+            AC_MSG_ERROR([metis was disabled by the user, but it is needed as a dependency for parmetis])
+        fi
+    	METIS_LIB="${with_metis}/lib"
+    	METIS_INCLUDE="${with_metis}/include"
+    	need_metis="yes"
+    fi
+    if test "x${with_metis_lib}" != "x"
+    then
+    	METIS_LIB="${with_metis_lib}"
+    	need_metis="yes"
+    fi
+    if test "x${with_metis_include}" != "x"
+    then
+    	METIS_INCLUDE="${with_metis_include}"
+    	need_metis="yes"
+    fi
+    if test "x${METIS_LIB}" != "x"
+    then
+    	if test -d "${METIS_LIB}"
+    	then
+    		LDFLAGS="${LDFLAGS} -L${METIS_LIB}"
+    	else
+    		AC_MSG_ERROR([${METIS_LIB}: No such directory])
+    	fi
+    fi
+    if test "x${METIS_INCLUDE}" != "x"
+    then
+    	if test -d "${METIS_INCLUDE}"
+    	then
+    		CPPFLAGS="${CPPFLAGS} -I${METIS_INCLUDE}"
+    	else
+    		AC_MSG_ERROR([${METIS_INCLUDE}: No such directory])
+    	fi
+    fi
+    has_metis="yes"
+    AC_CHECK_HEADERS([metis.h],[],[has_metis="no"])
+    AC_CHECK_LIB([metis],[METIS_PartGraphKway],[],[has_metis="no"])
 
-    AC_MSG_NOTICE([python config: ${python_config}])
-    AC_MSG_NOTICE([python: ${python_bin}])
+    # Now, on to parmetis
+    AC_MSG_CHECKING([ParMETIS path])
+	if test "x${with_parmetis}" != "x"; then
+		PARMETIS_LIB="${with_parmetis}/lib"
+		PARMETIS_INCLUDE="${with_parmetis}/include"
+		need_parmetis="yes"
+	fi
+	if test "x${with_parmetis_lib}" != "x"
+	then
+		PARMETIS_LIB="${with_parmetis_lib}"
+		need_parmetis="yes"
+	fi
+	if test "x${with_parmetis_include}" != "x"
+	then
+		PARMETIS_INCLUDE="${with_parmetis_include}"
+		need_parmetis="yes"
+	fi
 
+    # Early error if ParMETIS is needed, but METIS (its dependency) is not available
+	if test "x${need_parmetis}" == "xyes"; then
+	    if test "x${has_metis}" != "xyes"; then
+	        AC_MSG_ERROR([parmetis was requested, but metis cannot be compiled and linked correctly])
+	    fi
+	fi
 
-    AC_MSG_CHECKING([python embandinng: linker flags])
+	if test "x${PARMETIS_LIB}" != "x"
+	then
+		if test -d "${PARMETIS_LIB}"
+		then
+			LDFLAGS="${LDFLAGS} -L${PARMETIS_LIB}"
+		else
+			AC_MSG_ERROR([${PARMETIS_LIB}: No such directory])
+		fi
+	fi
+	if test "x${PARMETIS_INCLUDE}" != "x"
+	then
+		if test -d "${PARMETIS_INCLUDE}"
+		then
+			CPPFLAGS="${CPPFLAGS} -I${PARMETIS_INCLUDE}"
+		else
+			AC_MSG_ERROR([${PARMETIS_INCLUDE}: No such directory])
+		fi
+	fi
+	has_parmetis="yes"
+	AC_CHECK_HEADERS([parmetis.h],[],[has_parmetis="no"])
+	AC_CHECK_LIB([parmetis],[ParMETIS_V3_PartGeomKway],[],[has_parmetis="no"],[-lmetis])
 
-	if ${python_config} --ldflags --embed; then
-	    PF=$(${python_config} --ldflags --embed)
+	if test "x${has_parmetis}" == "xyes"; then
+		AC_DEFINE([WITH_PARMETIS], [1], [Using ParMETIS])
 	else
-	    PF=$(${python_config} --ldflags)
-	fi 
-	
-    LDFLAGS="${LDFLAGS} ${PF}"
-
-    AC_MSG_RESULT([${PF}])
-
-	AC_MSG_CHECKING([Python - numpy additional include path])
-	PYINC="$(${python_bin} -c 'import numpy; print(numpy.get_include())')"
-	CPPFLAGS="${CPPFLAGS} -I${PYINC}"
-    AC_MSG_RESULT([${PYINC}])
-    
-    AC_MSG_CHECKING([Python Embandinng: compiler flags])
-#    PF=$($python_config --cflags)
-    PF=$($python_config --includes)
-    CPPFLAGS="${CPPFLAGS} ${PF}"
-
-    PF=$($python_config --prefix)
-
-    LDFLAGS="${LDFLAGS} -L${PF}/lib"
-    EMBEDED_PYTHON=1
-    AC_MSG_RESULT([${PF}])
-	AC_DEFINE([EMBEDED_PYTHON], [1], [Using Python support])
+		if test "x${need_parmetis}" == "xyes"; then
+			AC_MSG_ERROR([parmetis not found])
+		fi
+	fi
 fi
-
-
 
 NLOPT=""
 
@@ -664,6 +821,30 @@ then
 	WITH_LAMMPS=1
 fi
 
+if test "x${with_solid_container}" == "x"
+then
+	with_solid_container="grid"
+fi
+
+if test "x${with_solid_container}" == "xall"
+then
+	AC_DEFINE([SOLID_CONTAINER], [1], [Using all container])
+elif test "x${with_solid_container}" == "xtree"
+then
+	AC_DEFINE([SOLID_CONTAINER], [2], [Using tree container])
+elif test "x${with_solid_container}" == "xgrid"
+then
+	AC_DEFINE([SOLID_CONTAINER], [3], [Using grid container])
+else
+	AC_MSG_ERROR([Not suppported type of storage: x${with_storage}])
+fi
+
+if test "x${with_solid_cache}" != "x"
+then
+	AC_DEFINE_UNQUOTED([SOLID_CACHE], ${with_solid_cache}, [Using solid cache])
+fi
+
+
 if test "x${with_r}" == "x"
 then
 	AC_PATH_PROG(with_r,[R],[no])
@@ -686,8 +867,8 @@ fi
 
 AC_MSG_CHECKING([R package: optparse])
 AS_IF([$R_BIN --vanilla --slave -e 'if (!require("optparse")) stop("No");' >/dev/null 2>&1],AC_MSG_RESULT([yes]),AC_MSG_ERROR([no]))
-AC_MSG_CHECKING([R package: numbers])
-AS_IF([$R_BIN --vanilla --slave -e 'if (!require("numbers")) stop("No");' >/dev/null 2>&1],AC_MSG_RESULT([yes]),AC_MSG_ERROR([no]))
+#AC_MSG_CHECKING([R package: numbers])
+#AS_IF([$R_BIN --vanilla --slave -e 'if (!require("numbers")) stop("No");' >/dev/null 2>&1],AC_MSG_RESULT([yes]),AC_MSG_ERROR([no]))
 AC_MSG_CHECKING([R package: rtemplate])
 AS_IF([$R_BIN --vanilla --slave -e 'if (!require("rtemplate")) stop("No");' >/dev/null 2>&1],AC_MSG_RESULT([yes]),AC_MSG_ERROR([no]))
 AC_MSG_CHECKING([R package: gvector])
@@ -777,11 +958,13 @@ then
 fi
 
 
-if test "x${enable_cpp11}" == "xyes"
+if test "x${enable_cpp17}" != "xno"
 then
-	CPPFLAGS="${CPPFLAGS} -std=c++11"
-	NVFLAGS="${NVFLAGS} -std=c++11"
+	CPPFLAGS="${CPPFLAGS} -std=c++17"
+	NVFLAGS="${NVFLAGS} -std=c++17"
 fi
+
+AC_CHECK_HEADERS([chrono],[AC_DEFINE([USE_STEADY_CLOCK], [1], [Using chrono's steady_clock])],[])
 
 
 if test "x${CONF_CPPFLAGS}" == "x"
@@ -843,7 +1026,7 @@ fi
 if test "x${enable_paranoid}" == "xyes"
 then
 	CPPFLAGS="${CPPFLAGS} -Wall -Werror -Wno-unknown-warning-option"
-	CPPFLAGS="${CPPFLAGS} -Wno-unused-but-set-variable -Wno-unused-variable -Wno-format-overflow -Wno-unused-private-field -Wno-self-assign"
+	CPPFLAGS="${CPPFLAGS} -Wno-unused-but-set-variable -Wno-unused-variable -Wno-format-overflow -Wno-unused-private-field -Wno-self-assign -Wno-unknown-pragmas"
 fi
 
 if test "x${enable_profiling}" == "xyes"
@@ -877,8 +1060,6 @@ AC_MSG_RESULT([CPPFLAGS : $CPPFLAGS])
 AC_MSG_RESULT([LDFLAGS  : $LDFLAGS])
 AC_MSG_RESULT([NVFLAGS  : $NVFLAGS])
 
-
-
 AC_SUBST(CP)
 AC_SUBST(NVFLAGS)
 AC_SUBST(CROSS_CPU)
@@ -893,8 +1074,24 @@ AC_SUBST(WITH_R)
 AC_SUBST(TAPENADE)
 AC_SUBST(PV_VERSION)
 AC_SUBST(RTOPT)
-AC_SUBST(EMBEDED_PYTHON)
+AC_SUBST(X_BLOCK)
+AC_SUBST(WARPSIZE)
+AC_SUBST(X_MOD)
+AC_SUBST(CPU_LAYOUT)
 
 AC_CONFIG_FILES([CLB/config.mk:src/config.mk.in])
+AC_CONFIG_FILES([CLB/config.R_:src/config.R.in])
 AC_CONFIG_FILES([config.main.mk:src/config.main.mk.in])
 AC_OUTPUT
+
+if test -f "CLB/config.R"
+then
+	if diff "CLB/config.R" "CLB/config.R_" >/dev/null 2>&1
+	then
+		echo "CLB/config.R unchanged"
+	else
+		mv CLB/config.R_ CLB/config.R
+	fi
+else
+	mv CLB/config.R_ CLB/config.R
+fi

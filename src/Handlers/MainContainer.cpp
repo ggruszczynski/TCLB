@@ -4,11 +4,9 @@ std::string MainContainer::xmlname = "CLBConfig";
 
 int MainContainer::Init () {
 		GenericAction::Init();
-		char filename[2*STRING_LEN];
-
-		solver->outIterFile("config", ".xml", filename);
+		const auto filename = solver->outIterFile("config", ".xml");
 		pugi::xml_node n = solver->configfile.child("CLBConfig").append_child("Run");
-		n.append_attribute("model").set_value(MODEL);
+		n.append_attribute("model").set_value(solver->lattice->model->name.c_str());
 		pugi::xml_node c = n.append_child("Code");
 		c.append_attribute("version").set_value(VERSION);
 		#ifdef CALC_DOUBLE_PRECISION
@@ -21,7 +19,7 @@ int MainContainer::Init () {
 		#else
 			c.append_attribute("cross").set_value("GPU");
 		#endif
-		solver->configfile.save_file(filename);
+		solver->configfile.save_file(filename.c_str());
 
 		return  GenericAction::ExecuteInternal();
 }

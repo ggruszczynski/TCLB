@@ -1,3 +1,10 @@
+# Setting permissive access policy.
+#  * This skips checks of fields being overwritten or read prematurely.
+#  * Otherwise the model compilation was failing.
+#  * This should be removed if the issue is fixed
+SetOptions(permissive.access=TRUE)  ### WARNING
+
+
 # 	Density - table of variables of LB Node to stream
 #	Pressure Evolution:
 AddDensity( name="g[0]", dx= 0, dy= 0, group="g")
@@ -79,20 +86,20 @@ if (Options$RT) {
 	AddStage("BaseInit"  , "Init_distributions" , save=Fields$group %in% c("g","h","Vel"))
 
 	# iteration
-	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw") , load=DensityAll$group %in% c("g","h","Vel","nw"))  # TODO: is nw needed here?
+	AddStage("BaseIter"  , "calcHydroIter"      , save=Fields$group %in% c("g","h","Vel","nw") , load=DensityAll$group %in% c("PF","g","h","Vel","nw"))  # TODO: is nw needed here?
 	AddStage("PhaseIter" , "calcPhaseFIter"		, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("g","h","Vel","nw"))
-	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("nw"))	
+	AddStage("WallIter"  , "calcWallPhaseIter"	, save=Fields$group %in% c("PF")			   , load=DensityAll$group %in% c("nw","PF"))	# Purposefully read/write of PF for boundary. complex geom may force RACE condition.
 }
 
 AddAction("Iteration", c("BaseIter", "PhaseIter","WallIter"))
 AddAction("Init"     , c("PhaseInit","WallInit", "WallIter","BaseInit"))
 
 # 	Outputs:
-AddQuantity(name="Rho",	  unit="kg/m3")
-AddQuantity(name="PhaseField",unit="1")
-AddQuantity(name="U",	  unit="m/s",vector=T)
-AddQuantity(name="NormalizedPressure",	  unit="Pa")
-AddQuantity(name="Pressure",	  unit="Pa")
+AddQuantity(name="Rho",	unit="kg/m3")
+AddQuantity(name="PhaseField", unit="1")
+AddQuantity(name="U", unit="m/s",vector=T)
+AddQuantity(name="NormalizedPressure", unit="1")
+AddQuantity(name="Pressure", unit="Pa")
 AddQuantity(name="Normal", unit="1", vector=T)
 
 #	Initialisation States
@@ -202,5 +209,4 @@ if (Options$Outflow) {
 }
 AddNodeType(name="Solid", group="BOUNDARY")
 AddNodeType(name="Wall", group="BOUNDARY")
-AddNodeType(name="BGK", group="COLLISION")
 AddNodeType(name="MRT", group="COLLISION")

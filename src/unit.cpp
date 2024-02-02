@@ -54,12 +54,6 @@ void GaussSolve (double A[], double b[], double x[], int n)
 }
 // m s kg K
 
-std::string strFromDouble(double val) {
-    std::ostringstream strs;
-    strs << val;
-    return strs.str();
-}
-
   UnitEnv::UnitEnv (){
     for (int i=0; i<m_unit; i++) scale[i]=1;
     UnitVal A(1);
@@ -98,14 +92,14 @@ std::string strFromDouble(double val) {
     units["%"]=1./100.;
     units["An"] = 6.022*100000000000000000000000.;
   };
-  UnitVal UnitEnv::readUnitOne( std::string val ) {
+  UnitVal UnitEnv::readUnitOne( const std::string& val ) const {
     if (units.count(val) > 0) {
-      return units[val];
+      return units.at(val);
     } else {
       return 0;
     }
-  };
-  UnitVal UnitEnv::readUnitAlpha( std::string val , int p) {
+  }
+  UnitVal UnitEnv::readUnitAlpha( const std::string& val , double p) const {
     UnitVal ret,ret1,ret2;
     int i=0, j=1;
     ret1 = readUnitOne(val.substr(0,1));
@@ -141,21 +135,22 @@ std::string strFromDouble(double val) {
       }
     }
     return ret;
-  };
-  UnitVal UnitEnv::readUnit( std::string val ) {
+  }
+  UnitVal UnitEnv::readUnit( const std::string& val ) const {
     UnitVal last, ret;
-    int i,j,k,l,p,w=1;
+    int i,j,k,l,w=1;
+    double p;
     ret = 1.;
     i=0;
     while (val[i]) {
       j=i;
       while (isalpha(val[i])) i++;
       k=i;
-      while (isdigit(val[i])) i++;
+      while (isdigit(val[i]) || '.' == (char)val[i]) i++;
       l=i;
       p=1;
       if (l-k > 0) {
-        p = atoi(val.substr(k,l-k).c_str());
+        p = atof(val.substr(k,l-k).c_str());
       }
       if (k-j > 0) {
         last = readUnitAlpha(val.substr(j,k-j).c_str(), p);
@@ -183,8 +178,8 @@ std::string strFromDouble(double val) {
       }
     }
     return ret;
-  };
-  UnitVal UnitEnv::readText( std::string val ) {
+  }
+  UnitVal UnitEnv::readText( const std::string& val ) const {
     UnitVal ret = 1.;
     std::string num = "", unit = "";
     int i=0, j=1;
@@ -216,11 +211,11 @@ std::string strFromDouble(double val) {
       ret = ret * ((UnitVal) atof(num.c_str()));
     }
     return ret;
-  };
-  void UnitEnv::setUnit(std::string name, const UnitVal & v, double v2) {
+  }
+  void UnitEnv::setUnit(const std::string& name, const UnitVal & v, double v2) {
     gauge[name] = v/UnitVal(v2);
   }
-  void UnitEnv::setUnit(std::string name, const UnitVal & v) {
+  void UnitEnv::setUnit(const std::string& name, const UnitVal & v) {
     gauge[name] = v;
   }
   void UnitEnv::makeGauge() {
@@ -231,7 +226,7 @@ std::string strFromDouble(double val) {
       Mat[i]=0;
     }
     i=0;
-    for(std::map<std::string, UnitVal>::iterator el=gauge.begin();el!=gauge.end();el++) {
+    for(auto el=gauge.begin();el!=gauge.end();el++) {
       UnitVal v = el->second;
       for (j=0;j<m_unit;j++) {
         Mat[m_unit*j+i] = v.uni[j];
@@ -263,9 +258,9 @@ std::string strFromDouble(double val) {
       scale[j] = exp(-x[j]);
     }
   }
-  void UnitEnv::printGauge() {
+  void UnitEnv::printGauge() const {
     output("/---------------[ GAUGE ]-----------------\n");
-    for(std::map<std::string, UnitVal>::iterator el=gauge.begin();el!=gauge.end();el++) {
+    for(auto el=gauge.begin();el!=gauge.end();el++) {
       UnitVal v = el->second;
       output("|  %s\n", v.tmp_str());
     }

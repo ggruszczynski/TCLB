@@ -1,15 +1,23 @@
+#ifndef SAMPLER_H
+#define SAMPLER_H
+
 #include <mpi.h>
-#include "utils.h"
+
+#include <cstdlib>
+#include <vector>
+
 #include "Consts.h"
-#include "Global.h"
 #include "cross.h"
+#include "Lists.h"
+#include "Global.h"
+#include "Region.h"
 #include "types.h"
 #include "unit.h"
-#include <stdlib.h>
-#include <vector>
+#include "utils.h"
+
 /* 
-Class used for optimal storing and output of the evolution of the particular point/{set of points}.
-Each point and output data is controlled, by the mpi rank related to that point, according to initial mesh division
+Class used for optimal storage and output of the evolution of a particular point/{set of points}.
+Each point and corresponding output data is controlled by the mpi rank related to that point according to initial mesh division
 */
 
 struct sreg {
@@ -18,17 +26,18 @@ struct sreg {
 };
 class Sampler {
        	typedef std::map< std::string , int > Location;
+       	const Model* model;
        	public:
-		Sampler();
+		Sampler(Model* model_, const UnitEnv* units_, int my_rank_) : model(model_), units(units_), mpi_rank(my_rank_) {}
 		lbRegion position;
 		real_t *gpu_buffer;
                	Location location;
                	name_set *quant;
-               	int size;
-		UnitEnv units;
+               	int size = 0;
+		const UnitEnv* units;
 		std::vector <sreg> spoints; 
-		MPIInfo mpis; 
-		int startIter;
+		int mpi_rank;
+		int startIter = 0;
 		int totalIter;
                	int initCSV(const char* name);
                	int writeHistory(int curr_iter);
@@ -47,3 +56,4 @@ inline int csvWriteElement(FILE * f, vector_t tmp) {
        	return csvWriteElement(f, tmp.z);
 }
 
+#endif

@@ -11,6 +11,15 @@
 /* Making a OPENMP version */
 #undef CROSS_OPENMP
 
+/* X dimension of block */
+#undef X_BLOCK
+
+/* X modulus used for memory arrangement */
+#undef X_MOD
+
+/* warp size */
+#undef WARPSIZE
+
 /* Making a GUI version */
 #undef GRAPHICS
 
@@ -18,10 +27,19 @@
 #undef CALC_DOUBLE_PRECISION
 
 /* Storage type used */
-#undef STORAGE_TYPE
+#undef STORAGE_BITS
 
 /* Using shift for storage */
 #undef STORAGE_SHIFT
+
+/* Type solid container */
+#undef SOLID_CONTAINER
+
+/* Using solid container cache */
+#undef SOLID_CACHE
+
+/* Using opportunistic operations */
+#undef USE_ADDOPP
 
 /* Using 3D block grid in CUDA */
 #undef GRID3D
@@ -34,6 +52,9 @@
 
 /* Using HDF5 */
 #undef WITH_HDF5
+
+/* Using ParMETIS */
+#undef WITH_PARMETIS
 
 /* CUDA CC */
 #undef CUDA_CC
@@ -65,7 +86,10 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Build-in python support */
-#undef EMBEDED_PYTHON
+/* If to use the C++11 chrono */
+#undef USE_STEADY_CLOCK
+
+/* If cxxabi.h is present (for demangle) */
+#undef HAS_CXXABI_H
 
 #endif
