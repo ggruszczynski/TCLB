@@ -1,0 +1,202 @@
+
+CudaDeviceFunction real_t getm00_F(){
+	real_t m00_F = <?R C(sum(f)) ?>;
+	return m00_F/material_density;
+}
+
+CudaDeviceFunction real_t getcp(){
+	return cp;
+}
+
+CudaDeviceFunction real_t getmaterial_density(){
+	return material_density;
+}
+
+CudaDeviceFunction real_t getconductivity(){
+	return conductivity;
+}
+
+CudaDeviceFunction real_t getPorosity(){
+	return poro0; 
+}
+
+CudaDeviceFunction real_t getNSPermability()
+{	
+	// Use this function is only for vtk output.
+
+	// Darcy Forcing
+	// The Kozeny-Carman equation provides a way to estimate the permeability of a porous medium based on its porosity and specific surface area.
+	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
+	real_t permability;
+	#ifdef OPTIONS_PORO121PERM
+		permability = poro0;
+	#else
+		permability = poro0*poro0*poro0; 
+		permability /= (Kazeny_NScoeff*(1-poro0)*(1-poro0)+1E-3);
+		permability /= (ssa*ssa);
+	#endif
+
+	return permability;
+}
+
+
+
+CudaDeviceFunction real_t getRho(){
+	// Use this function is only for vtk output.
+	// Nodes are created using streamed, post-collision DF.
+	// RunBoundaries are called in orded to assign the desired value at the boundary.
+	// It can make a difference in convergence study and nicer preview.
+
+	RunBoundariesHydrodynamics();
+	RunBoundariesHeat();	
+
+	real_t rho = <?R C(sum(f)) ?>;
+	return rho;
+}
+
+CudaDeviceFunction real_t getRho_(){
+	real_t rho = <?R C(sum(f)) ?>;
+	return rho;
+}
+
+CudaDeviceFunction real_t getP_fluctuations(){
+	return (getRho_()-material_density)/3.0;
+}
+
+CudaDeviceFunction vector_t getHflux(){
+	//raw moments from density-probability functions
+	//real_t H = h000 + h010 + h020 + h100 + h110 + h120 + h200 + h210 + h220;
+	real_t t100 = h100 + h110 + h120 - h200 - h210 - h220;
+	real_t t010 = h010 - h020 + h110 - h120 + h210 - h220;
+
+	// heat flux
+	vector_t flux;  flux.x = t100; flux.y = t010; flux.z = 0;
+	return flux;
+}
+
+CudaDeviceFunction vector_t getHDflux(){
+	vector_t Hflux = getHflux();  // rho u T + Q^neq
+	real_t permability = getPermability(Kazeny_Hcoeff);
+	vector_t fluxHD = getHDarcyForce(Hflux, permability);
+	return fluxHD;
+}
+
+
+
+vector_t getTotalHydroForce()
+{
+	real_t localTemperature = getT_();
+	vector_t u = getRawU();
+	real_t rho = getRho_();
+	vector_t ForceB = getBoussinesqForce(localTemperature, rho);
+	vector_t ForceD = getDarcyForce(u, rho, nu, Kazeny_NScoeff);
+	vector_t Force; Force.x = ForceB.x + ForceD.x; Force.y = ForceB.y + ForceD.y; Force.z = ForceB.z + ForceD.z;
+	return Force;
+}
+
+CudaDeviceFunction vector_t getU_()
+{
+	// vector_t Force = getTotalHydroForce();
+	// real_t rho = getRho_();
+	// vector_t u = getRawU();
+
+	real_t localTemperature = getT_();
+	vector_t u = getRawU();
+	real_t rho = getRho_();
+	vector_t ForceB = getBoussinesqForce(localTemperature, rho);
+
+	real_t permability = getPermability(Kazeny_NScoeff);
+	vector_t ForceD = getDarcyForce(u, rho, nu, Kazeny_NScoeff);
+	vector_t Force; Force.x = ForceB.x + ForceD.x; Force.y = ForceB.y + ForceD.y; Force.z = ForceB.z + ForceD.z;
+	u.x += Force.x/(2*rho);
+	u.y += Force.y/(2*rho);
+	u.z += Force.z/(2*rho);
+	return u;
+}
+ 
+CudaDeviceFunction vector_t getRawU(){
+	real_t rho = getRho_();
+	vector_t u;
+	<?R C(PV(c("u.x","u.y", "u.z")), f %*% U) ?>
+	u.x /= rho;
+	u.y /= rho;
+	u.z /= rho;
+	return u;
+}
+
+CudaDeviceFunction vector_t getU(){	
+	// Use this function is only for vtk output.
+	// Nodes are created using streamed, post-collision DF.
+	// RunBoundaries are called in orded to assign the desired value at the boundary.
+	// It can make a difference in convergence study and nicer preview.
+
+	RunBoundariesHydrodynamics();
+	RunBoundariesHeat();	
+	
+	// vector_t Force = getTotalHydroForce();
+	// real_t rho = getRho_();
+	// vector_t u;	
+
+	real_t localTemperature = getT_();
+	vector_t u = getRawU();
+	real_t rho = getRho_();
+	vector_t ForceB = getBoussinesqForce(localTemperature, rho);
+	vector_t ForceD = getDarcyForce(u, rho, nu, Kazeny_NScoeff);
+	vector_t Force; Force.x = ForceB.x + ForceD.x; Force.y = ForceB.y + ForceD.y; Force.z = ForceB.z + ForceD.z;
+
+	u.x += Force.x/(2*rho);
+	u.y += Force.y/(2*rho);
+	u.z += Force.z/(2*rho);
+	if((NodeType & NODE_BOUNDARY) == NODE_Wall){
+		u.x = 0;
+		u.y = 0;
+		u.z = 0;
+	}
+	return u;
+}
+
+CudaDeviceFunction real_t getT(){
+	// Use this function is only for vtk output.
+	// Nodes are created using streamed, post-collision DF.
+	// RunBoundaries are called in orded to assign the desired value at the boundary.
+	// It can make a difference in convergence study and nicer preview.
+
+	RunBoundariesHydrodynamics();
+	RunBoundariesHeat();	
+
+	real_t rho = getRho_();
+	real_t m00_H = <?R C(sum(h)) ?>;
+	return m00_H/(rho*cp);
+}
+
+CudaDeviceFunction real_t getT_(){
+	real_t rho = getRho_();
+	real_t m00_H = <?R C(sum(h)) ?>;
+	return m00_H/(rho*cp);
+}
+
+CudaDeviceFunction real_t getH(){
+	return <?R C(sum(h)) ?>;
+}
+
+CudaDeviceFunction float2 Color() {
+	float2 ret;
+	
+	ret.x = getT_();
+	ret.x -= 10;  // hack for better preview.
+	ret.y = ret.x;
+
+
+	if (NodeType == NODE_Solid){
+		ret.y = 0;
+	} else {
+		ret.y = 1;
+	}
+
+	// vector_t u = getU_();
+	// // ret.x = sqrt(u.x*u.x + u.y*u.y + u.z*u.z);
+	// ret.x = u.x;
+	// ret.y = u.y;
+
+	return ret;
+}

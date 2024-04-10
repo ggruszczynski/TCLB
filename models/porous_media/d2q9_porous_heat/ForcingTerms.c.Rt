@@ -1,0 +1,78 @@
+
+CudaDeviceFunction real_t smooth_limiter(real_t x) {
+    double limit = 1000.0;
+    double steepness = 0.1; // Adjust steepness for a smoother or sharper transition
+
+    // Sigmoid function for smooth limiting
+    double clipped = limit / (1 + exp(-steepness * (x - limit)));
+
+    // Optional: Ensures that values below the limit are unaffected
+    return clipped;
+}
+
+
+CudaDeviceFunction real_t getPermability(real_t Kazeny_coeff)
+{
+	// Darcy Forcing
+	// The Kozeny-Carman equation provides a way to estimate the permeability of a porous medium based on its porosity and specific surface area.
+	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
+	real_t permability;
+	#ifdef OPTIONS_PORO121PERM
+		permability = poro0;
+	#else
+		real_t eps = 1E-3;
+		permability = poro0*poro0*poro0; 
+		permability /= (Kazeny_coeff*(1-poro0)*(1-poro0)+eps);
+		permability /= (ssa*ssa);
+	#endif
+
+	return permability;
+}
+
+CudaDeviceFunction vector_t getBoussinesqForce(real_t localTemp, real_t rho)
+{
+	// Boussinesq approximation
+	// rho(T) ~ rho_0*(1-thermal_exp_coeff*(Temp-Temp_0))
+	// F_b = (rho(T) - rho_0)*Grav_Y = -Grav_Y*rho_0*thermal_exp_coeff*(Temp-Temp_0)
+	// see chapter 8.4.1, eq 8.44, p313 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+	real_t refTemperature = 0;
+	real_t BoussinesqForceX = -GravitationX*BoussinesqCoeff*(localTemp - refTemperature); // BoussinesqCoeff=rho_0*thermal_exp_coeff
+	real_t BoussinesqForceY = -GravitationY*BoussinesqCoeff*(localTemp - refTemperature); // BoussinesqCoeff=rho_0*thermal_exp_coeff
+
+	vector_t Force; 
+	Force.x = GravitationX*rho+BoussinesqForceX;  
+	Force.y = GravitationY*rho+BoussinesqForceY; 
+	Force.z = 0; 
+
+	return Force;
+}
+
+CudaDeviceFunction vector_t getHDarcyForce(vector_t Hflux, real_t permability)
+{	
+	real_t coeff = 2*conductivity/(2*permability + conductivity);
+	vector_t F_HDarcy;
+	F_HDarcy.x = -Hflux.x*coeff;
+	F_HDarcy.y = -Hflux.y*coeff;
+
+	F_HDarcy.z = 0; // sqrt(gradPhi.x*gradPhi.x + gradPhi.y*gradPhi.y + 1e-12); // length
+	
+	// u.x += 0.5*F_Darcy[0]/rho;
+	// u.y += 0.5*F_Darcy[1]/rho;
+	return F_HDarcy;
+}
+
+CudaDeviceFunction vector_t getDarcyForce(vector_t u, real_t rho, real_t kin_visc, real_t permability)
+{	
+	real_t dyn_visc = kin_visc*rho; // calcDynVisc
+	real_t coeff_darcy = 2.*dyn_visc/(2*rho*permability+dyn_visc);
+	
+	vector_t F_Darcy;
+	F_Darcy.x = -rho*u.x*coeff_darcy;
+	F_Darcy.y = -rho*u.y*coeff_darcy;
+	F_Darcy.z = 0; // sqrt(gradPhi.x*gradPhi.x + gradPhi.y*gradPhi.y + 1e-12); // length
+	
+	// u.x += 0.5*F_Darcy[0]/rho;
+	// u.y += 0.5*F_Darcy[1]/rho;
+	return F_Darcy;
+}

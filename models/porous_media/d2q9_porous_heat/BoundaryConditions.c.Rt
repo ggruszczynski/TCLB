@@ -1,0 +1,389 @@
+
+CudaDeviceFunction void HydroBounceBack()
+{
+	<?R 
+		# FullBounceBack(group='f') # to much stuff gets generated in the IBB mode Oo
+	?> 
+
+	real_t tmp;
+	tmp = f010;
+	f010 = f020;
+	f020 = tmp;
+	tmp = f120;
+	f120 = f210;
+	f210 = tmp;
+	tmp = f100;
+	f100 = f200;
+	f200 = tmp;
+	tmp = f110;
+	f110 = f220;
+	f220 = tmp;
+}
+
+CudaDeviceFunction void ThermalBounceBack()
+{
+	<?R 
+		# FullBounceBack(group='h')
+	?> 
+
+	real_t tmp;
+	tmp = h010;
+	h010 = h020;
+	h020 = tmp;
+	tmp = h120;
+	h120 = h210;
+	h210 = tmp;
+	tmp = h100;
+	h100 = h200;
+	h200 = tmp;
+	tmp = h110;
+	h110 = h220;
+	h220 = tmp;
+}
+
+CudaDeviceFunction void LidVelocity()
+{
+	<?R # ZouHeRewrite(EQ, f, c(0, 1, 0), "velocity", c('VelocityX', 'VelocityY')) ?> // TODO: this shall work :/
+
+	// /********* velocity-type Zou He boundary condition  ****************/
+	// real_t Ry  = ( ( f[3] + f[1] + f[0] + ( f[6] + f[5] + f[2] )*2. )*VelocityY ) / ( 1 + VelocityY );
+	// real_t Rx  =  ( f[3] - f[1] + ( f[0] - Ry + f[3] + f[1] + ( f[2] + f[6] + f[5] )*2. )*VelocityX )*3. ;
+	// f[4] = f[2] - Ry*2./3.;
+	// f[7] = f[5] + ( -Ry - Rx )/6.;
+	// f[8] = f[6] + ( -Ry + Rx )/6.;
+	
+	// real_t Ry  = ( ( f200 + f100 + f000 + ( f210 + f110 + f010 )*2. )*VelocityY ) / ( 1 + VelocityY );
+	// real_t Rx  =  ( f200 - f100 + ( f000 - Ry + f200 + f100 + ( f010 + f210 + f110 )*2. )*VelocityX )*3. ;
+	// f010 = f020 - Ry*2./3.;
+	// f220 = f110 + ( -Ry - Rx )/6.;
+	// f120 = f210 + ( -Ry + Rx )/6.;
+
+
+	real_t rho;
+	vector_t u;
+	u.x=VelocityX; u.y=VelocityY; u.z=0;
+
+	// Non equilibrium bounce-back (aka Zou-He scheme)
+	// see chapter 5.3.4.4, eq 5.48, p198 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+	rho = (f000 + f010 + f020 +2*(f120 + f020 + f220))/(1-u.y);  // eq 5.32	
+
+	f010 = f020 - 2./3.*rho*u.y; // eq.5.48
+	f220 = f110 + (f100 - f200)/2. - rho*u.x/2. -rho*u.y/6.;
+	f120 = f210 - (f100 - f200)/2. + rho*u.x/2. -rho*u.y/6.;
+
+	// equilibrium scheme for Heat-BC - don't care and impose rho*Teq
+	// see chapter 5.3.4.2, eq 5.34, p191 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+
+	// real_t T = InitTemperature;	
+	// real_t H = rho*cp*T;
+	// SetEquilibriumHeat(H, rho, u); 
+
+	ThermalBounceBack();
+}
+
+CudaDeviceFunction void WVelocity()
+{
+	<?R # ZouHeRewrite(EQ, f, c(-1, 0, 0), "velocity") ?> // TODO: this shall work :/
+
+	real_t rho, ru;
+	vector_t u;
+	u.x=VelocityX; u.y=0; u.z=0;
+	rho = ( f000 + f010 + f020 + 2.*(f200 + f220 + f210) ) / (1. - u.x);
+	ru = rho * u.x;
+	f100 = f200 + (2./3.) * ru;
+	f110 = f220 + (1./6.) * ru + (1./2.)*(f020 - f010);
+	f120 = f210 + (1./6.) * ru + (1./2.)*(f010 - f020);
+	// equilibrium scheme for Heat-BC - don't care and impose rho*Teq
+	// see chapter 5.3.4.2, eq 5.34, p191 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+
+	real_t T = InitTemperature;	
+	real_t H = rho*cp*T;
+	SetEquilibriumHeat(H, rho, u); 
+}
+
+CudaDeviceFunction void EPressure()
+{
+// 	real_t Jx, Jy, Jz, rho;
+// 	rho = (material_density + Pressure*3.); // TODO: *material_density; ? why pressure + 1?
+// // rho = (1 + Pressure*3.);
+// 	Jx  = ( -f022 - f012 - f002 - f021 - f011 - f001 - f020 - f010 + rho - f000 + ( -f112 - f121 - f122 - f111 - f102 - f101 - f120 - f110 - f100 )*2. ) / ( -1 );
+// 	Jy  = ( f022 - f012 + f021 - f011 + f020 - f010 ) / ( 1/3. );
+// 	Jz  = ( f022 + f012 + f002 - f021 - f011 - f001 )*3. ;
+
+// 	f200 = f100 - Jx*4./9.;
+// 	f210 = f120 + ( Jy - Jx )/9.;
+// 	f220 = f110 + ( -Jy - Jx )/9.;
+// 	f201 = f102 + ( Jz - Jx )/9.;
+// 	f211 = f122 + ( Jz + Jy - Jx )/36.;
+// 	f221 = f112 + ( Jz - Jy - Jx )/36.;
+// 	f202 = f101 + ( -Jz - Jx )/9.;
+// 	f212 = f121 + ( -Jz + Jy - Jx )/36.;
+// 	f222 = f111 + ( -Jz - Jy - Jx )/36.;
+
+<?R #ZouHeRewrite(EQ, f, c(1, 0), "pressure") ?>
+
+	real_t ru;
+	real_t rho = (material_density + Pressure*3.); // TODO: *material_density; ? why pressure + 1?
+	vector_t u; 
+	u.z=0;
+	u.x = -1. + ( f000 + f010 + f020 + 2.*(f100 + f110 + f120) ) / rho;
+	ru = rho * u.x;
+	f200 = f100 - (2./3.) * ru;
+	f220 = f110 - (1./6.) * ru + (1./2.)*(f010 - f020);
+	f210 = f120 - (1./6.) * ru + (1./2.)*(f020 - f010);
+
+	u.y = (f110 + f010 + f210 - f220 - f020 - f120)/rho; // TODO: or just 0?
+	// equilibrium scheme for Heat-BC - don't care and impose rho*Teq
+	// see chapter 5.3.4.2, eq 5.34, p191 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+
+	real_t T = InitTemperature;
+	real_t H = rho*cp*T;
+	SetEquilibriumHeat(H, rho, u); 	
+}
+
+//	BOUNDARY CONDITIONS:
+
+#ifdef OPTIONS_OutFlowNeumann
+CudaDeviceFunction void ENeumann()
+{
+	// See 'Evaluation of outflow boundary conditions for two-phase lattice Boltzmann equation' 
+	// by Qin Lou, Zhaoli Guo and Baochang Shi from 2013 for details.
+	<?R
+	if (Options$OutFlowNeumann){
+		C(f, PV(paste0(f_neighbours,"(",-Density$dx[Density$group=="f"]-1,",",-Density$dy[Density$group=="f"],")")))
+		C(h, PV(paste0(h_neighbours,"(",-Density$dx[Density$group=="h"]-1,",",-Density$dy[Density$group=="h"],")")))
+	}
+	?>
+}
+#endif
+
+CudaDeviceFunction void ImposeHeatFlux(vector_t n)
+{
+	if ((NodeType & NODE_BOUNDARY) != NODE_Wall) // in case of wall, bounce back procedure has been already done
+	{
+		ThermalBounceBack();
+	}
+
+	#ifdef OPTIONS_CHT
+		real_t Sigma2 = 1/3.*h_stability_enhancement/(cp*rho);
+	#else
+		real_t Sigma2 = 1/3.;
+	#endif
+	real_t rho = getRho_();
+	real_t imposed_heat_flux = InitHeatFlux;
+	real_t first_order_cm = -2*imposed_heat_flux*h_stability_enhancement;
+	real_t third_order_cm = first_order_cm*Sigma2;
+	real_t fifth_order_cm = third_order_cm*Sigma2;
+
+	// real_t third_order_cm = -2*1/3.*imposed_heat_flux*h_stability_enhancement*h_stability_enhancement/(rho*cp);
+	// real_t fifth_order_cm = -2*1/9.*imposed_heat_flux*h_stability_enhancement*h_stability_enhancement*h_stability_enhancement/(cp*cp*rho*rho);
+		
+	// set the cm_heat_flux_cht_bc into the temp variables
+	real_t temp000 = 0;
+	real_t temp100 = n.x*first_order_cm;
+	real_t temp010 = n.y*first_order_cm;
+	real_t temp110 = 0;
+	real_t temp200 = 0;
+	real_t temp020 = 0;
+	real_t temp120 = n.x*third_order_cm;
+	real_t temp210 = n.y*third_order_cm;
+	real_t temp220 = 0;
+
+	// we assume that the Neumann BC is not moving, 
+	// thus we treat the cm as raw moments and...
+	// go back straight from cm to density-probability functions
+	h000 += temp000 - temp020 - temp200 + temp220;
+	h100 += 1/2.*temp100 - 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	h200 += -1/2.*temp100 + 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	h010 += 1/2.*temp010 + 1/2.*temp020 - 1/2.*temp210 - 1/2.*temp220;
+	h110 += 1/4.*temp110 + 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	h210 += -1/4.*temp110 - 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	h020 += -1/2.*temp010 + 1/2.*temp020 + 1/2.*temp210 - 1/2.*temp220;
+	h120 += -1/4.*temp110 + 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+	h220 += 1/4.*temp110 - 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+}
+
+CudaDeviceFunction void RhoDirichletEquilibriumScheme()
+{
+	real_t rho = InitRho;
+	vector_t u = getU_(); 
+	SetEquilibriumHydro(rho, u.x, u.y, u.z);
+}
+
+
+CudaDeviceFunction void HeatDirichletEquilibriumScheme()
+{
+	// equilibrium scheme for BC - don't care and impose rho*Teq
+	// see chapter 5.3.4.2, eq 5.34, p191 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+	real_t T = InitTemperature;
+	real_t rho = getRho_();
+
+	vector_t u = getU_(); 
+	real_t H = rho*cp*T;
+	SetEquilibriumHeat(H, rho, u); 
+}
+
+
+CudaDeviceFunction void RhoSource()
+{
+
+	real_t Rho = InitRho;
+	vector_t u = getU_();
+
+	//=== THIS IS AUTOMATICALLY GENERATED CODE ===
+
+	real_t Sigma2 = 1./3.;
+
+	real_t uxuy = u.x*u.y;
+	real_t ux2 = u.x*u.x;
+	real_t uy2 = u.y*u.y;
+
+	//back from cm_eq to raw moments
+	real_t temp000 = Rho;
+	real_t temp100 = Rho*u.x;
+	real_t temp010 = Rho*u.y;
+	real_t temp200 = Rho*(Sigma2 + ux2);
+	real_t temp020 = Rho*(Sigma2 + uy2);
+	real_t temp110 = Rho*uxuy;
+	real_t temp210 = Rho*u.y*(Sigma2 + ux2);
+	real_t temp120 = Rho*u.x*(Sigma2 + uy2);
+	real_t temp220 = Rho*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
+	//back to density-probability functions
+	real_t feq000 = temp000 - temp020 - temp200 + temp220;
+	real_t feq100 = 1/2.*temp100 - 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	real_t feq200 = -1/2.*temp100 + 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	real_t feq010 = 1/2.*temp010 + 1/2.*temp020 - 1/2.*temp210 - 1/2.*temp220;
+	real_t feq110 = 1/4.*temp110 + 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	real_t feq210 = -1/4.*temp110 - 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	real_t feq020 = -1/2.*temp010 + 1/2.*temp020 + 1/2.*temp210 - 1/2.*temp220;
+	real_t feq120 = -1/4.*temp110 + 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+	real_t feq220 = 1/4.*temp110 - 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+
+	//add source term
+	f000 += feq000;
+	f100 += feq100;
+	f010 += feq010;
+	f110 += feq110;
+	f200 += feq200;
+	f020 += feq020;
+	f120 += feq120;
+	f210 += feq210;
+	f220 += feq220;
+}
+
+CudaDeviceFunction void HeaterSource()
+{
+
+	real_t T = InitTemperature;
+	real_t rho = getRho_();
+	vector_t u = getU_();
+	real_t H = rho*cp*T;  
+
+	//=== THIS IS AUTOMATICALLY GENERATED CODE ===
+	#ifdef OPTIONS_CHT
+		real_t Sigma2 = 1./3.*h_stability_enhancement/(cp*rho);
+	#else
+		real_t Sigma2 = 1./3.;
+	#endif
+	real_t uxuy = u.x*u.y;
+	real_t ux2 = u.x*u.x;
+	real_t uy2 = u.y*u.y;
+
+	//back from cm_eq to raw moments
+	real_t temp000 = H;
+	real_t temp100 = H*u.x;
+	real_t temp010 = H*u.y;
+	real_t temp200 = H*(Sigma2 + ux2);
+	real_t temp020 = H*(Sigma2 + uy2);
+	real_t temp110 = H*uxuy;
+	real_t temp210 = H*u.y*(Sigma2 + ux2);
+	real_t temp120 = H*u.x*(Sigma2 + uy2);
+	real_t temp220 = H*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
+	//back to density-probability functions
+	real_t heq000 = temp000 - temp020 - temp200 + temp220;
+	real_t heq100 = 1/2.*temp100 - 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	real_t heq200 = -1/2.*temp100 + 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	real_t heq010 = 1/2.*temp010 + 1/2.*temp020 - 1/2.*temp210 - 1/2.*temp220;
+	real_t heq110 = 1/4.*temp110 + 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	real_t heq210 = -1/4.*temp110 - 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	real_t heq020 = -1/2.*temp010 + 1/2.*temp020 + 1/2.*temp210 - 1/2.*temp220;
+	real_t heq120 = -1/4.*temp110 + 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+	real_t heq220 = 1/4.*temp110 - 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+
+	//add source term
+	h000 += heq000;
+	h100 += heq100;
+	h010 += heq010;
+	h110 += heq110;
+	h200 += heq200;
+	h020 += heq020;
+	h120 += heq120;
+	h210 += heq210;
+	h220 += heq220;
+}
+
+CudaDeviceFunction void HeatDirichletAntiBounceBackScheme()
+{
+	// Anti-Bounce-Back Scheme
+	// see chapter 8.5.2.1, eq 8.53, p318 from 'The Lattice Boltzmann Method: Principles and Practice'
+	// by T. Krüger, H. Kusumaatmaja, A. Kuzmin, O. Shardt, G. Silva, E.M. Viggen
+
+	// Be aware that the ABB is a link-wise BC, thus the collision does not take place.
+
+	if ((NodeType & NODE_BOUNDARY) != NODE_Wall) // in case of wall, bounce back procedure has been already done
+	{
+		ThermalBounceBack();
+	}
+
+	real_t T = InitTemperature;
+	real_t rho = getRho_();
+	vector_t u; u.x=0; u.y=0; u.z=0;  // TODO: or vector_t u = getU_(); 
+	real_t H = rho*cp*T;
+
+	//=== THIS IS AUTOMATICALLY GENERATED CODE ===
+	#ifdef OPTIONS_CHT
+		real_t Sigma2 = 1./3.*h_stability_enhancement/(cp*rho);
+	#else
+		real_t Sigma2 = 1./3.;
+	#endif
+	real_t uxuy = u.x*u.y;
+	real_t ux2 = u.x*u.x;
+	real_t uy2 = u.y*u.y;
+
+	//back from cm_eq to raw moments
+	real_t temp000 = H;
+	real_t temp100 = H*u.x;
+	real_t temp010 = H*u.y;
+	real_t temp200 = H*(Sigma2 + ux2);
+	real_t temp020 = H*(Sigma2 + uy2);
+	real_t temp110 = H*uxuy;
+	real_t temp210 = H*u.y*(Sigma2 + ux2);
+	real_t temp120 = H*u.x*(Sigma2 + uy2);
+	real_t temp220 = H*(Sigma2*Sigma2 + Sigma2*ux2 + Sigma2*uy2 + ux2*uy2);
+	//back to density-probability functions
+	real_t heq000 = temp000 - temp020 - temp200 + temp220;
+	real_t heq100 = 1/2.*temp100 - 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	real_t heq200 = -1/2.*temp100 + 1/2.*temp120 + 1/2.*temp200 - 1/2.*temp220;
+	real_t heq010 = 1/2.*temp010 + 1/2.*temp020 - 1/2.*temp210 - 1/2.*temp220;
+	real_t heq110 = 1/4.*temp110 + 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	real_t heq210 = -1/4.*temp110 - 1/4.*temp120 + 1/4.*temp210 + 1/4.*temp220;
+	real_t heq020 = -1/2.*temp010 + 1/2.*temp020 + 1/2.*temp210 - 1/2.*temp220;
+	real_t heq120 = -1/4.*temp110 + 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+	real_t heq220 = 1/4.*temp110 - 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
+
+	//anti bounce back
+	h000 = -h000 + 2 * heq000;
+	h100 = -h100 + 2 * heq100;
+	h010 = -h010 + 2 * heq010;
+	h110 = -h110 + 2 * heq110;
+	h200 = -h200 + 2 * heq200;
+	h020 = -h020 + 2 * heq020;
+	h120 = -h120 + 2 * heq120;
+	h210 = -h210 + 2 * heq210;
+	h220 = -h220 + 2 * heq220;
+}
