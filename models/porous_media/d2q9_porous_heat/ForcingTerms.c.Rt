@@ -48,9 +48,9 @@ CudaDeviceFunction vector_t getBoussinesqForce(real_t localTemp, real_t rho)
 	return Force;
 }
 
-CudaDeviceFunction vector_t getHDarcyForce(vector_t Hflux, real_t permability)
+CudaDeviceFunction vector_t getHDarcyForce(vector_t Hflux, real_t cond, real_t permability)
 {	
-	real_t coeff = 2*conductivity/(2*permability + conductivity);
+	real_t coeff = 2*cond/(2*permability + cond);
 	vector_t F_HDarcy;
 	F_HDarcy.x = -Hflux.x*coeff;
 	F_HDarcy.y = -Hflux.y*coeff;

@@ -22,46 +22,15 @@ CudaDeviceFunction real_t getPorosity(){
 
 CudaDeviceFunction real_t getNSPermability()
 {	
-	// Use this function is only for vtk output.
-
-	// Darcy Forcing
-	// The Kozeny-Carman equation provides a way to estimate the permeability of a porous medium based on its porosity and specific surface area.
-	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
-	real_t permability;
-
-	permability = getPermability(Kazeny_NScoeff);
-
-	// #ifdef OPTIONS_PORO121PERM
-	// 	permability = poro0/Kazeny_NScoeff;
-	// #else
-
-	// 	permability = poro0*poro0*poro0; 
-	// 	permability /= (Kazeny_NScoeff*(1-poro0)*(1-poro0)+1E-3);
-	// 	permability /= (ssa*ssa);
-	// #endif
-
-	return permability;
+	// Use this function only for vtk output.
+	return getPermability(Kazeny_NScoeff);
 }
 
 
 CudaDeviceFunction real_t getHPermability()
 {	
-	// Use this function is only for vtk output.
-
-	// Darcy Forcing
-	// The Kozeny-Carman equation provides a way to estimate the permeability of a porous medium based on its porosity and specific surface area.
-	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
-	real_t permability;
-	permability = getPermability(Kazeny_Hcoeff);
-	// #ifdef OPTIONS_PORO121PERM
-	// 	permability = poro0/Kazeny_Hcoeff;
-	// #else
-	// 	permability = poro0*poro0*poro0; 
-	// 	permability /= (Kazeny_Hcoeff*(1-poro0)*(1-poro0)+1E-3);
-	// 	permability /= (ssa*ssa);
-	// #endif
-
-	return permability;
+	// Use this function only for vtk output.
+	return getPermability(Kazeny_Hcoeff);
 }
 
 
@@ -101,7 +70,11 @@ CudaDeviceFunction vector_t getHflux(){
 CudaDeviceFunction vector_t getHDflux(){
 	vector_t Hflux = getHflux();  // rho u T + Q^neq
 	real_t permability = getPermability(Kazeny_Hcoeff);
-	vector_t fluxHD = getHDarcyForce(Hflux, permability);
+
+	real_t omega_ade = GetOmegaTRTPlus(conductivity, permability);
+	// real_t omega_k = 1.0/(3*conductivity/rho +0.5);
+	real_t conductivity_with_poro = (1./omega_ade - 0.5)/3.;
+	vector_t fluxHD = getHDarcyForce(Hflux, conductivity_with_poro, permability);
 	return fluxHD;
 }
 
