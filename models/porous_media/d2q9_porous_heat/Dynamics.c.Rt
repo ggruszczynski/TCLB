@@ -575,6 +575,8 @@ CudaDeviceFunction void relax_and_collide_ADE_CM_HIGHER(real_t rho, real_t omega
 	h120 = temp110 + temp120 - temp210 - temp220;
 	h220 = temp110 + temp120 + temp210 + temp220;
 
+	// h100 += fluxHDarcy.x/2.;
+	// h010 += fluxHDarcy.y/2.;
 
 	//central moments from raw moments
 	temp000 = h000;
@@ -789,8 +791,8 @@ CudaDeviceFunction void CollisionCM_HIGHER(){
 	vector_t fluxHDarcy = getHDarcyForce(Hflux, permability);
 	// fluxHDarcy.x = 0;
 	// fluxHDarcy.y = 0;
-	real_t omega_k = GetOmegaTRTPlus(conductivity, permability);
-	// real_t omega_k = 1.0/(3*conductivity+0.5);
+	// real_t omega_k = GetOmegaTRTPlus(conductivity, permability);
+	real_t omega_k = 1.0/(3*conductivity/rho +0.5);
 
 
 

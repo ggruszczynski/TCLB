@@ -28,17 +28,41 @@ CudaDeviceFunction real_t getNSPermability()
 	// The Kozeny-Carman equation provides a way to estimate the permeability of a porous medium based on its porosity and specific surface area.
 	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
 	real_t permability;
-	#ifdef OPTIONS_PORO121PERM
-		permability = poro0;
-	#else
-		permability = poro0*poro0*poro0; 
-		permability /= (Kazeny_NScoeff*(1-poro0)*(1-poro0)+1E-3);
-		permability /= (ssa*ssa);
-	#endif
+
+	permability = getPermability(Kazeny_NScoeff);
+
+	// #ifdef OPTIONS_PORO121PERM
+	// 	permability = poro0/Kazeny_NScoeff;
+	// #else
+
+	// 	permability = poro0*poro0*poro0; 
+	// 	permability /= (Kazeny_NScoeff*(1-poro0)*(1-poro0)+1E-3);
+	// 	permability /= (ssa*ssa);
+	// #endif
 
 	return permability;
 }
 
+
+CudaDeviceFunction real_t getHPermability()
+{	
+	// Use this function is only for vtk output.
+
+	// Darcy Forcing
+	// The Kozeny-Carman equation provides a way to estimate the permeability of a porous medium based on its porosity and specific surface area.
+	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
+	real_t permability;
+	permability = getPermability(Kazeny_Hcoeff);
+	// #ifdef OPTIONS_PORO121PERM
+	// 	permability = poro0/Kazeny_Hcoeff;
+	// #else
+	// 	permability = poro0*poro0*poro0; 
+	// 	permability /= (Kazeny_Hcoeff*(1-poro0)*(1-poro0)+1E-3);
+	// 	permability /= (ssa*ssa);
+	// #endif
+
+	return permability;
+}
 
 
 CudaDeviceFunction real_t getRho(){

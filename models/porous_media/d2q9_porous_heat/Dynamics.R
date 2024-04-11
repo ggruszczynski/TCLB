@@ -90,6 +90,7 @@ AddQuantity(name="H", 		unit="J" )
 AddQuantity(name="T", 		unit="K")
 AddQuantity(name="Porosity", unit="1")
 AddQuantity(name="NSPermability", unit="1")
+AddQuantity(name="HPermability", unit="1")
 
 AddQuantity(name="Hflux", unit="1", ,vector=T)
 AddQuantity(name="HDflux", unit="1", ,vector=T)

@@ -18,7 +18,7 @@ CudaDeviceFunction real_t getPermability(real_t Kazeny_coeff)
 	real_t ssa = 1. ; // the specific surface area (surface area per unit volume of solid).
 	real_t permability;
 	#ifdef OPTIONS_PORO121PERM
-		permability = poro0;
+		permability = poro0/Kazeny_coeff;
 	#else
 		real_t eps = 1E-3;
 		permability = poro0*poro0*poro0; 
