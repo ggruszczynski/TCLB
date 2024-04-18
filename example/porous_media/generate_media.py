@@ -1,6 +1,12 @@
+# %% imports
+
 import numpy as np
 import matplotlib.pyplot as plt
-from noise import pnoise2
+import noise
+from utils import make_plot, save_img
+import cv2
+
+# %% attempt 1 
 
 def generate_porous_media(width, height, scale=0.1, minmax_range=(0, 1.), threshold=0.5, binary=False):
     """
@@ -18,7 +24,7 @@ def generate_porous_media(width, height, scale=0.1, minmax_range=(0, 1.), thresh
     
     for i in range(height):
         for j in range(width):
-            noise_value = pnoise2(i * scale, j * scale)
+            noise_value = noise.pnoise2(i * scale, j * scale)
             porosity[i, j] = noise_value
             if binary:
               if noise_value < threshold:
@@ -37,24 +43,72 @@ minmax_range=(0.01, 0.999)
 width_in_pixels, height_in_pixels = 1024, 256
 porous_media = generate_porous_media(width_in_pixels, 
                                      height_in_pixels, 
-                                     scale=0.05, minmax_range=minmax_range, 
+                                     scale=0.1, minmax_range=minmax_range, 
                                      threshold=0.5, binary=False)
 
-# Calculate the figure size in inches for a given DPI (e.g., 100)
-dpi = 207
-fig_width = width_in_pixels / dpi  # Width in inches
-fig_height = height_in_pixels / dpi  # Height in inches
 
-plt.figure(figsize=(fig_width, fig_height), dpi=dpi)
-
-plt.imshow(porous_media, cmap='gray', vmin=0, vmax=1)
+make_plot(porous_media,title='Attempt v0', cmap='gray')
 
 
-# Save the figure without any decorations
-plt.axis('off')
-# plt.title('Simulated Porous Media')
+# %% Attempt 2
+
+# defaults
+# shape = (1024,1024)
+# scale = 100.0
+# octaves = 6
+# persistence = 0.5
+# lacunarity = 2.0
+# defaults
+shape = (1024,1024)
+scale = 100.0
+octaves = 10
+persistence = 0.7
+lacunarity = 2.0
+
+world = np.zeros(shape)
+for i in range(shape[0]):
+    for j in range(shape[1]):
+        world[i][j] = noise.pnoise2(i/scale, 
+                                    j/scale, 
+                                    octaves=octaves, 
+                                    persistence=persistence, 
+                                    lacunarity=lacunarity, 
+                                    repeatx=1024, 
+                                    repeaty=1024, 
+                                    base=0)
+        
+make_plot(world,title='Attempt v1', cmap='gray')
+        
+save_img(world, shape[0], shape[1], 'gist_gray')
+        
+# toimage(world).show()
+
+
+# plt.imshow(world, cmap='gray') #, vmin=0, vmax=1)
 # plt.colorbar()
-# plt.grid()
-# plt.show()
-plt.savefig('generated_porous_media.png', bbox_inches='tight', pad_inches=0, dpi=dpi)
-plt.close()
+# %%
+
+import cv2
+
+# read image
+image = cv2.imread('porous_media_1024x512.png')
+# calculate mean value from RGB channels and flatten to 1D array
+# vals = im.mean(axis=2).flatten()
+
+gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) # convert to grayscale
+float_image = gray_image.astype(np.float32)
+normalized_image = float_image / 255.0 # Rescale to 0-1 range
+
+def make_histogram(img, nbins = 256):
+    fig, ax = plt.subplots()
+    ax.set_title("Grayscale Histogram")
+    ax.set_xlabel("grayscale value")
+    ax.set_ylabel("pixel count")
+    # ax.set_xlim([-1.0, 1.0])  # <- named arguments do not work here
+    # ax.plot(bin_edges[:-1], histogram)  # <- or here
+    x = img.flatten()
+
+    # the histogram of the data
+    n, bins, patches = ax.hist(x, nbins, density=True)
+
+make_histogram(normalized_image)

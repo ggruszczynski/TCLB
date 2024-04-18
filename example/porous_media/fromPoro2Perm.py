@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+from .utils import make_plot, save_img
 
 
 # %% 
@@ -37,42 +38,7 @@ phi = normalized_image #np.linspace(0.0, 0.9, 200)
 
 # Calculate and plot permeability for each epsilon value
 
-def make_plot(x, title, cmap):
-    plt.figure(figsize=(10, 7))
-    plt.imshow(x, cmap=cmap)
-    plt.colorbar()
-    plt.title(f'{title}')
-    plt.show()
-    plt.close()
 
-def save_img(x, h, w, cmap, title='generated_permability.png'):
-    
-#     plt.figure(figsize=(3.841, 7.195), dpi=100)
-# ( your code ...)
-# plt.savefig('myfig.png', dpi=1000)
-    # plt.figure(figsize=(5.12, 1.024), dpi=100)
-    # plt.axis('off')
-    # plt.imshow(x, cmap='gist_gray') #  vmax=1000
-
-    # plt.savefig(f'{title}', bbox_inches='tight', pad_inches=0, dpi=100)
-    # plt.close()
-    
-    # w = 1000
-    # h = 512
-    # im_np = numpy.random.rand(h, w)
-    
-    
-    my_dpi = 100
-    fig = plt.figure(figsize=(w/my_dpi, h/my_dpi), dpi=my_dpi)
-    
-    ax = plt.Axes(fig, [0., 0., 1., 1.])
-    ax.imshow(x, cmap=cmap)
-    fig.add_axes(ax)
-    # plt.imshow(x, cmap='gist_gray')
-    
-    plt.axis('off')
-    plt.savefig(f'{title}', bbox_inches='tight', pad_inches=0, dpi=my_dpi)
-    
 
 
 def rescale(background, new_min, new_max):
