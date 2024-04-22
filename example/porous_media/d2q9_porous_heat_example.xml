@@ -17,10 +17,10 @@
 		  </Wall> -->
 
       <RhoDirichletEQ name="inkSource">
-          <Box dx="256" nx="16" ny="72" dy="16"/>
+          <Box dx="216" nx="16" ny="128" dy="64"/>
 		  </RhoDirichletEQ>
       <HeaterDirichletTemperatureEQ name="inkSource"> 
-          <Box dx="256" nx="16" ny="72" dy="16"/>
+          <Box dx="216" nx="16" ny="128" dy="64"/>
       </HeaterDirichletTemperatureEQ>   
 
  
@@ -79,7 +79,7 @@
 
 	library(png)
 	#tab = readPNG("example/porous_media/porous_media.png")
-    	background = readPNG("example/porous_media/porous_media_contrast_512x256.png")
+    	background = readPNG("example/porous_media/porous_media_contrast_1024x256.png")
     	# graphics = readPNG("example/porous_media/logo_1024x256bw.png")
 
 		nx = dim(background)[2]

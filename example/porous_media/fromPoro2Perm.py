@@ -28,7 +28,7 @@ K = 1.  # Kozeny constant, arbitrary choice for demonstration
 S = 1.  # Specific surface area, arbitrary choice for demonstration
 
 # Epsilon values to prevent division by zero in the denominator
-epsilon = 1E-2
+
 
 # Porosity range from 0 to 1 (not including 1 to avoid division by zero in the original equation)
 phi = normalized_image #np.linspace(0.0, 0.9, 200)
@@ -41,13 +41,7 @@ phi = normalized_image #np.linspace(0.0, 0.9, 200)
 
 
 
-def rescale(background, new_min, new_max):
-    # new_min = 0.01 +  1* np.min(background) # Define new minimum value
-    # new_max = 0.99 * np.max(background)  # Define new maximum value
-    min  = np.min(background)
-    max = np.max(background)
-    new_backgroud = new_min + ((background - min) * (new_max - new_min)) / (max - min)
-    return new_backgroud
+
     
     
 # Define the smooth limiter function based on the given C code
@@ -57,8 +51,8 @@ def smooth_limiter(x, max=10, steepness = 0.1):
     return result
 
 
-    # Adjusted Kozeny-Carman equation to include epsilon in the denominator
-def Kozeny_Carman(phi,K,S):
+# Adjusted Kozeny-Carman equation to include epsilon in the denominator
+def Kozeny_Carman(phi,K,S, epsilon = 1E-3):
     return (phi**3) / (K * ((1 - phi)**2 + epsilon)) * (1/S**2)
 
 rephi = rescale(phi, 0.01, 0.99)

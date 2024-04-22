@@ -1,4 +1,4 @@
-ffmpeg  -framerate 24 -pattern_type glob -i 'H*.png' -vf "scale=-2:824" -c:v libx264 -profile:v high -b:v 5M -crf 17 -pix_fmt yuv420p output.mp4
+ffmpeg  -framerate 24 -pattern_type glob -i 'T*.png' -vf "scale=-2:824" -c:v libx264 -profile:v high -b:v 5M -crf 17 -pix_fmt yuv420p output.mp4
 
 
 he error you're encountering, [libx264 @ 0x640c54a6ff00] height not divisible by 2 (2902x825), indicates that the resolution of your input images (or the resolution you're attempting to encode at) has a height that is not divisible by 2. The H.264 codec, which is being used here (-c:v libx264), requires that both the width and height of the video be divisible by 2.
