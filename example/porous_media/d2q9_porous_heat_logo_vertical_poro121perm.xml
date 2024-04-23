@@ -1,0 +1,113 @@
+
+<!-- To be used with models/d2q9_porous_heat -->
+
+<?xml version="1.0"?>
+<CLBConfig version="2.0" output="output/logo_vertical_121/">
+    <Geometry nx="1536" ny="1024" > 
+      <!-- <CM_HIGHER> <Box/> </CM_HIGHER>   -->
+
+      <Cumulants> <Box/> </Cumulants> 
+      <!-- <CM_HIGHER_PROB> <Box/> </CM_HIGHER_PROB>  -->
+      <!-- <CM_HIGHER_PROB_M_EQ> <Box/> </CM_HIGHER_PROB_M_EQ>   -->
+
+<!-- 
+      <Wall mask="ALL" name="border">
+        <Box ny="2"/>
+        <Box dy="-2"/>
+		  </Wall> -->
+
+
+      <RhoDirichletEQ name="inkSource">
+       <Box dy="-2"/>
+		  </RhoDirichletEQ>
+      <HeaterDirichletTemperatureEQ name="inkSource"> 
+      <Box dy="-2"/>
+      </HeaterDirichletTemperatureEQ>   
+
+ 
+      <RhoDirichletEQ name="outlet"> 
+      <Box ny="2"/>
+		  </RhoDirichletEQ>
+      <HeaterDirichletTemperatureEQ name="outlet"> 
+      <Box ny="2"/>
+      </HeaterDirichletTemperatureEQ>
+
+        <!-- <HeaterNeumannHeatFluxEast name="heat_pump"> 
+            <Box dx="512" dy="16" nx="32" ny="32"/>
+        </HeaterNeumannHeatFluxEast>     -->
+
+    </Geometry>
+    <Model>
+      <Param name="InitTemperature" value="10"/>
+
+      <Param name="InitTemperature" value="11" zone="inkSource"/>
+      <Param name="InitRho" value="1.0" zone="inkSource"/>
+
+      <Param name="InitTemperature" value="10" zone="outlet"/>
+      <Param name="InitRho" value="1.0" zone="outlet"/> 
+
+
+
+      <Param name="nu" value="0.01"/>
+      <Param name="conductivity" value="0.001"/>
+
+
+
+
+      <Param name="Kazeny_Hcoeff" value="1E4"/>
+      <Param name="Kazeny_NScoeff" value="1."/>
+
+      <Param name="nu_buffer" value="0.166666"/>
+      <Param name="conductivity_buffer" value="0.166666"/>
+
+      <Param name="h_stability_enhancement" value="1."/>
+      <Param name="cp" value="1."/>
+      
+
+      <!-- <Param name="InitTemperature" value="10" zone="Inlet"/>
+      <Param name="VelocityX" value="0.025" /> -->
+
+
+      <!-- <Param name="GravitationX" value="-1E-4" /> -->
+      <Param name="GravitationY" value="-1E-6" />  <!-- negative: dense fluid goes down -->
+      <Param name="BoussinesqCoeff" value="-1E1" /> <!-- positive - ligher fluid goes against gravity -->
+    </Model>
+      <RunR>
+
+		library(png)
+    #graphics = readPNG("example/porous_media/SIGGRAPH_1024x256bw_horizontal.png")
+    #background = readPNG("example/porous_media/porosity.png")
+
+    background = readPNG("example/porous_media/kc_generated_permability.png")
+    graphics = readPNG("example/porous_media/SIGGRAPH_1536x1024.png")
+	nx = dim(background)[2]
+	ny = dim(background)[1]
+
+
+    porosity = as.vector(background[,,3])
+    graphics = as.vector(graphics[,,3])
+
+    new_min = 0.1 # Define new minimum value
+    new_max = 80 # Define new maximum value
+
+    porosity = new_min + ((porosity - min(porosity)) * (new_max - new_min)) / (max(porosity) - min(porosity))
+    scaled_mix = porosity + 100*graphics # 50
+    
+
+	  x = round(as.vector(Solver$Geometry$X) - 0.5) %% nx
+	  y = round(as.vector(Solver$Geometry$Y) - 0.5) %% ny
+	
+    # white = porosity 100%, black = 0% (no flow)
+    Solver$Fields$poro0[] = scaled_mix[(ny - 1 - y) + ny*x + 1]  # for porous_media_contrast_1024x512
+
+   
+
+	  </RunR>
+    <Solve Iterations="3"> <VTK Iterations="1"/> </Solve> 
+    <Failcheck Iterations="100" nx="1024" ny="256" />
+    
+    <Solve Iterations="200000"> 
+      <VTK Iterations="500" what="H,T,U,Rho"/> 
+      <Log Iterations="5000"/>
+    </Solve>
+  </CLBConfig>

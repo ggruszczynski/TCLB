@@ -47,3 +47,6 @@ Running*.time
 /*.csv
 update.sh
 /.overlay*
+
+my/
+WIP/

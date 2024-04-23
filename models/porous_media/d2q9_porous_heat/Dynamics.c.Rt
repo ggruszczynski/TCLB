@@ -273,6 +273,34 @@ CudaDeviceFunction void SetEquilibriumHeat(real_t H, real_t rho, vector_t u)
 	h220 = 1/4.*temp110 - 1/4.*temp120 - 1/4.*temp210 + 1/4.*temp220;
 }
 
+CudaDeviceFunction vector_t GetNonEqHFlux(real_t H, real_t rho, vector_t u) 
+{	
+	//=== THIS IS AUTOMATICALLY GENERATED CODE ===
+	#ifdef OPTIONS_CHT
+		real_t Sigma2 = 1./3.*h_stability_enhancement/(cp*rho);
+	#else
+		real_t Sigma2 = 1./3.;
+	#endif
+
+	//equilibrium in central moments space
+	real_t heq000 = H;
+	real_t heq100 = 0;
+	real_t heq010 = 0;
+	//back eq raw moments
+	real_t tempeq100 = heq000*u.x + heq100;
+	real_t tempeq010 = heq000*u.y + heq010;
+
+
+	//raw moments
+	real_t t100 = h100 + h110 + h120 - h200 - h210 - h220;
+	real_t t010 = h010 - h020 + h110 - h120 + h210 - h220;
+
+	// non equilibrium component of the heat flux
+	vector_t flux; flux.x = t100 - tempeq100; flux.y = t010 - tempeq010; flux.z = 0;
+	return flux;
+}
+
+
 CudaDeviceFunction void relax_and_collide_ADE_Cumulants(real_t rho, real_t omega_ade, vector_t u, vector_t fluxHDarcy)
 {
 	#ifdef OPTIONS_CHT
@@ -777,6 +805,8 @@ CudaDeviceFunction real_t GetOmegaTRTPlus(real_t diff_coeff, real_t permability)
 	// I. Ginzburg, G. Silva, L. Talon, 
 	// Analysis and improvement of brinkman lattice boltzmann schemes: Bulk, boundary, interface. 
 	// Similarity and distinctness with finite elements in heterogeneous porous media, Phys. Rev. E 91 (2015) 023307.
+	// see Table I
+	
 	// real_t conductivity = (1./omega_ade-0.5)/3.;
 	real_t Magic = 3./16;
 	const real_t Lambda = Magic;
@@ -823,6 +853,7 @@ CudaDeviceFunction void CollisionCM_HIGHER(){
 
 	real_t conductivity_with_poro = (1./omega_k - 0.5)/3.;
 	vector_t Hflux = getHflux(); // rho u T + Q^neq
+	// vector_t Hflux = GetNonEqHFlux(getH(), rho, u); //  Q^neq
 	// real_t H =  getH();
 	// Hflux.x /= H;
 	// Hflux.y /= H;
