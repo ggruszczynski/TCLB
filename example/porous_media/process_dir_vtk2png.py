@@ -17,18 +17,21 @@ reader = vtk.vtkXMLImageDataReader()
 # directory_path= '/home/grzegorz/GITHUB/LBM/TCLB/output/poro_study/'
 
 # file_path = 'd2q9_poro_study_121perm_VTK_P00_00002003.vti'
-subdir = 'poro_study_kc_abs_normal_permability/'
+# subdir = 'poro_study_kc_abs_normal_permability/'
+
+# subdir = 'poro_study_tanh_kc_chi_permability/'
+# subdir = 'poro_study_porosity_chi_distribution/'
+subdir = 'poro_study_porosity_normal_distribution/'
+
+
 directory_path = '/home/grzegorz/GITHUB/LBM/TCLB/output/' + subdir
 
 # data_path = directory_path + file_path
-
+shape = (512,512)
 data_path = glob.glob(directory_path + '*.vti')[10]
 
-shape = (512,512)
 check_arrays(data_path)
-
 data=getdata_1D(data_path, array_id=2, reader=reader, shape=shape) 
-
 
 colors = [(1, 1, 1), (0, 0, 1), (0, 0, 0)] # black, blue, white 
 n_bins = 1000 # Discretizes the interpolation into bins 
@@ -36,10 +39,7 @@ cmap_name = 'custom_colormap'
 cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bins)
 
 
-make_plot(data, "title", cm, vmin=10.05, vmax=11, ticks=[10, 10.2, 10.4, 10.6, 10.8, 11])
-
-
-    
+make_plot(data, "title", cm, vmin=10.05, vmax=11, ticks=[10, 10.2, 10.4, 10.6, 10.8, 11]) 
 save_img(data, h=shape[0], w=shape[1], cmap=cm, vmin=10, vmax=11, title=f'uff.png')
 
 output_dir = 'script_output/' + subdir
@@ -89,34 +89,9 @@ ffmpeg_command = [
     '-b:v', '5M',
     '-crf', '17',
     '-pix_fmt', 'yuv420p',
-    f'{output_dir}output.mp4'
+    f'{output_dir}_ink_H_output.mp4'
 ]
 
 # Execute the ffmpeg command, automatically confirming any prompts
 subprocess.run(ffmpeg_command, text=True, input='y\n')
 
-# Step 4: Plot the 2D field using matplotlib
-# plt.figure(figsize=(14, 10))
-
-
-# im = plt.imshow(data, cmap=cm, clim=(10, 11))
-# im = plt.imshow(data, cmap='viridis')  # You can change the colormap as needed
-# plt.colorbar()
-
-# cbar = plt.colorbar(im, orientation='horizontal', fraction=0.1, pad=0.1)
-# cbar.set_label('Intensity')  # You can customize the label
-
-# plt.title('Velocity magnitude')
-
-# plt.grid(which='major', color='#CCCCCC', linestyle='--')
-# Optionally, you can customize the grid lines further
-# plt.minorticks_on()  # Enable minor ticks if needed
-# plt.grid(which='minor', color='#CCCCCC', linestyle=':')
-# plt.show()
-    
-# Loop through all *.vti files in the directory
-# for file_path in glob.glob(directory_path + '*.vti'):
-#     print(file_path)
-#     # Add your processing logic for each file here
-
-# %%

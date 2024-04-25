@@ -33,23 +33,23 @@ def make_histogram(img, nbins = 100, title="Grayscale Histogram", output_name="H
     
 
     # ax.set_title(f"{title}")
-    ax.set_xlabel("Grayscale value")
+    # ax.set_xlabel("Grayscale value")
     # ax.set_ylabel("Count")
     # ax.set_xlim([-1.0, 1.0])  # <- named arguments do not work here
     # ax.plot(bin_edges[:-1], histogram)  # <- or here
 
     
     # Turn off tick labels
-    ax.set_yticklabels([])
+    # ax.set_yticklabels([])
     # ax.set_xticklabels([])
     # to remove the tick marks as well as the label
     # ax.set_xticks([])
-    ax.set_yticks([])
+    # ax.set_yticks([])
     
     # Turn off y-axis ticks and labels
     # ax.yaxis.set_visible(False)
     ax.yaxis.set_ticklabels([])
-    
+    ax.xaxis.set_ticklabels([])
     
     # plt.gca().axes.get_yaxis().set_visible(False)
     # plt.gca().axes.yaxis.set_ticklabels([])
