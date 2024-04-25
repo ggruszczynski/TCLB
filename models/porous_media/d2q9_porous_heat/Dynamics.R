@@ -119,6 +119,7 @@ AddNodeType(name="HeaterNeumannHeatFluxEast", 	  group="ADDITIONALS_HEAT")
 
 AddNodeType(name="CM", 						group="COLLISION")
 AddNodeType(name="CM_HIGHER", 				group="COLLISION")
+AddNodeType(name="CM_HIGHER_INCOMPRESSIBLE",group="COLLISION")
 AddNodeType(name="CM_HIGHER_PROB", 			group="COLLISION")
 AddNodeType(name="CM_HIGHER_PROB_M_EQ", 	group="COLLISION")
 AddNodeType(name="Cumulants", 				group="COLLISION")

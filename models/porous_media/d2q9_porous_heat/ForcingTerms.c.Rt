@@ -1,16 +1,4 @@
 
-CudaDeviceFunction real_t smooth_limiter(real_t x) {
-    double limit = 1000.0;
-    double steepness = 0.1; // Adjust steepness for a smoother or sharper transition
-
-    // Sigmoid function for smooth limiting
-    double clipped = limit / (1 + exp(-steepness * (x - limit)));
-
-    // Optional: Ensures that values below the limit are unaffected
-    return clipped;
-}
-
-
 CudaDeviceFunction real_t getPermability(real_t Kazeny_coeff)
 {
 	// Darcy Forcing

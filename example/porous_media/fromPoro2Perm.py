@@ -45,10 +45,7 @@ phi = normalized_image #np.linspace(0.0, 0.9, 200)
     
     
 # Define the smooth limiter function based on the given C code
-def smooth_limiter(x, max=10, steepness = 0.1):
-    result = x*(3*x + 1)/(x+1)**2
-    # result = max / (1 + np.exp(-steepness * (x - max)))
-    return result
+
 
 
 # Adjusted Kozeny-Carman equation to include epsilon in the denominator
