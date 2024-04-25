@@ -59,4 +59,8 @@ def getdata_1D(data_path, array_id, reader, shape):
     data = numpy_array.reshape(shape[0], shape[1])
     # Rotate the image by 180 degrees
     data = np.flipud(np.fliplr(data))
+    
+    # By applying np.fliplr() twice, you effectively mirror the image against the y-axis, flipping it horizontally. 
+    data = np.fliplr(data)  # Flip the image horizontally to mirror against the y-axis
+    # data = np.flipud(np.fliplr(data))
     return data 

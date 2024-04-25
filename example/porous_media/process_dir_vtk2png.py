@@ -21,17 +21,29 @@ reader = vtk.vtkXMLImageDataReader()
 
 # subdir = 'poro_study_tanh_kc_chi_permability/'
 # subdir = 'poro_study_porosity_chi_distribution/'
-subdir = 'poro_study_porosity_normal_distribution/'
+# subdir = 'poro_study_porosity_normal_distribution/'
+# shape = (512,512)
+
+
+
+shape = (1024,1024)
+subdir = 'tk_ink_poro121/'
 
 
 directory_path = '/home/grzegorz/GITHUB/LBM/TCLB/output/' + subdir
-
+output_dir = 'script_output/' + subdir
 # data_path = directory_path + file_path
-shape = (512,512)
-data_path = glob.glob(directory_path + '*.vti')[10]
+
+data_path = glob.glob(directory_path + '*.vti')[20]
+
+# Array 0 name: Rho
+# Array 1 name: U
+# Array 2 name: H
+# Array 3 name: T
+array_id  =3 
 
 check_arrays(data_path)
-data=getdata_1D(data_path, array_id=2, reader=reader, shape=shape) 
+data=getdata_1D(data_path, array_id=array_id, reader=reader, shape=shape) 
 
 colors = [(1, 1, 1), (0, 0, 1), (0, 0, 0)] # black, blue, white 
 n_bins = 1000 # Discretizes the interpolation into bins 
@@ -40,7 +52,7 @@ cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bins)
 
 
 make_plot(data, "title", cm, vmin=10.05, vmax=11, ticks=[10, 10.2, 10.4, 10.6, 10.8, 11]) 
-save_img(data, h=shape[0], w=shape[1], cmap=cm, vmin=10, vmax=11, title=f'uff.png')
+save_img(data, h=shape[0], w=shape[1], cmap=cm, vmin=10, vmax=11, title=f'script_output/uff.png')
 
 output_dir = 'script_output/' + subdir
 
@@ -68,8 +80,8 @@ for file in vti_files_sorted:
     print(f"processing {counter}:  {file}")
     reader = vtk.vtkXMLImageDataReader()
     counter = counter +1
-    data=getdata_1D(file, array_id=2, reader=reader, shape=shape) 
-    save_img(data, h=shape[0], w=shape[1], cmap=cm, vmin=10.05, vmax=11, title=output_dir + f'H_{counter}.png')
+    data=getdata_1D(file, array_id=array_id, reader=reader, shape=shape) 
+    save_img(data, h=shape[0], w=shape[1], cmap=cm, vmin=10.05, vmax=11, title=output_dir + f'ink_{counter}.png')
 
 
 # %% Step 2: 
@@ -81,7 +93,7 @@ ffmpeg_command = [
     'ffmpeg',
     '-framerate', '24',
     '-pattern_type', 'glob',
-    '-i', f'{output_dir}H_*.png',
+    '-i', f'{output_dir}ink_*.png',
     # '-vf', 'scale=-2:512', # -2 value in the scale parameter is a special value that maintains the aspect ratio of the input video while resizing it
     '-vf', 'scale=512:512',
     '-c:v', 'libx264',
@@ -89,7 +101,7 @@ ffmpeg_command = [
     '-b:v', '5M',
     '-crf', '17',
     '-pix_fmt', 'yuv420p',
-    f'{output_dir}_ink_H_output.mp4'
+    f'{output_dir}ink_output.mp4'
 ]
 
 # Execute the ffmpeg command, automatically confirming any prompts
